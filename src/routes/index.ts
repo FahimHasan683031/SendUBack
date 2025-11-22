@@ -8,6 +8,7 @@ import { SubscriptionRoutes } from '../app/modules/subscription/subscription.rou
 import { ChatRoutes } from '../app/modules/chat/chat.routes'
 import { MessageRoutes } from '../app/modules/message/message.routes'
 import { categoryRoutes } from '../app/modules/category/category.route'
+import { BusinessDetailsRoute } from '../app/modules/businessDetails/businessDetails.route'
 
 
 const router = express.Router()
@@ -22,6 +23,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/chat', route: ChatRoutes },
   { path: '/message', route: MessageRoutes },
   { path: '/category', route: categoryRoutes },
+  { path: '/business-details', route: BusinessDetailsRoute },
 
 ]
 

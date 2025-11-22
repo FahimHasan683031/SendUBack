@@ -26,6 +26,7 @@ type IAuthentication = {
 export type IUser = {
   _id: Types.ObjectId;
   email: string;
+  image?: string;
   password: string;
   firstName: string;
   lastName: string;

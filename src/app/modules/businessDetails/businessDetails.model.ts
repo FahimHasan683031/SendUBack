@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
-import { IBusinessProfile } from "./businessProfile.interface";
+import { IBusinessDetails } from "./businessDetails.interface";
 
-const businessProfileSchema = new Schema<IBusinessProfile>(
+const businessDetailsSchema = new Schema<IBusinessDetails>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -35,7 +35,8 @@ const businessProfileSchema = new Schema<IBusinessProfile>(
       required:false
     },
     logo: {
-      type: String
+      type: String,
+      required:false
     },
     companyName: {
       type: String,
@@ -94,4 +95,4 @@ const businessProfileSchema = new Schema<IBusinessProfile>(
   }
 );
 
-export const BusinessProfile = model<IBusinessProfile>('BusinessProfile', businessProfileSchema);
+export const BusinessDetails = model<IBusinessDetails>('BusinessDetails', businessDetailsSchema);

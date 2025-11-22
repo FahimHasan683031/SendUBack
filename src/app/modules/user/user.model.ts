@@ -18,6 +18,10 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    image: {
+      type: String,
+      default: "",
+    },
     firstName: {
       type: String,
       required: true,
@@ -114,6 +118,9 @@ console.log(isExist)
 
   next();
 });
+
+
+
 
 export const User = mongoose.model<IUser, UserModel>("User", UserSchema);
 

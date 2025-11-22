@@ -16,6 +16,7 @@ import { JwtPayload } from 'jsonwebtoken'
 import { IUser } from '../../user/user.interface'
 import { emailHelper } from '../../../../helpers/emailHelper'
 import mongoose from 'mongoose'
+import { BusinessDetails } from '../../businessDetails/businessDetails.model'
 
 export const createUser = async (payload: IUser) => {
   payload.email = payload.email?.toLowerCase().trim();
@@ -69,6 +70,13 @@ export const createUser = async (payload: IUser) => {
     }], { session });
     
     if (!user[0]) throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user.");
+    // 6. Create Business Details if role is Business
+    if(user[0].role === USER_ROLES.Business){
+      await BusinessDetails.create({
+        businessEmail: user[0].email, 
+        userId: user[0]._id,
+      })
+    }
 
     const createdUser = user[0];
 

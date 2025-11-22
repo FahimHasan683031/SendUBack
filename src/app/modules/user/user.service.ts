@@ -8,7 +8,9 @@ import { logger } from '../../../shared/logger'
 import { AuthHelper } from '../auth/auth.helper'
 import QueryBuilder from '../../builder/QueryBuilder'
 import config from '../../../config'
+import { BusinessDetails } from '../businessDetails/businessDetails.model'
 
+// create super admin
 const createAdmin = async (): Promise<Partial<IUser> | null> => {
   const admin = {
     email: config.super_admin.email,
@@ -74,31 +76,6 @@ const getSingleUser = async (id: string) => {
   return result
 }
 
-// update userRole
-const updateUserRole = async (
-  id: string,
-  role: USER_ROLES,
-) => {
-  const user = await User.findById(id)
-  if (!user) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
-  }
-
-  const result = await User.findByIdAndUpdate(
-    id,
-    { role },
-    { new: true },
-  )
-  if (!result) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'Failed to update user role'
-    )
-  }
-  
-  return result
-}
-
 // delete User
 const deleteUser = async (id: string) => {
   const user = await User.findById(id)
@@ -107,6 +84,9 @@ const deleteUser = async (id: string) => {
   }
   if(user.role === USER_ROLES.ADMIN){
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Admin cannot be deleted')
+  }
+  if(user.role === USER_ROLES.Business){
+    await BusinessDetails.deleteOne({userId: user._id})
   }
   const result = await User.findByIdAndDelete(id)
   return result
@@ -124,11 +104,7 @@ const updateProfile = async (
 
   const updatedUser = await User.findOneAndUpdate(
     { _id: user.authId, status: { $ne: USER_STATUS.DELETED } },
-    {
-      ...(payload.firstName && { firstName: payload.firstName }),
-      ...(payload.lastName && { lastName: payload.lastName }),
-      ...(payload.email && { email: payload.email }),
-    },
+    payload,
     { new: true },
   )
 
@@ -147,19 +123,13 @@ const getProfile = async (user: JwtPayload) => {
       'The requested profile not found or deleted.',
     )
   }
-  return isExistUser
-}
-
-const getCurrentUser = async (user: JwtPayload) => {
-  const isExistUser = await User.findById(user.authId)
-  if (!isExistUser) {
-    throw new ApiError(
-      StatusCodes.NOT_FOUND,
-      'The requested profile not found or deleted.',
-    )
+  if(isExistUser.role === USER_ROLES.Business){
+    const businessDetails = await BusinessDetails.findOne({userId: isExistUser._id}).lean()
+    return {...isExistUser, businessDetails}
   }
   return isExistUser
 }
+
 
 const deleteMyAccount = async (user: JwtPayload) => {
   const isExistUser = await User.findById(user.authId)
@@ -171,17 +141,18 @@ const deleteMyAccount = async (user: JwtPayload) => {
   }
   
   await User.findByIdAndDelete(isExistUser._id)
+  if(isExistUser.role === USER_ROLES.Business){
+    await BusinessDetails.deleteOne({userId: isExistUser._id})
+  }
   return 'Account deleted successfully'
 }
 
 export const UserServices = {
   updateProfile,
-  updateUserRole,
   createAdmin,
   getAllUser,
   getSingleUser,
   deleteUser,
   getProfile,
-  getCurrentUser,
   deleteMyAccount,
 }
