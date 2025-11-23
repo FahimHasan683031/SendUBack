@@ -7,13 +7,13 @@ import { categoryController } from "./category.controller";
 
 const router = express.Router();
 
-router.post("/create-service",
+router.post("/create",
     fileAndBodyProcessorUsingDiskStorage(),
     validateRequest(createCategoryZod),
     categoryController.createCategory);
-router.get("/get-categories", categoryController.getAllCategories);
-router.put("/update-category/:id", categoryController.updateCategory);
-router.delete("/delete-category/:id", categoryController.deleteCategory);
+router.get("/", categoryController.getAllCategories);
+router.patch("/:id", categoryController.updateCategory);
+router.delete("/:id", categoryController.deleteCategory);
 
 
 export const CategoryRoutes = router;

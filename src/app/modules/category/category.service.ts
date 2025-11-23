@@ -10,7 +10,7 @@ const createCategory = async (payload: ICategory) => {
 
 // Get all categories
 const getAllCategories = async (query: Record<string, unknown>) => {
-   const categoryQueryBuilder = new QueryBuilder(CategoryModel.find(), query)
+   const categoryQueryBuilder = new QueryBuilder(CategoryModel.find({isActive: true, parent: null}), query)
     .filter()
     .fields()
 
