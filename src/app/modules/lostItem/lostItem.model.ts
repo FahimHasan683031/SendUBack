@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { ILostItem, LOST_ITEM_STATUS } from "./lostItem.interface";
+import { ILostItem } from "./lostItem.interface";
 
 const lostItemSchema = new Schema<ILostItem>(
   {
@@ -8,19 +8,10 @@ const lostItemSchema = new Schema<ILostItem>(
       ref: 'User',
       required: true
     },
-    businessId: {
-      type: Schema.Types.ObjectId,
-      ref: 'BusinessProfile',
-      required: true
-    },
     images: [{
       type: String,
       trim: true
     }],
-    qrCode: {
-      type: String,
-      trim: true
-    },
     itemName: {
       type: String,
       required: true,
@@ -68,11 +59,6 @@ const lostItemSchema = new Schema<ILostItem>(
       type: String,
       trim: true
     },
-    status: {
-      type: String,
-      enum: Object.values(LOST_ITEM_STATUS),
-      default: LOST_ITEM_STATUS.PENDING
-    }
   },
   {
     timestamps: true
