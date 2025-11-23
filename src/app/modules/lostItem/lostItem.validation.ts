@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createLostItemSchema = z.object({
   body: z.object({
-    images: z.array(z.string().url("Invalid image URL")).max(3, "Maximum 3 images allowed").optional(),
+    images: z.array(z.string()).optional(),
     itemName: z.string().trim().min(1, "Item name is required"),
     itemDescription: z.string().trim().optional(),
     dateFound: z.string().datetime("Invalid date format").or(z.date()).optional(),
@@ -19,7 +19,7 @@ export const createLostItemSchema = z.object({
 
 export const updateLostItemSchema = z.object({
   body: z.object({
-    images: z.array(z.string().url("Invalid image URL")).max(3, "Maximum 3 images allowed").optional(),
+    images: z.array(z.string()).optional(),
     itemName: z.string().trim().min(1, "Item name is required").optional(),
     itemDescription: z.string().trim().optional(),
     dateFound: z.string().datetime("Invalid date format").or(z.date()).optional(),
@@ -34,7 +34,16 @@ export const updateLostItemSchema = z.object({
   }).strict("Unknown fields are not allowed")
 });
 
+export const addOrReplaceImagesSchema = z.object({
+  body: z.object({
+    images: z.array(z.string()).min(1, "At least one image path is required"),
+  }).strict("Unknown fields are not allowed")
+});
+
+
+
 export const LostItemValidations = {
   createLostItemSchema,
   updateLostItemSchema,
+  addOrReplaceImagesSchema
 };

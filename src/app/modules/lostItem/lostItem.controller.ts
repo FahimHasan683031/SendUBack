@@ -36,8 +36,8 @@ const getMyLostItems = catchAsync(async (req: Request, res: Response) => {
 const getSingleLostItem = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params
   const lostItem = await lostItemServices.getSingleLostItem(
-    req.user as JwtPayload,
     id
+
   )
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -51,7 +51,6 @@ const getSingleLostItem = catchAsync(async (req: Request, res: Response) => {
 const updateLostItem = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params
   const lostItem = await lostItemServices.updateLostItem(
-    req.user as JwtPayload,
     id,
     req.body
   )
@@ -78,10 +77,26 @@ const deleteLostItem = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+// add or replace image for a lost item
+const addOrReplaceImages = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const lostItem = await lostItemServices.addOrReplaceImages(
+    id,
+    req.body.images
+  )
+   sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Lost item images updated successfully",
+    data: lostItem.images,
+  })
+  })
+
 export const lostItemControllers = {
   createLostItem,
   getMyLostItems,
   getSingleLostItem,
   updateLostItem,
   deleteLostItem,
+  addOrReplaceImages
 }

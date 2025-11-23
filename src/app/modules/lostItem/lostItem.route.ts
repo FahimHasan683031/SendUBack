@@ -2,39 +2,55 @@
 import express from "express";
 import { LostItemValidations } from "./lostItem.validation";
 import { lostItemControllers } from "./lostItem.controller";
+import validateRequest from "../../middleware/validateRequest";
+import auth from "../../middleware/auth";
+import { USER_ROLES } from "../user/user.interface";
+import { fileAndBodyProcessorUsingDiskStorage } from "../../middleware/processReqBody";
 
 const router = express.Router();
 
 // Create a new lost item
 router.post(
   "/",
-  LostItemValidations,
+  auth(USER_ROLES.Business),
+  validateRequest(LostItemValidations.createLostItemSchema),
   lostItemControllers.createLostItem
 );
 
 // Get all lost items for a user
 router.get(
-  "/user/:userId",
-  LostItemController.getLostItemsByUser
+  "/myLostItems",
+  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  lostItemControllers.getMyLostItems
+);
+router.post(
+  "/upload-image/:id",
+  fileAndBodyProcessorUsingDiskStorage(),
+  validateRequest(LostItemValidations.addOrReplaceImagesSchema),
+  lostItemControllers.addOrReplaceImages
 );
 
-// Get a specific lost item by ID
+
+// Get single lost item
 router.get(
   "/:id",
-  LostItemController.getLostItemById
+  lostItemControllers.getSingleLostItem
 );
 
 // Update a lost item by ID
 router.put(
   "/:id",
-  LostItemValidations.updateLostItemSchema,
-  LostItemController.updateLostItem
+  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  fileAndBodyProcessorUsingDiskStorage(),
+  validateRequest(LostItemValidations.updateLostItemSchema),
+  lostItemControllers.updateLostItem
 );
 
 // Delete a lost item by ID
 router.delete(
   "/:id",
-  LostItemController.deleteLostItem
+  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  lostItemControllers.deleteLostItem
 );
 
-export default router;
+export const LostItemRoutes = router;

@@ -10,26 +10,20 @@ type IFolderName =
   | 'image'
   | 'media'
   | 'documents'
-  | 'resume'
   | 'logo'
-  | 'certificate'
-  | 'portfolio'
+  | 'lostImage'
 
 interface ProcessedFiles {
   [key: string]: string | string[] | undefined
 }
 
-
 const uploadFields = [
   { name: 'image', maxCount: 1 },
   { name: 'media', maxCount: 3 },
   { name: 'documents', maxCount: 3 },
-  { name: 'resume', maxCount: 1 },
   { name: 'logo', maxCount: 1 },
-  { name: 'certificate', maxCount: 10 },
-  { name: 'portfolio', maxCount: 25 },
+  { name: 'lostImage', maxCount: 4 }, 
 ] as const
-
 
 export const fileAndBodyProcessorUsingDiskStorage = () => {
   const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -65,10 +59,8 @@ export const fileAndBodyProcessorUsingDiskStorage = () => {
         image: ['image/jpeg', 'image/png', 'image/jpg'],
         media: ['video/mp4', 'audio/mpeg'],
         documents: ['application/pdf'],
-        resume: ['application/pdf'],
-        logo: ['image/jpeg', 'image/png', 'image/jpg'], 
-        certificate: ['application/pdf', 'image/jpeg', 'image/png'],
-        portfolio: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'],
+        logo: ['image/jpeg', 'image/png', 'image/jpg'],
+        lostImage: ['image/jpeg', 'image/png', 'image/jpg'], 
       };
 
       const fieldType = file.fieldname as IFolderName;
@@ -127,7 +119,7 @@ export const fileAndBodyProcessorUsingDiskStorage = () => {
                 paths.push(filePath);
 
                 if (
-                  ['image', 'portfolio', 'logo', 'certificate'].includes(
+                  ['image', 'logo', 'lostImage'].includes( 
                     fieldName,
                   ) &&
                   file.mimetype.startsWith('image/')
@@ -167,10 +159,8 @@ export const fileAndBodyProcessorUsingDiskStorage = () => {
         req.body = {
           ...req.body,
           ...(processedFiles.logo && { logo: processedFiles.logo }),
-          ...(processedFiles.resume && { resume: processedFiles.resume }),
           ...(processedFiles.image && { image: processedFiles.image }),
-          ...(processedFiles.portfolio && { portfolioImages: processedFiles.portfolio }),
-          ...(processedFiles.certificate && { certificate: processedFiles.certificate }),
+          ...(processedFiles.lostImage && { images: processedFiles.lostImage }), 
         };
 
         next();

@@ -4,6 +4,7 @@ import { LostItem } from './lostItem.model'
 import { User } from '../user/user.model'
 import ApiError from '../../../errors/ApiError'
 import { StatusCodes } from 'http-status-codes'
+import { USER_ROLES } from '../user/user.interface'
 
 // create lost item
 export const createLostItem = async (
@@ -37,15 +38,10 @@ export const getMyLostItems = async (
 
 // get single lost item
 export const getSingleLostItem = async (
-  user: JwtPayload,
   id: string,
 ) => {
-  const isExistUser = await User.findById(user.authId)
-  if (!isExistUser) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
-  }
-  
-  const lostItem = await LostItem.findOne({ _id: id, userId: user.authId })
+ 
+  const lostItem = await LostItem.findOne({ _id: id })
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
@@ -54,22 +50,17 @@ export const getSingleLostItem = async (
 
 // update lost item
 export const updateLostItem = async (
-  user: JwtPayload,
   id: string,
   payload: Partial<ILostItem>,
 ) => {
-  const isExistUser = await User.findById(user.authId)
-  if (!isExistUser) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
-  }
   
-  const isExistLostItem = await LostItem.findOne({ _id: id, userId: user.authId })
+  const isExistLostItem = await LostItem.findOne({ _id: id })
   if (!isExistLostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
   
   const lostItem = await LostItem.findOneAndUpdate(
-    { _id: id, userId: user.authId },
+    { _id: id },
     payload,
     { new: true },
   )
@@ -85,15 +76,39 @@ export const deleteLostItem = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
+  if(isExistUser.role !== USER_ROLES.Business && isExistUser.role !== USER_ROLES.ADMIN){
+    throw new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to delete this lost item')
+  }
   
-  const isExistLostItem = await LostItem.findOne({ _id: id, userId: user.authId })
+  const isExistLostItem = await LostItem.findOne({ _id: id })
   if (!isExistLostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
   
-  const lostItem = await LostItem.findOneAndDelete({ _id: id, userId: user.authId })
+  const lostItem = await LostItem.findOneAndDelete({ _id: id})
   return lostItem
 }
+
+const addOrReplaceImages = async (
+  itemId: string,
+  images: string[],
+) => {
+  const item = await LostItem.findById(itemId);
+  if (!item) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Lost item not found");
+  }
+  // Update images
+  item.images = images;
+  await item.save();
+  
+  //@ts-ignore
+  const io = global.io
+  if (io && itemId) {
+    // send message to specific chatId Room
+    io.emit(`getImages::${itemId}`, item)
+  }
+  return item;
+};
 
 export const lostItemServices = {
   createLostItem,
@@ -101,4 +116,5 @@ export const lostItemServices = {
   getSingleLostItem,
   updateLostItem,
   deleteLostItem,
+  addOrReplaceImages
 }

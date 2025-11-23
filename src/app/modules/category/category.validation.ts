@@ -1,20 +1,25 @@
-
+// service.validation.ts
 import { z } from "zod";
 
-// create category validation schema
-export const createCategoryValidationSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, "Category name is required"),
-    description: z.string().optional(),
-    status: z.boolean().optional(),
-  }),
+// Base service validation (common for all levels)
+const baseCategorySchema = z.object({
+  name: z.string().min(1, "Category name is required"),
+  image: z.string().min(1, "Image URL is required"),
+  isActive: z.boolean().default(true),
 });
 
-// update category validation schema
-export const updateCategoryValidationSchema = z.object({
-  body: z.object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    status: z.boolean().optional(),
-  }),
+// Create service validation
+export const createCategoryZod = z.object({
+  body: baseCategorySchema.extend({
+    parent: z.string().optional().nullable(),
+  }).strict(),
 });
+
+// Update service validation
+export const updateCategoryZod = z.object({
+  body: baseCategorySchema.partial().strict(), 
+});
+
+
+
+

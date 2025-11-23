@@ -11,7 +11,7 @@ export enum LOST_ITEM_STATUS {
 export interface ILostItem extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId; 
-  images: string[];
+  images?: string[];
   qrCode?: string;
   itemName: string;
   itemDescription?: string;

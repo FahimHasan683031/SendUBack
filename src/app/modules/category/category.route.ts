@@ -1,24 +1,19 @@
 import express from "express";
-import { createCategoryController, deleteCategoryController, getCategoriesController, updateCategoryController } from "./category.controller";
-import { createCategoryValidationSchema } from "./category.validation";
-import auth from "../../middleware/auth";
-import { USER_ROLES } from "../user/user.interface";
+import { createCategoryZod, updateCategoryZod } from "./category.validation";
+import { fileAndBodyProcessorUsingDiskStorage } from "../../middleware/processReqBody";
 import validateRequest from "../../middleware/validateRequest";
-const router = express.Router()
+import { categoryController } from "./category.controller";
 
-router.route("/")
-    .post(
-        auth(USER_ROLES.ADMIN),
-        validateRequest(createCategoryValidationSchema),
-        createCategoryController
-    )
-    .get(
-        getCategoriesController
-    )
 
-router
-    .route("/:id")
-    .patch( auth(USER_ROLES.ADMIN), updateCategoryController)
-    .delete( auth(USER_ROLES.ADMIN),deleteCategoryController)
+const router = express.Router();
 
-export const categoryRoutes = router;
+router.post("/create-service",
+    fileAndBodyProcessorUsingDiskStorage(),
+    validateRequest(createCategoryZod),
+    categoryController.createCategory);
+router.get("/get-categories", categoryController.getAllCategories);
+router.put("/update-category/:id", categoryController.updateCategory);
+router.delete("/delete-category/:id", categoryController.deleteCategory);
+
+
+export const CategoryRoutes = router;

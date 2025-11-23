@@ -1,26 +1,30 @@
 import { model, Schema } from "mongoose";
 import { ICategory } from "./category.interface";
 
-const CategorySchema = new Schema<ICategory>(
+const categorySchema = new Schema<ICategory>(
   {
     name: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 50,
     },
-    description: {
+    image: {
       type: String,
-      trim: true,
-      maxlength: 200,
-      default: '',
+      required: true,
     },
-    status: {
+    parent: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      default: null,
+    },
+    isActive: {
       type: Boolean,
       default: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export const Category = model<ICategory>('Category', CategorySchema);
+export const CategoryModel = model<ICategory>("Category", categorySchema);

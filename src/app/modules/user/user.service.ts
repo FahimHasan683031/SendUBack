@@ -47,11 +47,14 @@ const createAdmin = async (): Promise<Partial<IUser> | null> => {
 }
 
 const getAllUser = async (query: Record<string, unknown>) => {
-  const userQueryBuilder = new QueryBuilder(User.find(), query)
+  const userQueryBuilder = new QueryBuilder(User.find().select('-password -authentication'), query)
     .filter()
     .sort()
     .fields()
     .paginate()
+    
+
+
 
   const users = await userQueryBuilder.modelQuery.lean()
   const paginationInfo = await userQueryBuilder.getPaginationInfo()
@@ -72,7 +75,7 @@ const getAllUser = async (query: Record<string, unknown>) => {
 }
 
 const getSingleUser = async (id: string) => {
-  const result = await User.findById(id)
+  const result = await User.findById(id).select('-password -authentication')
   return result
 }
 
@@ -116,7 +119,7 @@ const updateProfile = async (
 }
 
 const getProfile = async (user: JwtPayload) => {
-  const isExistUser = await User.findById(user.authId).lean()
+  const isExistUser = await User.findById(user.authId).lean().select('-password -authentication')
   if (!isExistUser) {
     throw new ApiError(
       StatusCodes.NOT_FOUND,

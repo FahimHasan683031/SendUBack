@@ -10,7 +10,8 @@ const lostItemSchema = new Schema<ILostItem>(
     },
     images: [{
       type: String,
-      trim: true
+      trim: true,
+      required:false
     }],
     itemName: {
       type: String,

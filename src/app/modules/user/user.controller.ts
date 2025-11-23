@@ -16,7 +16,6 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'Profile updated successfully',
-    data: {result},
   })
 })
 
@@ -50,7 +49,6 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'User deleted successfully',
-    data: result,
   })
 })
 
@@ -72,7 +70,7 @@ const deleteMyAccount = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: result,
+    message: "Account deleted successfully",
   })
 })
 

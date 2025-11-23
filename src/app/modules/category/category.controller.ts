@@ -1,52 +1,61 @@
 import { Request, Response } from "express";
-import { createCategory, deleteCategory, getCategories, updateCategory } from "./category.service";
 import sendResponse from "../../../shared/sendResponse";
+import { serviceService } from "./category.service";
+import { ICategory } from "./category.interface";
 import { StatusCodes } from "http-status-codes";
 
-// create category
-export const createCategoryController = async (req: Request, res: Response) => {
+// create service
+const createCategory = async (req: Request, res: Response) => {
   const payload = req.body;
-  const category = await createCategory(payload);
-  sendResponse(res, {
+  const result = await serviceService.createCategory(payload);
+  sendResponse<ICategory>(res, {
     statusCode: StatusCodes.CREATED,
     success: true,
-    message: 'Category created successfully',
-    data: category,
-  })
+    message: "Category created successfully",
+    data: result,
+  });
 };
 
-// get categories
-export const getCategoriesController = async (req: Request, res: Response) => {
-  const categories = await getCategories(req.query);
- sendResponse(res, {
-  statusCode: StatusCodes.OK,
-  success: true,
-  message: 'Categories retrieved successfully',
-  data: categories,
- })
-};
-
-// Delete category
-export const deleteCategoryController = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  const category = await deleteCategory(id);
+// get all services
+const getAllCategories = async (req: Request, res: Response) => {
+  const result = await serviceService.getAllCategories(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Category deleted successfully',
-    data: category,
-  })
+    message: "Categories retrieved successfully",
+    data: result,
+  });
 };
 
-// Update category
-export const updateCategoryController = async (req: Request, res: Response) => {
+// update service
+const updateCategory = async (req: Request, res: Response) => {
   const id = req.params.id;
   const payload = req.body;
-  const category = await updateCategory(id, payload);
+  const result = await serviceService.updateCategory(id, payload);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Category updated successfully',
-    data: category,
-  })
+    message: "Category updated successfully",
+    data: result,
+  });
+};
+
+
+// delete service
+const deleteCategory = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const result = await serviceService.deleteCategory(id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Category deleted successfully",
+    data: result,
+  });
+};
+
+export const categoryController = {
+  createCategory,
+  getAllCategories,
+  updateCategory,
+  deleteCategory,
 };

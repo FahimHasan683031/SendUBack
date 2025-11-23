@@ -1,37 +1,46 @@
 import QueryBuilder from "../../builder/QueryBuilder";
-import { Category } from "./category.model";
+import { ICategory } from "./category.interface";
+import { CategoryModel } from "./category.model";
 
-
-// create category
-export const createCategory = async (payload: { name: string }) => {
-  const category = await Category.create(payload);
-  return category;
+// Create service
+const createCategory = async (payload: ICategory) => {
+  const result = await CategoryModel.create(payload);
+  return result;
 };
 
-
-// get categories
-export const getCategories = async (query: Record<string, unknown>) => {
- const categoryQueryBuilder = new QueryBuilder(Category.find(), query)
+// Get all categories
+const getAllCategories = async (query: Record<string, unknown>) => {
+   const categoryQueryBuilder = new QueryBuilder(CategoryModel.find(), query)
     .filter()
-    .sort()
-    .paginate()
-   const categories = await categoryQueryBuilder.modelQuery
-  const paginationInfo = await categoryQueryBuilder.getPaginationInfo()
+    .fields()
 
+  const totalCategories = await CategoryModel.countDocuments()
+
+  const categories = await categoryQueryBuilder.modelQuery
+  
   return {
-    data: categories,
-    meta: paginationInfo,
-  }
+    categories,
+  };
 };
 
-// Delete category
-export const deleteCategory = async (id: string) => {
-  const category = await Category.findByIdAndDelete(id);
-  return category;
+// Update service
+const updateCategory = async (id: string, payload: ICategory) => {
+  const result = await CategoryModel.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
+  return result;
 };
 
-// Update category
-export const updateCategory = async (id: string, payload: { name: string }) => {
-  const category = await Category.findByIdAndUpdate(id, payload, { new: true });
-  return category;
+// Delete service
+const deleteCategory = async (id: string) => {
+  const result = await CategoryModel.findByIdAndDelete(id);
+  return result;
+};
+
+
+export const serviceService = {
+  createCategory,
+  getAllCategories,
+  updateCategory,
+  deleteCategory,
 };
