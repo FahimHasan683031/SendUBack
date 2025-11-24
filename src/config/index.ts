@@ -61,4 +61,7 @@ export default {
     password: process.env.ADMIN_PASSWORD,
     name: process.env.ADMIN_NAME,
   },
+  shippo: {
+    shippo_api_key: process.env.SHIPPO_API_KEY,
+  },
 }
