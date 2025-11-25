@@ -21,7 +21,8 @@ export interface IParcel {
 export interface IShipment {
   address_from: IShippingAddress;
   address_to: IShippingAddress;
-  parcels: IParcel[];
+  parcels?: IParcel[];
+  product_type?: string;
   user_email?: string;
   user_phone?: string;
 }

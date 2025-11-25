@@ -24,13 +24,14 @@ const baseParcelSchema = z.object({
   mass_unit: z.enum(['lb', 'kg'], {
     required_error: "Mass unit is required"
   }),
+  description: z.string().optional(),
 });
 
 // Base shipment validation
 const baseShipmentSchema = z.object({
   address_from: baseAddressSchema,
   address_to: baseAddressSchema,
-  parcels: z.array(baseParcelSchema).min(1, "At least one parcel is required"),
+  product_type: z.string(),
   user_email: z.string().email().optional(),
   user_phone: z.string().optional(),
 });

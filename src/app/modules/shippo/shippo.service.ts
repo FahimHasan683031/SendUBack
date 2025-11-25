@@ -4,6 +4,7 @@ import ApiError from '../../../errors/ApiError';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
+import { generateParcel } from '../../../utils/shippo-parcel.utils';
 
 // Direct API calls using fetch/axios
 const SHIPPO_BASE_URL = 'https://api.goshippo.com';
@@ -36,6 +37,11 @@ const shippoRequest = async (endpoint: string, options: any = {}) => {
 // create shipment
 const createShipment = async (payload: IShipment) => {
   try {
+    const parcel = generateParcel(payload.product_type || 'Other');
+    payload.parcels = [parcel];
+
+
+
     const shipment = await shippoRequest('/shipments', {
       method: 'POST',
       body: payload,
