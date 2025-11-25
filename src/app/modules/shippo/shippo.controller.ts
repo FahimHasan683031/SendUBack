@@ -1,85 +1,124 @@
-// src/modules/shippo/shippo.controller.ts
 import { Request, Response } from "express";
-import catchAsync from "../../../shared/catchAsync";
-import sendResponse from "../../../shared/sendResponse";
+import { shippoService } from "./shippo.service";
 import { StatusCodes } from "http-status-codes";
-import * as shippoService from "./shippo.service";
+import sendResponse from "../../../shared/sendResponse";
 
-const validateAddress = catchAsync(async (req: Request, res: Response) => {
+// create shipment
+const createShipment = async (req: Request, res: Response) => {
+  const payload = req.body;
+  const result = await shippoService.createShipment(payload);
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: "Shipment created successfully",
+    data: result,
+  });
+};
+
+// get all shipments
+const getAllShipments = async (req: Request, res: Response) => {
+  const result = await shippoService.getAllShipments(req.query);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shipments retrieved successfully",
+    data: result,
+  });
+};
+
+// get shipping rates
+const getShippingRates = async (req: Request, res: Response) => {
+  const { shipmentId } = req.params;
+  const result = await shippoService.getShippingRates(shipmentId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shipping rates retrieved successfully",
+    data: result,
+  });
+};
+
+// purchase label
+const purchaseLabel = async (req: Request, res: Response) => {
+  const { rateId, shipmentId } = req.body;
+  const result = await shippoService.purchaseLabel(rateId, shipmentId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Label purchased successfully",
+    data: result,
+  });
+};
+
+// validate address
+const validateAddress = async (req: Request, res: Response) => {
   const address = req.body;
   const result = await shippoService.validateAddress(address);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Address validated",
+    message: "Address validated successfully",
     data: result,
   });
-});
+};
 
-const createParcel = catchAsync(async (req: Request, res: Response) => {
-  const parcel = req.body;
-  const result = await shippoService.createParcel(parcel);
+// track shipment
+const trackShipment = async (req: Request, res: Response) => {
+  const { carrier, trackingNumber } = req.params;
+  const result = await shippoService.trackShipment(carrier, trackingNumber);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Parcel created",
+    message: "Tracking information retrieved successfully",
     data: result,
   });
-});
+};
 
-const getRates = catchAsync(async (req: Request, res: Response) => {
+// get shipment by id
+const getShipmentById = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const result = await shippoService.getShipmentById(id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shipment retrieved successfully",
+    data: result,
+  });
+};
+
+// update shipment
+const updateShipment = async (req: Request, res: Response) => {
+  const id = req.params.id;
   const payload = req.body;
-  const result = await shippoService.getRates(payload);
+  const result = await shippoService.updateShipment(id, payload);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Rates returned",
+    message: "Shipment updated successfully",
     data: result,
   });
-});
+};
 
-const createShipment = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
-  const result = await shippoService.createShipment(payload);
+// delete shipment
+const deleteShipment = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const result = await shippoService.deleteShipment(id);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Shipment created (rates attached)",
+    message: "Shipment deleted successfully",
     data: result,
   });
-});
+};
 
-const buyLabel = catchAsync(async (req: Request, res: Response) => {
-  const { rate_object_id, async } = req.body;
-  const result = await shippoService.buyLabel(rate_object_id, async);
-  const labelUrl = shippoService.getLabelUrlFromTransaction(result);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Label purchased",
-    data: {
-      transaction: result,
-      label_url: labelUrl,
-    },
-  });
-});
-
-const trackShipment = catchAsync(async (req: Request, res: Response) => {
-  const { carrier, tracking_number } = req.params;
-  const result = await shippoService.trackShipment(carrier, tracking_number);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Tracking info",
-    data: result,
-  });
-});
-
-export const shippoControllers = {
-  validateAddress,
-  createParcel,
-  getRates,
+export const shippoController = {
   createShipment,
-  buyLabel,
+  getAllShipments,
+  getShippingRates,
+  purchaseLabel,
+  validateAddress,
   trackShipment,
+  getShipmentById,
+  updateShipment,
+  deleteShipment
 };

@@ -1,100 +1,246 @@
-// src/modules/shippo/shippo.service.ts
+import { ShippoShipment } from './shippo.model';
+import { IShipment } from './shippo.interface';
+import ApiError from '../../../errors/ApiError';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { StatusCodes } from 'http-status-codes';
+import config from '../../../config';
 
-import { IAddressInput, IParcelInput, ICreateShipmentPayload, ICreateLabelResult } from "./shippo.interface";
-import { shippoRequest } from "./shippo.utils";
+// Direct API calls using fetch/axios
+const SHIPPO_BASE_URL = 'https://api.goshippo.com';
+const SHIPPO_API_KEY = config.shippo.shippo_api_key;
 
-/**
- * Address validation via Shippo: we will create an address object and ask Shippo to validate.
- * Shippo provides "validation" in address creation with "validate" param.
- */
-export const validateAddress = async (address: IAddressInput) => {
-  // Shippo expects keys: name, street1, street2, city, state, zip, country
-  const payload = {
-    ...address,
-    validate: true, // ask shippo to validate
+const shippoRequest = async (endpoint: string, options: any = {}) => {
+  try {
+    const url = `${SHIPPO_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+      method: options.method || 'GET',
+      headers: {
+        'Authorization': `ShippoToken ${SHIPPO_API_KEY}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Shippo API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Shippo API request failed:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// create shipment
+const createShipment = async (payload: IShipment) => {
+  try {
+    const shipment = await shippoRequest('/shipments', {
+      method: 'POST',
+      body: payload,
+    });
+    
+    const dbShipment = await ShippoShipment.create({
+      shippo_shipment_id: shipment.object_id,
+      address_from: payload.address_from,
+      address_to: payload.address_to,
+      parcels: payload.parcels,
+      user_email: payload.user_email,
+      user_phone: payload.user_phone,
+      status: 'created'
+    });
+
+    return dbShipment;
+  } catch (error: any) {
+    console.error('Create shipment error:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// get shipping rates
+const getShippingRates = async (shipmentId: string) => {
+  try {
+    const rates = await shippoRequest(`/shipments/${shipmentId}/rates`);
+    
+    await ShippoShipment.findOneAndUpdate(
+      { shippo_shipment_id: shipmentId },
+      { rates: rates.results, status: 'rated' }
+    );
+
+    return rates;
+  } catch (error: any) {
+    console.error('Get rates error:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// purchase label
+const purchaseLabel = async (rateId: string, shipmentId: string) => {
+  try {
+    const transaction = await shippoRequest('/transactions', {
+      method: 'POST',
+      body: {
+        rate: rateId,
+        label_file_type: 'PDF',
+        async: false
+      },
+    });
+
+    await ShippoShipment.findOneAndUpdate(
+      { shippo_shipment_id: shipmentId },
+      { 
+        transaction_id: transaction.object_id,
+        tracking_number: transaction.tracking_number,
+        selected_rate: transaction.rate,
+        status: 'purchased'
+      }
+    );
+
+    return transaction;
+  } catch (error: any) {
+    console.error('Purchase label error:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// validate address - Correct version
+const validateAddress = async (address: any) => {
+  try {
+    const validatedAddress = await shippoRequest('/addresses', {
+      method: 'POST',
+      body: {
+        ...address,
+        validate: true // This enables proper validation
+      },
+    });
+    
+    // Return the raw response - Shippo provides validation_results in the response
+    return validatedAddress;
+  } catch (error: any) {
+    console.error('Validate address error:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// track shipment - Final working version
+const trackShipment = async (carrier: string, trackingNumber: string) => {
+  try {
+    console.log(`Tracking request: ${carrier} - ${trackingNumber}`);
+    
+    // In test mode, only 'shippo' carrier works
+    let effectiveCarrier = carrier;
+    let effectiveTrackingNumber = trackingNumber;
+    
+    if (config.node_env === 'development' || config.node_env === 'test') {
+      effectiveCarrier = 'shippo';
+      
+      // Map real carriers to Shippo test tracking numbers
+      const testTrackingMap: { [key: string]: string } = {
+        'usps': 'SHIPPO_TRANSIT',
+        'fedex': 'SHIPPO_DELIVERED', 
+        'ups': 'SHIPPO_PRE_TRANSIT',
+        'dhl': 'SHIPPO_TRANSIT',
+        'shippo': 'SHIPPO_TRANSIT'
+      };
+      
+      effectiveTrackingNumber = testTrackingMap[carrier.toLowerCase()] || 'SHIPPO_TRANSIT';
+      
+      console.log(`Test mode: Using ${effectiveCarrier} - ${effectiveTrackingNumber} instead of ${carrier} - ${trackingNumber}`);
+    }
+    
+    const tracking = await shippoRequest('/tracks', {
+      method: 'POST',
+      body: {
+        carrier: effectiveCarrier,
+        tracking_number: effectiveTrackingNumber
+      },
+    });
+    
+    // Add original request info for reference in test mode
+    if (config.node_env === 'development' || config.node_env === 'test') {
+      return {
+        ...tracking,
+        original_request: {
+          carrier: carrier,
+          tracking_number: trackingNumber
+        },
+        test_mode: true,
+        note: "Using Shippo test tracking - real carriers not available in test mode"
+      };
+    }
+    
+    return tracking;
+  } catch (error: any) {
+    console.error('Track shipment error:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// get all shipments
+const getAllShipments = async (query: Record<string, unknown>) => {
+  const shipmentQueryBuilder = new QueryBuilder(
+    ShippoShipment.find(), 
+    query
+  )
+    .filter()
+    .fields()
+
+  const totalShipments = await ShippoShipment.countDocuments();
+
+  const shipments = await shipmentQueryBuilder.modelQuery;
+  
+  return {
+    shipments,
+    total: totalShipments
   };
-  const res = await shippoRequest("post", "/addresses/", payload);
-  // res.validation_results or res.is_valid may appear - return raw for caller
-  return res;
 };
 
-/**
- * Create a parcel object (Shippo 'parcel')
- */
-export const createParcel = async (parcel: IParcelInput) => {
-  const payload = {
-    length: parcel.length,
-    width: parcel.width,
-    height: parcel.height,
-    distance_unit: parcel.distance_unit || "cm",
-    weight: parcel.weight,
-    mass_unit: parcel.mass_unit || "kg",
-  };
-  const res = await shippoRequest("post", "/parcels/", payload);
-  return res;
+// get shipment by id
+const getShipmentById = async (id: string) => {
+  const shipment = await ShippoShipment.findById(id);
+  
+  if (!shipment) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipment not found');
+  }
+
+  return shipment;
 };
 
-/**
- * Get rates by creating a shipment draft (Shippo usually returns rates on shipment creation)
- * We will create a 'shipment' with address_from, address_to and parcels, and request rates.
- */
-export const getRates = async (payload: ICreateShipmentPayload) => {
-  const shipmentPayload = {
-    address_from: payload.address_from,
-    address_to: payload.address_to,
-    parcels: payload.parcels,
-    async: false, // wait for synchronous rate calculation
-    // You can add "extra" params like customs_declaration for international shipments
-  };
-  const res = await shippoRequest("post", "/shipments/", shipmentPayload);
-  // res.rates is expected array
-  return res;
+// update shipment
+const updateShipment = async (id: string, payload: Partial<IShipment>) => {
+  const shipment = await ShippoShipment.findByIdAndUpdate(
+    id,
+    payload,
+    { new: true }
+  );
+  
+  if (!shipment) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipment not found');
+  }
+
+  return shipment;
 };
 
-/**
- * Create a shipment and return available rates (similar to getRates but you may want to persist the shipment id)
- */
-export const createShipment = async (payload: ICreateShipmentPayload) => {
-  const res = await getRates(payload);
-  // res will contain object_id (shipment id), rates etc.
-  return res;
+// delete shipment
+const deleteShipment = async (id: string) => {
+  const shipment = await ShippoShipment.findByIdAndDelete(id);
+  
+  if (!shipment) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipment not found');
+  }
+
+  return shipment;
 };
 
-/**
- * Buy a label (Shippo calls it "transaction"): you must pass a rate object id
- * rate_object: the rate object returned in shipment.rates[].object_id (or id)
- */
-export const buyLabel = async (rate_object_id: string, async = false) => {
-  const payload = {
-    rate: rate_object_id,
-    async, // can ask shippo to process async (true) or sync (false)
-  };
-  const res = await shippoRequest("post", "/transactions/", payload);
-  // res.status, res.label_url, res.tracking_number etc.
-  return res;
-};
-
-/**
- * Download label: Shippo returns label_url(s) inside transaction response.
- * We can just return that URL to the client. If you want to proxy and download PDF to server, do it here.
- */
-export const getLabelUrlFromTransaction = (transaction: any): string | null => {
-  // transaction.label_url or transaction.label_urls.pdf?
-  // Normalize common possibilities:
-  if (!transaction) return null;
-  if (transaction.label_url) return transaction.label_url;
-  if (transaction.label_urls && transaction.label_urls.pdf) return transaction.label_urls.pdf;
-  if (transaction.label_urls && transaction.label_urls.png) return transaction.label_urls.png;
-  return null;
-};
-
-/**
- * Track shipment using Shippo tracking endpoint
- * You can either use tracking number + carrier to query Shippo tracking
- */
-export const trackShipment = async (carrier: string, tracking_number: string) => {
-  // Shippo tracking endpoint
-  const path = `/tracks/${carrier}/${tracking_number}/`;
-  const res = await shippoRequest("get", path);
-  return res;
+export const shippoService = {
+  createShipment,
+  getAllShipments,
+  getShippingRates,
+  purchaseLabel,
+  validateAddress,
+  trackShipment,
+  getShipmentById,
+  updateShipment,
+  deleteShipment
 };

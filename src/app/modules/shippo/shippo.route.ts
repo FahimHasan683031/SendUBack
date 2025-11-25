@@ -1,40 +1,67 @@
-// src/modules/shippo/shippo.route.ts
 import express from "express";
-import { shippoControllers } from "./shippo.controller";
-
-
-
+import validateRequest from "../../middleware/validateRequest";
+import { shippoController } from "./shippo.controller";
+import { 
+  createShipmentZod, 
+  updateShipmentZod,
+  purchaseLabelZod, 
+  getRatesZod, 
+  trackShipmentZod,
+  validateAddressZod
+} from "./shippo.validation";
 
 const router = express.Router();
 
 
 router.post(
+  "/create",
+  validateRequest(createShipmentZod),
+  shippoController.createShipment
+);
+
+router.get(
+  "/",
+  shippoController.getAllShipments
+);
+
+router.get(
+  "/:id",
+  shippoController.getShipmentById
+);
+
+router.patch(
+  "/:id",
+  validateRequest(updateShipmentZod),
+  shippoController.updateShipment
+);
+
+router.get(
+  "/rates/:shipmentId",
+  validateRequest(getRatesZod),
+  shippoController.getShippingRates
+);
+
+router.post(
+  "/purchase-label",
+  validateRequest(purchaseLabelZod),
+  shippoController.purchaseLabel
+);
+
+router.post(
   "/address",
-  shippoControllers.validateAddress
+  validateRequest(validateAddressZod),
+  shippoController.validateAddress
 );
 
-
-router.post(
-  "/parcel",
-  shippoControllers.createParcel
+router.get(
+  "/track/:carrier/:trackingNumber",
+  validateRequest(trackShipmentZod),
+  shippoController.trackShipment
 );
 
-
-router.post(
-  "/rates",
-  shippoControllers.getRates
+router.delete(
+  "/:id",
+  shippoController.deleteShipment
 );
 
-
-router.post(
-  "/shipments",
-  shippoControllers.createShipment
-);
-
-
-router.post("/transactions", shippoControllers.buyLabel);
-
-
-router.get("/track/:carrier/:tracking_number", shippoControllers.trackShipment);
-
-export const ShippoRoutes = router;
+export const shippoRoutes = router;

@@ -1474,6 +1474,11 @@
   resolved "https://registry.npmjs.org/@tsconfig/node16/-/node16-1.0.4.tgz"
   integrity sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==
 
+"@types/axios@^0.9.36":
+  version "0.9.36"
+  resolved "https://registry.npmjs.org/@types/axios/-/axios-0.9.36.tgz"
+  integrity sha512-NLOpedx9o+rxo/X5ChbdiX6mS1atE4WHmEEIcR9NLenRVa5HoVjAvjafwU3FPTqnZEstpoqCaW7fagqSoTDNeg==
+
 "@types/bcrypt@^5.0.2":
   version "5.0.2"
   resolved "https://registry.npmjs.org/@types/bcrypt/-/bcrypt-5.0.2.tgz"
@@ -1709,6 +1714,11 @@
     "@types/http-errors" "*"
     "@types/node" "*"
     "@types/send" "*"
+
+"@types/shippo@^1.7.8":
+  version "1.7.8"
+  resolved "https://registry.npmjs.org/@types/shippo/-/shippo-1.7.8.tgz"
+  integrity sha512-9obiXzEHodBv0I4NxVrpsDUk7eCHWgJo6Ow4Jevw5fplVGepQ8lYijDldait5PPKKvbiIUMMtCqdoww8chG0JA==
 
 "@types/strip-bom@^3.0.0":
   version "3.0.0"
@@ -1954,10 +1964,10 @@ asynckit@^0.4.0:
   resolved "https://registry.npmjs.org/asynckit/-/asynckit-0.4.0.tgz"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
-axios@^1.7.8:
-  version "1.12.2"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.12.2.tgz"
-  integrity sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==
+axios@^1.13.2, axios@^1.7.8:
+  version "1.13.2"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.13.2.tgz"
+  integrity sha512-VPk9ebNqPcy5lRGuSlKx752IlDatOjT9paPlm8A7yOuW2Fbvp4X3JznJtT4f0GzGLLiWE9W8onz51SqLYwzGaA==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.4"

@@ -10,7 +10,9 @@ import { MessageRoutes } from '../app/modules/message/message.routes'
 import { BusinessDetailsRoute } from '../app/modules/businessDetails/businessDetails.route'
 import { LostItemRoutes } from '../app/modules/lostItem/lostItem.route'
 import { CategoryRoutes } from '../app/modules/category/category.route'
-import { ShippoRoutes } from '../app/modules/shippo/shippo.route'
+import { shippoRoutes } from '../app/modules/shippo/shippo.route'
+
+
 
 
 const router = express.Router()
@@ -27,7 +29,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/business-details', route: BusinessDetailsRoute },
   { path: '/lost-item', route: LostItemRoutes },
   { path: '/category', route: CategoryRoutes },
-  { path: '/shippo', route: ShippoRoutes },
+  { path: '/shippo', route: shippoRoutes },
 
 ]
 
