@@ -18,8 +18,7 @@ router.route("/")
     )
 
 router.post(
-    "/create-checkout-session/:planId",
-    auth( USER_ROLES.RECRUITER),
+    "/create-checkout-session/:shipmentId",
     PlanController.createCheckoutSession
 )
 

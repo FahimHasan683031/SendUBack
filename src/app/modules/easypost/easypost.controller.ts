@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { shippoService } from "./shippo.service";
+import { easypostService } from "./easypost.service";
 import { StatusCodes } from "http-status-codes";
 import sendResponse from "../../../shared/sendResponse";
 
 // create shipment
 const createShipment = async (req: Request, res: Response) => {
   const payload = req.body;
-  const result = await shippoService.createShipment(payload);
+  const result = await easypostService.createShipment(payload);
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
     success: true,
@@ -17,7 +17,7 @@ const createShipment = async (req: Request, res: Response) => {
 
 // get all shipments
 const getAllShipments = async (req: Request, res: Response) => {
-  const result = await shippoService.getAllShipments(req.query);
+  const result = await easypostService.getAllShipments(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -26,36 +26,10 @@ const getAllShipments = async (req: Request, res: Response) => {
   });
 };
 
-// get shipping rates
-const getShippingRates = async (req: Request, res: Response) => {
-  const { shipmentId } = req.params;
-  const result = await shippoService.getShippingRates(shipmentId);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Shipping rates retrieved successfully",
-    data: result,
-  });
-};
-
-// select rate
-const selectRate = async (req: Request, res: Response) => {
-  const { shipmentId, rateId } = req.body;
-  const result = await shippoService.selectRate(shipmentId, rateId);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Rate selected successfully",
-    data: result,
-  });
-};
-
-
-
 // purchase label
 const purchaseLabel = async (req: Request, res: Response) => {
   const { rateId, shipmentId } = req.body;
-  const result = await shippoService.purchaseLabel(rateId, shipmentId);
+  const result = await easypostService.purchaseLabel(rateId, shipmentId);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -64,23 +38,22 @@ const purchaseLabel = async (req: Request, res: Response) => {
   });
 };
 
-// validate address
-const validateAddress = async (req: Request, res: Response) => {
-  console.log("hello")
-  const address = req.body;
-  const result = await shippoService.validateAddress(address);
+// create pickup
+const createPickup = async (req: Request, res: Response) => {
+  const payload = req.body;
+  const result = await easypostService.createPickup(payload);
   sendResponse(res, {
-    statusCode: StatusCodes.OK,
+    statusCode: StatusCodes.CREATED,
     success: true,
-    message: "Address validated successfully",
+    message: "Pickup scheduled successfully",
     data: result,
   });
 };
 
 // track shipment
 const trackShipment = async (req: Request, res: Response) => {
-  const { carrier, trackingNumber } = req.params;
-  const result = await shippoService.trackShipment(carrier, trackingNumber);
+  const { trackingCode } = req.params;
+  const result = await easypostService.trackShipment(trackingCode);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -89,10 +62,22 @@ const trackShipment = async (req: Request, res: Response) => {
   });
 };
 
+// validate address
+const validateAddress = async (req: Request, res: Response) => {
+  const address = req.body;
+  const result = await easypostService.validateAddress(address);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Address validated successfully",
+    data: result,
+  });
+};
+
 // get shipment by id
 const getShipmentById = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const result = await shippoService.getShipmentById(id);
+  const result = await easypostService.getShipmentById(id);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -105,7 +90,7 @@ const getShipmentById = async (req: Request, res: Response) => {
 const updateShipment = async (req: Request, res: Response) => {
   const id = req.params.id;
   const payload = req.body;
-  const result = await shippoService.updateShipment(id, payload);
+  const result = await easypostService.updateShipment(id, payload);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -117,7 +102,7 @@ const updateShipment = async (req: Request, res: Response) => {
 // delete shipment
 const deleteShipment = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const result = await shippoService.deleteShipment(id);
+  const result = await easypostService.deleteShipment(id);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -126,15 +111,14 @@ const deleteShipment = async (req: Request, res: Response) => {
   });
 };
 
-export const shippoController = {
+export const easypostController = {
   createShipment,
   getAllShipments,
-  getShippingRates,
   purchaseLabel,
-  validateAddress,
+  createPickup,
   trackShipment,
+  validateAddress,
   getShipmentById,
   updateShipment,
-  deleteShipment,
-  selectRate
+  deleteShipment
 };

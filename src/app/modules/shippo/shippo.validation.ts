@@ -1,15 +1,43 @@
 import { z } from "zod";
 
-// Base address validation
-const baseAddressSchema = z.object({
+export const baseAddressSchema = z.object({
+  address_type: z.enum([
+    'hotel',
+    'airport',
+    'car_rental',
+    'ship',
+    'airbnb',
+    'hospital',
+    'travel_agency',
+    'event',
+    'museum',
+    'bus',
+    'lost_property',
+    'other',
+    'to'
+  ], { errorMap: () => ({ message: "Invalid address type" }) }),
+
   name: z.string().min(1, "Name is required"),
   street1: z.string().min(1, "Street address is required"),
   city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
+  state: z.string().optional(),
   zip: z.string().min(1, "ZIP code is required"),
   country: z.string().min(1, "Country is required"),
   phone: z.string().optional(),
   email: z.string().email().optional(),
+
+  room_number: z.string().optional(),
+  reservation_name: z.string().optional(),
+  check_out_date: z.string().optional(),
+  airport_section: z.string().optional(),
+  location_description: z.string().optional(),
+  pickup_location: z.string().optional(),
+  reference_code: z.string().optional(),
+  trip_date: z.string().optional(),
+  trip_from: z.string().optional(),
+  trip_to: z.string().optional(),
+  booking_reference: z.string().optional(),
+  seat_number: z.string().optional(),
 });
 
 // Base parcel validation
@@ -31,7 +59,7 @@ const baseParcelSchema = z.object({
 const baseShipmentSchema = z.object({
   address_from: baseAddressSchema,
   address_to: baseAddressSchema,
-  product_type: z.string(),
+  products: z.array(z.string().min(1, "Product description is required")),
   user_email: z.string().email().optional(),
   user_phone: z.string().optional(),
 });
@@ -51,6 +79,14 @@ export const purchaseLabelZod = z.object({
   body: z.object({
     rateId: z.string().min(1, "Rate ID is required"),
     shipmentId: z.string().min(1, "Shipment ID is required"),
+  }).strict(),
+});
+
+// Select rate validation
+export const selectRateZod = z.object({
+  body: z.object({
+    shipmentId: z.string().min(1, "Shipment ID is required"),
+    rateId: z.string().min(1, "Rate ID is required"),
   }).strict(),
 });
 

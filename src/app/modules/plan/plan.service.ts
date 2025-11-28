@@ -42,8 +42,8 @@ const createPlanToDB = async (payload: IPlan): Promise<IPlan | null> => {
 }
 
 
-const creatSession = async ( user:JwtPayload,planId:string,) => {
-const url = await createCheckoutSession(user,planId)
+const creatSession = async ( shipmentId:string,) => {
+const url = await createCheckoutSession(shipmentId)
 
   return { url }
 }

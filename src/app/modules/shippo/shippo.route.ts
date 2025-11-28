@@ -7,7 +7,8 @@ import {
   purchaseLabelZod, 
   getRatesZod, 
   trackShipmentZod,
-  validateAddressZod
+  validateAddressZod,
+  selectRateZod
 } from "./shippo.validation";
 
 const router = express.Router();
@@ -27,6 +28,13 @@ router.get(
 router.get(
   "/:id",
   shippoController.getShipmentById
+);
+
+// select rate
+router.patch(
+  "/select-rate",
+  validateRequest(selectRateZod),
+  shippoController.selectRate
 );
 
 router.patch(
@@ -58,6 +66,8 @@ router.get(
   validateRequest(trackShipmentZod),
   shippoController.trackShipment
 );
+
+
 
 router.delete(
   "/:id",

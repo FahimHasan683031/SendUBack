@@ -37,8 +37,8 @@ const shippoRequest = async (endpoint: string, options: any = {}) => {
 // create shipment
 const createShipment = async (payload: IShipment) => {
   try {
-    const parcel = generateParcel(payload.product_type || 'Other');
-    payload.parcels = [parcel];
+    const parcel = payload.products?.map(product => generateParcel(product)) || [generateParcel('Other')];
+    payload.parcels = parcel;
 
 
 
@@ -77,6 +77,31 @@ const getShippingRates = async (shipmentId: string) => {
     return rates;
   } catch (error: any) {
     console.error('Get rates error:', error);
+    throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
+  }
+};
+
+// select rate
+const selectRate = async (shipmentId: string, rateId: string) => {
+  try {
+    const shipment = await ShippoShipment.findOne({ shippo_shipment_id: shipmentId });
+    if (!shipment) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Shipment not found');
+    }
+
+    const selectedRate = shipment.rates?.find(rate => rate.object_id === rateId);
+    if (!selectedRate) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid rate selection');
+    }
+
+    await ShippoShipment.findOneAndUpdate(
+      { shippo_shipment_id: shipmentId },
+      { selected_rate: selectedRate, rates:[] }
+    );
+
+    return selectedRate;
+  } catch (error: any) {
+    console.error('Select rate error:', error);
     throw new ApiError(StatusCodes.BAD_REQUEST, error.message);
   }
 };
@@ -204,7 +229,8 @@ const getAllShipments = async (query: Record<string, unknown>) => {
 
 // get shipment by id
 const getShipmentById = async (id: string) => {
-  const shipment = await ShippoShipment.findById(id);
+
+  const shipment = await ShippoShipment.findOne({ shippo_shipment_id: id });
   
   if (!shipment) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipment not found');
@@ -248,5 +274,6 @@ export const shippoService = {
   trackShipment,
   getShipmentById,
   updateShipment,
-  deleteShipment
+  deleteShipment,
+  selectRate
 };
