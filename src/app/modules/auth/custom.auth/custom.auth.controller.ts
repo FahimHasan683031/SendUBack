@@ -147,7 +147,7 @@ const deleteAccount = catchAsync(async (req: Request, res: Response) => {
 const socialLogin = catchAsync(async (req: Request, res: Response) => {
   const { appId, deviceToken } = req.body
   const result = await CustomAuthServices.socialLogin(appId, deviceToken)
-  const { status, message, accessToken, refreshToken, role } = result
+  const { status, message, accessToken,  role } = result
   sendResponse(res, {
     statusCode: status,
     success: true,
