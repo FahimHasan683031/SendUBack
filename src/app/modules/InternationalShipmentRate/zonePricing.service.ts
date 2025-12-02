@@ -1,0 +1,95 @@
+import QueryBuilder from "../../builder/QueryBuilder";
+import { ZonePricing } from "./zonePricing.model";
+import { IZonePricing, IShippingRateRequest, IShippingRateResponse } from "./zonePricing.interface";
+import { getZoneByCountry } from "../../../utils/zone.utils";
+
+
+// create zone pricing
+const createZonePricing = async (payload: Partial<IZonePricing>) => {
+    const isExist = await ZonePricing.findOne({
+        fromZone: payload.fromZone,
+        toZone: payload.toZone,
+        shippingType: payload.shippingType,
+    })
+    if(isExist){
+        isExist.set(payload);
+        await isExist.save();
+        return isExist;
+    }
+  const zonePricing = await ZonePricing.create(payload);
+  return zonePricing;
+};
+
+// get all zone pricing
+const getZonePricings = async (query: Record<string, unknown>) => {
+  const zonePricingQueryBuilder = new QueryBuilder(ZonePricing.find(), query)
+    .filter()
+    .sort()
+    .paginate();
+  
+  const zonePricings = await zonePricingQueryBuilder.modelQuery;
+  const paginationInfo = await zonePricingQueryBuilder.getPaginationInfo();
+
+  return {
+    data: zonePricings,
+    meta: paginationInfo,
+  };
+};
+
+// get zone pricing by id
+const getZonePricingById = async (id: string) => {
+  const zonePricing = await ZonePricing.findById(id);
+  return zonePricing;
+};
+
+// delete zone pricing
+const deleteZonePricing = async (id: string) => {
+  const zonePricing = await ZonePricing.findByIdAndDelete(id);
+  return zonePricing;
+};
+
+// update zone pricing
+const updateZonePricing = async (id: string, payload: Partial<IZonePricing>) => {
+  const zonePricing = await ZonePricing.findByIdAndUpdate(id, payload, { 
+    new: true,
+    runValidators: true 
+  });
+  return zonePricing;
+};
+
+// calculate shipping rate
+const getShippingRate = async (payload: IShippingRateRequest) => {
+  const { fromCountry, toCountry, shippingType, weight } = payload;
+
+  console.log(fromCountry, toCountry, shippingType, weight)
+  
+  // Get zones for countries
+  const fromZone = getZoneByCountry(fromCountry);
+  const toZone = getZoneByCountry(toCountry);
+  
+  if (!fromZone || !toZone) {
+    throw new Error("Invalid country codes");
+  }
+  
+  // Find pricing for the route
+  const pricing = await ZonePricing.find({
+    fromZone: fromZone.id,
+    toZone: toZone.id,
+  });
+  
+  if (!pricing) {
+    throw new Error("No shipping rate available for this route");
+  }
+  
+  return pricing
+};
+
+
+export const ZonePricingService = {
+  createZonePricing,
+  getZonePricings,
+  getZonePricingById,
+  deleteZonePricing,
+  updateZonePricing,
+  getShippingRate
+};
