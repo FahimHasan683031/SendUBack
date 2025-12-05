@@ -40,6 +40,8 @@ const createShipment = async (payload: IShipment) => {
     const parcel = payload.products?.map(product => generateParcel(product)) || [generateParcel('Other')];
     payload.parcels = parcel;
 
+  
+
 
 
     const shipment = await shippoRequest('/shipments', {

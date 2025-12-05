@@ -1,0 +1,57 @@
+import { Schema, model } from 'mongoose';
+import { IShipping } from './shipping.interface';
+
+
+const shippingAddressSchema = new Schema({
+  name: { type: String, required: true },
+  street1: { type: String, required: true },
+  street2: String,
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  postal_code: { type: String, required: true },
+  country: { type: String, required: true },
+  phone: { type: String, required: true },
+  email: { type: String, required: true }
+});
+
+const parcelSchema = new Schema({
+  length: { type: Number, required: true },
+  width: { type: Number, required: true },
+  height: { type: Number, required: true },
+  distance_unit: { type: String, enum: ['in', 'cm'], required: true },
+  weight: { type: Number, required: true },
+  mass_unit: { type: String, enum: ['lb', 'kg'], required: true }
+});
+
+const shippingSchema = new Schema<IShipping>({
+  shipping_type: { 
+    type: String, 
+    enum: ['insideUk', 'international'],
+    required: true 
+  },
+  status: { 
+    type: String, 
+    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    default: 'pending' 
+  },
+  address_from: { type: shippingAddressSchema, required: true },
+  address_to: { type: shippingAddressSchema, required: true },
+  parcel: [parcelSchema],
+  shipping_label: String,
+  tracking_id: String,
+  tracking_url: String,
+  carrier: String,
+  service: String,
+  shipping_cost: Number,
+  currency: { type: String, default: 'GBP' },
+  notes: String
+}, {
+  timestamps: true
+});
+
+// Indexes for better query performance
+shippingSchema.index({ tracking_id: 1 });
+shippingSchema.index({ status: 1 });
+shippingSchema.index({ shipping_type: 1 });
+
+export const Shipping = model<IShipping>('Shipping', shippingSchema);

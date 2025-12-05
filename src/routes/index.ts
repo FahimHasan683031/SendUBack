@@ -12,6 +12,7 @@ import { LostItemRoutes } from '../app/modules/lostItem/lostItem.route'
 import { CategoryRoutes } from '../app/modules/category/category.route'
 import { shippoRoutes } from '../app/modules/shippo/shippo.route'
 import { zonePricingRoutes } from '../app/modules/InternationalShipmentRate/zonePricing.route'
+import { shippingRoutes } from '../app/modules/shipping/shipping.route'
 
 
 
@@ -32,6 +33,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/category', route: CategoryRoutes },
   { path: '/shippo', route: shippoRoutes },
   { path: '/zone-pricing', route: zonePricingRoutes },
+  { path: '/shipping', route: shippingRoutes },
 
 ]
 
