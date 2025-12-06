@@ -4,6 +4,44 @@ import QueryBuilder from '../../builder/QueryBuilder'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
 import { generateParcel } from '../../../utils/shippo-parcel.utils'
+import { ZonePricingService } from '../InternationalShipmentRate/zonePricing.service'
+import { royalMailService } from './royalmail.service'
+import { getZoneByCountry } from '../../../utils/zone.utils'
+
+// Helper function to calculate insurance cost (10% of product value)
+const calculateInsuranceCost = (productValue: number): number => {
+  return productValue * 0.1
+}
+
+// Helper function to get shipping rates based on type
+const getShippingRates = async (shipingId:string) => {
+  const shiping= await Shipping.findById(shipingId) 
+  if(!shiping){
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
+  }
+  const { shipping_type, address_from, address_to, parcel } = shiping
+
+  if (shipping_type === 'insideUk') {
+    // Call Royal Mail API for UK domestic shipping
+    const rates = await royalMailService.getRoyalMailRates({
+      address_from,
+      address_to,
+      parcel: parcel as any[]
+    })
+    return rates
+  } else if (shipping_type === 'international') {
+    // Use zone pricing for international shipping
+    const fromCountry = address_from.country
+    const toCountry = address_to.country
+
+    // Get shipping rates from zone pricing
+    const rates = await ZonePricingService.getShippingRate(fromCountry, toCountry)
+
+    return rates
+  }
+
+  throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid shipping type')
+}
 
 // Create shipping
 const createShipping = async (payload: IShipping) => {
@@ -13,6 +51,7 @@ const createShipping = async (payload: IShipping) => {
     ) || [generateParcel('Other')]
     payload.parcel = parcel
 
+    // Determine shipping type based on countries
     if (
       payload.address_from.country === 'UK' &&
       payload.address_to.country === 'UK'
@@ -58,19 +97,7 @@ const getShippingById = async (id: string) => {
   return shipping
 }
 
-// Get shipping by order ID
-const getShippingByOrderId = async (orderId: string) => {
-  const shipping = await Shipping.findOne({ order_id: orderId })
 
-  if (!shipping) {
-    throw new ApiError(
-      StatusCodes.NOT_FOUND,
-      'Shipping not found for this order',
-    )
-  }
-
-  return shipping
-}
 
 // Get shipping by tracking ID
 const getShippingByTrackingId = async (trackingId: string) => {
@@ -88,53 +115,30 @@ const getShippingByTrackingId = async (trackingId: string) => {
 
 // Update shipping
 const updateShipping = async (id: string, payload: Partial<IShipping>) => {
+
+  const isExistShipping = await Shipping.findById(id)
+  if(!isExistShipping){
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
+  }
+
+  if(payload.selected_rate?.price){
+    payload.total_cost=payload.selected_rate.price + (isExistShipping.insurance?.insuranceCost || 0),
+    payload.shipping_cost=payload.selected_rate.price
+  }
+  if(payload.insurance?.isInsured && payload.insurance.productValue){
+    const insuranceCost= calculateInsuranceCost(payload.insurance.productValue)
+    payload.insurance.insuranceCost=insuranceCost
+    payload.total_cost=(payload.selected_rate?.price || isExistShipping.shipping_cost || 0) + insuranceCost
+  }
   const shipping = await Shipping.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   })
 
-  if (!shipping) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
-  }
-
   return shipping
 }
 
-// Update shipping status
-const updateShippingStatus = async (
-  id: string,
-  status: IShipping['status'],
-) => {
-  const shipping = await Shipping.findByIdAndUpdate(
-    id,
-    { status },
-    { new: true },
-  )
 
-  if (!shipping) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
-  }
-
-  return shipping
-}
-
-// Add shipping label
-const addShippingLabel = async (id: string, shippingLabel: string) => {
-  const shipping = await Shipping.findByIdAndUpdate(
-    id,
-    {
-      shipping_label: shippingLabel,
-      status: 'processing',
-    },
-    { new: true },
-  )
-
-  if (!shipping) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
-  }
-
-  return shipping
-}
 
 // Add tracking information
 const addTrackingInfo = async (
@@ -176,11 +180,9 @@ export const shippingService = {
   createShipping,
   getAllShippings,
   getShippingById,
-  getShippingByOrderId,
   getShippingByTrackingId,
   updateShipping,
-  updateShippingStatus,
-  addShippingLabel,
   addTrackingInfo,
   deleteShipping,
+  getShippingRates
 }

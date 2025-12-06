@@ -23,27 +23,36 @@ const parcelSchema = new Schema({
   mass_unit: { type: String, enum: ['lb', 'kg'], required: true }
 });
 
+const insuranceSchema = new Schema({
+  isInsured: { type: Boolean, required: true, default: false },
+  productValue: { type: Number, min: 0 },
+  insuranceCost: { type: Number, min: 0 }
+}, { _id: false });
+
 const shippingSchema = new Schema<IShipping>({
-  shipping_type: { 
-    type: String, 
+  shipping_type: {
+    type: String,
     enum: ['insideUk', 'international'],
-    required: true 
+    required: true
   },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending' 
+    default: 'pending'
   },
   address_from: { type: shippingAddressSchema, required: true },
   address_to: { type: shippingAddressSchema, required: true },
   parcel: [parcelSchema],
+  selected_rate: Schema.Types.Mixed,
+  shipping_cost: { type: Number, min: 0 },
+  currency: { type: String, default: 'GBP' },
+  insurance: { type: insuranceSchema },
+  total_cost: { type: Number, default: 0 },
   shipping_label: String,
   tracking_id: String,
   tracking_url: String,
   carrier: String,
   service: String,
-  shipping_cost: Number,
-  currency: { type: String, default: 'GBP' },
   notes: String
 }, {
   timestamps: true

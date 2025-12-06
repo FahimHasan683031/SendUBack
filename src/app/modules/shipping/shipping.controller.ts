@@ -1,4 +1,3 @@
-// src/modules/shipping/shipping.controller.ts
 import { Request, Response } from "express";
 import { shippingService } from "./shipping.service";
 import { StatusCodes } from "http-status-codes";
@@ -41,17 +40,7 @@ const getShippingById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get shipping by order ID
-const getShippingByOrderId = catchAsync(async (req: Request, res: Response) => {            
-  const { orderId } = req.params;
-  const result = await shippingService.getShippingByOrderId(orderId);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Shipping retrieved successfully",
-    data: result,
-  });
-});
+
 
 // Get shipping by tracking ID
 const getShippingByTrackingId = catchAsync(async (req: Request, res: Response) => {
@@ -78,31 +67,8 @@ const updateShipping = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Update shipping status
-const updateShippingStatus = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { status } = req.body;
-  const result = await shippingService.updateShippingStatus(id, status);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Shipping status updated successfully",
-    data: result,
-  });
-});
 
-// Add shipping label
-const addShippingLabel = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { shipping_label } = req.body;
-  const result = await shippingService.addShippingLabel(id, shipping_label);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Shipping label added successfully",
-    data: result,
-  });
-});
+
 
 // Add tracking information
 const addTrackingInfo = catchAsync(async (req: Request, res: Response) => {
@@ -129,15 +95,26 @@ const deleteShipping = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Calculate shipping rates
+const getShippingRates = catchAsync(async (req: Request, res: Response) => {
+  const result = await shippingService.getShippingRates(req.params.shippingId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shipping rates calculated successfully",
+    data: result,
+  });
+});
+
+
+
 export const shippingController = {
   createShipping,
   getAllShippings,
   getShippingById,
-  getShippingByOrderId,
   getShippingByTrackingId,
   updateShipping,
-  updateShippingStatus,
-  addShippingLabel,
   addTrackingInfo,
-  deleteShipping
+  deleteShipping,
+  getShippingRates
 };

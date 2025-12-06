@@ -2,19 +2,23 @@
 import express from "express";
 import validateRequest from "../../middleware/validateRequest";
 import { shippingController } from "./shipping.controller";
-import { 
-  createShippingZod, 
+import {
+  createShippingZod,
   updateShippingZod,
-  updateStatusZod,
-  addShippingLabelZod,
-  addTrackingInfoZod
+  addTrackingInfoZod,
 } from "./shipping.validation";
 
 const router = express.Router();
 
+// get shipping rates
+router.post(
+  "/getShippingRates/:shippingId",
+  shippingController.getShippingRates
+);
+
 // Create shipping
 router.post(
-  "/create",
+  "/",
   validateRequest(createShippingZod),
   shippingController.createShipping
 );
@@ -25,22 +29,18 @@ router.get(
   shippingController.getAllShippings
 );
 
-// Get shipping by ID
-router.get(
-  "/:id",
-  shippingController.getShippingById
-);
-
-// Get shipping by order ID
-router.get(
-  "/order/:orderId",
-  shippingController.getShippingByOrderId
-);
+;
 
 // Get shipping by tracking ID
 router.get(
   "/track/:trackingId",
   shippingController.getShippingByTrackingId
+);
+
+// Get shipping by ID
+router.get(
+  "/:id",
+  shippingController.getShippingById
 );
 
 // Update shipping
@@ -50,19 +50,9 @@ router.patch(
   shippingController.updateShipping
 );
 
-// Update shipping status
-router.patch(
-  "/:id/status",
-  validateRequest(updateStatusZod),
-  shippingController.updateShippingStatus
-);
 
-// Add shipping label
-router.post(
-  "/:id/label",
-  validateRequest(addShippingLabelZod),
-  shippingController.addShippingLabel
-);
+
+
 
 // Add tracking information
 router.post(

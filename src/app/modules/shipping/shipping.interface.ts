@@ -24,26 +24,37 @@ export interface IParcel {
 }
 
 
+export interface IInsurance {
+  isInsured: boolean;
+  productValue?: number;
+  insuranceCost?: number;
+}
+
 export interface IShipping {
   _id: Types.ObjectId;
   shipping_type: ShippingType;
   status: ShippingStatus;
-  
+
   // Address information
   address_from: IShippingAddress;
   address_to: IShippingAddress;
-  
+
   // Package information
   parcel: IParcel[] | string[];
-  price?:number;
-  insurance?:number;
+
+  // Pricing information
+  selected_rate?: any; 
+  shipping_cost?: number; // Final calculated shipping cost
+  currency: string;
+
+  // Insurance information
+  insurance?: IInsurance;
+  total_cost?: number; // shipping cost + insurance cost
   // Shipping details
-  shipping_label?: string; 
+  shipping_label?: string;
   tracking_id?: string;
   tracking_url?: string;
   carrier?: string;
   service?: string;
-  shipping_cost?: number;
-  currency: string;
   notes?: string;
 }

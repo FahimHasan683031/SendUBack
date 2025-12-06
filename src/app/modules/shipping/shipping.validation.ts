@@ -26,16 +26,39 @@ const parcelSchema = z.object({
   mass_unit: z.enum(['lb', 'kg'], {
     required_error: "Mass unit is required"
   }),
+  
 });
 
-
+// Insurance validation
+const insuranceSchema = z.object({
+  isInsured: z.boolean({
+    required_error: "Insurance selection is required"
+  }),
+  productValue: z.number().positive("Product value must be positive"),
+  insuranceCost: z.number().positive("Insurance cost must be positive").optional(),
+}).refine(
+  (data) => {
+    // If insured, product value must be provided
+    if (data.isInsured && !data.productValue) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Product value is required when insurance is selected",
+    path: ["productValue"],
+  }
+);
 
 // Base shipping validation
 const baseShippingSchema = z.object({
   address_from: shippingAddressSchema,
   address_to: shippingAddressSchema,
   parcel: z.array(z.string().min(1, "Parcel is required")),
+  selected_rate: z.any().optional(),
+  insurance: insuranceSchema.optional(),
   notes: z.string().optional(),
+  currency: z.string().min(1, "Currency is required"),
 });
 
 // Create shipping validation
@@ -68,5 +91,22 @@ export const addTrackingInfoZod = z.object({
     tracking_id: z.string().min(1, "Tracking ID is required"),
     tracking_url: z.string().url("Valid tracking URL is required"),
     carrier: z.string().min(1, "Carrier is required"),
+  }).strict(),
+});
+
+// Calculate shipping rates validation
+export const calculateShippingRatesZod = z.object({
+  body: z.object({
+    shipping_type: z.enum(['insideUk', 'international']),
+    address_from: shippingAddressSchema,
+    address_to: shippingAddressSchema,
+    parcel: z.array(z.string().min(1, "Parcel is required")),
+  }).strict(),
+});
+
+// Calculate insurance validation
+export const calculateInsuranceZod = z.object({
+  body: z.object({
+    productValue: z.number().positive("Product value must be positive"),
   }).strict(),
 });

@@ -58,14 +58,12 @@ const updateZonePricing = async (id: string, payload: Partial<IZonePricing>) => 
 };
 
 // calculate shipping rate
-const getShippingRate = async (payload: IShippingRateRequest) => {
-  const { fromCountry, toCountry, shippingType, weight } = payload;
+const getShippingRate = async (from:string,to:string) => {
 
-  console.log(fromCountry, toCountry, shippingType, weight)
   
   // Get zones for countries
-  const fromZone = getZoneByCountry(fromCountry);
-  const toZone = getZoneByCountry(toCountry);
+  const fromZone = getZoneByCountry(from);
+  const toZone = getZoneByCountry(to);
   
   if (!fromZone || !toZone) {
     throw new Error("Invalid country codes");
