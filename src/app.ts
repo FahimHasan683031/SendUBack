@@ -6,7 +6,8 @@ import { Morgan } from './shared/morgan'
 import cookieParser from 'cookie-parser'
 import globalErrorHandler from './app/middleware/globalErrorHandler'
 import passport from './app/modules/auth/passport.auth/config/passport'
-import handleStripeWebhook from './stripe/handleStripeWebhook';
+import handleStripeWebhook from './app/modules/payment/handleStripeWebhook'
+
 
 //application
 const app = express();

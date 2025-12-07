@@ -8,7 +8,7 @@ const router = Router();
 
 
 router.post(
-    "/checkout-session/:quoteId",
+    "/checkout-session/:shippingId",
     PaymentController.createCheckoutSession
 )
 

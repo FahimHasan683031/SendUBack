@@ -1,3 +1,4 @@
+import { shippingRoutes } from './../shipping/shipping.route';
 import { Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
 import { PaymentService } from "./payment.service";
@@ -5,7 +6,7 @@ import { StatusCodes } from "http-status-codes";
 import sendResponse from "../../../shared/sendResponse";
 
 const createCheckoutSession = catchAsync(async(req: Request, res: Response)=>{
-    const result = await PaymentService.creatSession( req.params.quoteId as string);
+    const result = await PaymentService.creatSession( req.params.shippingId as string);
 
     res.status(StatusCodes.OK).json({ url: result.url })
 

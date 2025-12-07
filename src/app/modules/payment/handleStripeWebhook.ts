@@ -5,17 +5,19 @@ import stripe from '../../../config/stripe'
 import config from '../../../config'
 import { PaymentService } from './payment.service'
 import { logger } from '../../../shared/logger'
-import { Quote } from '../quote/quote.model'
-import { emailTemplate } from '../../../shared/emailTemplate'
-import { emailHelper } from '../../../helpers/emailHelper'
 import mongoose from 'mongoose'
+import { Shipping } from '../shipping/shipping.model'
+import { emailHelper } from '../../../helpers/emailHelper'
+import { emailTemplate } from '../../../shared/emailTemplate'
 
 const handleStripeWebhook = async (
   req: Request,
   res: Response,
-): Promise<void> => {
+)=> {
   const signature = req.headers['stripe-signature'] as string
   let event: Stripe.Event
+
+  console.log('Received Stripe webhook')
 
   try {
     event = stripe.webhooks.constructEvent(
@@ -33,65 +35,76 @@ const handleStripeWebhook = async (
   const data = event.data.object as any
 
   try {
+    // -------------------------------
+    // CHECKOUT SESSION COMPLETED
+    // -------------------------------
     if (eventType === 'checkout.session.completed') {
-      // Retrieve session to get payment_intent details
       const session = await stripe.checkout.sessions.retrieve(data.id, {
         expand: ['payment_intent'],
       })
+
       const paymentIntent = session.payment_intent as Stripe.PaymentIntent
+      console.log('PaymentIntent:', paymentIntent)
 
-      // Extract required payment info
-      const email = session.customer_email || session.customer_details?.email
-      const amount = paymentIntent.amount / 100 // convert cents → dollars
-      const transactionId = paymentIntent.id
-      const customerName = session.customer_details?.name
-      const description = session.metadata?.description || 'Stripe Payment'
-      const service = session.metadata?.service || 'Shipping Payment'
+      // // extracted data
+      // const email =
+      //   session.customer_email || session.customer_details?.email || 'N/A'
 
-      // Save payment using your PaymentService
-      await PaymentService.createPayment({
-        email: email as string,
-        dateTime: new Date(),
-        amount,
-        transactionId,
-        service: service as string,
-        description: description as string,
-        customerName: customerName as string,
-        quoteId: new mongoose.Types.ObjectId(session.metadata?.quote_id),
-      })
+      // const amount = paymentIntent.amount / 100 // convert cents → currency format
+      // const transactionId = paymentIntent.id
+      // const customerName = session.customer_details?.name || 'N/A'
+      // const shippingId = session.metadata?.shipping_id
 
-      const quote = await Quote.findById(session.metadata?.quote_id).populate(
-        'serviceType',
-      )
+      // // get shipping record
+      // const shipping = await Shipping.findById(shippingId)
 
-      // Update quote status to paid
-      await Quote.findByIdAndUpdate(session.metadata?.quote_id, {
-        status: 'paymentCompleted',
-      })
+      // if (!shipping) {
+      //   logger.error('Shipping not found for webhook:', shippingId)
+      //   return res.sendStatus(200)
+      // }
 
-      setTimeout(() => {
-        // Send payment confirmation email
-        const paymentConfirmationEmailTemplate =
-          emailTemplate.sendPaymentConfirmationEmail(quote)
-        emailHelper.sendEmail(paymentConfirmationEmailTemplate)
+      // // Save Payment Record
+      // await PaymentService.createPayment({
+      //   email,
+      //   amount,
+      //   dateTime: new Date(),
+      //   transactionId,
+      //   service: 'Shipping Payment',
+      //   description: `Payment for ${shipping.shipping_type} shipment`,
+      //   customerName,
+      //   shippingId: new mongoose.Types.ObjectId(shippingId),
+      // })
 
-        // Send admin payment notification email
-        const adminPaymentNotificationEmailTemplate =
-          emailTemplate.sendAdminPaymentNotificationEmail(quote)
-        emailHelper.sendEmail(adminPaymentNotificationEmailTemplate)
-      }, 0)
+      // // Update shipping to paid/processing
+      // await Shipping.findByIdAndUpdate(shippingId, {
+      //   status: 'processing',
+      // })
 
-      logger.info(`Payment saved for ${email}, transactionId: ${transactionId}`)
+      // Send emails
+      // setTimeout(async () => {
+      //   try {
+      //     const confirmationTemplate =
+      //       emailTemplate.sendShippingPaymentConfirmation(shipping)
+      //     await emailHelper.sendEmail(confirmationTemplate)
+
+      //     const adminNotificationTemplate =
+      //       emailTemplate.sendAdminShippingPaymentNotification(shipping)
+      //     await emailHelper.sendEmail(adminNotificationTemplate)
+      //   } catch (err) {
+      //     logger.error('Email sending failed:', err)
+      //   }
+      // }, 0)
+
+      // logger.info(
+      //   `Shipping payment saved for ${email}, transactionId: ${transactionId}`,
+      // )
     }
-
-    // You can handle other events here if needed
   } catch (error: any) {
     logger.error('Webhook handler error:', error)
     res.status(500).send('Webhook internal error')
     return
   }
 
-  // Must return 200 to acknowledge receipt
   res.sendStatus(200)
 }
 

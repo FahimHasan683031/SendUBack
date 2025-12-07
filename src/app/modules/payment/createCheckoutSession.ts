@@ -1,37 +1,38 @@
 import { StatusCodes } from "http-status-codes";
-import { Quote } from "../quote/quote.model";
+import { Shipping } from "../shipping/shipping.model";
 import ApiError from "../../../errors/ApiError";
 import config from "../../../config";
 import stripe from "../../../config/stripe";
 import Stripe from "stripe";
-import { IService } from "../service/service.interface";
 
-export const createCheckoutSession = async (quoteId: string) => {
-  const quote = await Quote.findOne({ _id: quoteId })
-    .populate("serviceType")
-    .lean();
-  if (!quote) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Quote not found!");
+export const createCheckoutSession = async (shippingId: string) => {
+  // 1️⃣ Find shipping info
+  const shipping = await Shipping.findById(shippingId).lean();
+
+  if (!shipping) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Shipping data not found!");
   }
 
- 
-  const service = quote.serviceType as unknown as IService;
-  const amount = service?.price ? Math.round(Number(service.price) * 100) : null;
+  // 2️⃣ Payment amount → use total_cost
+  const amount = shipping.total_cost
+    ? Math.round(Number(shipping.total_cost) * 100)
+    : null;
+
   if (!amount) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid service price");
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid total cost");
   }
 
-  // --- create session ---
+  // 3️⃣ Prepare session params
   const params: Stripe.Checkout.SessionCreateParams = {
     mode: "payment",
-    customer_email: quote.email as string,
+    customer_email: shipping.address_to.email, // sender email
     line_items: [
       {
         price_data: {
-          currency: "usd",
+          currency: shipping.currency || "GBP",
           product_data: {
-            name: service.title,
-            description: `${service.description}`,
+            name: `Shipping: ${shipping.shipping_type.toUpperCase()}`,
+            description: `From ${shipping.address_from.country} to ${shipping.address_to.country}`,
           },
           unit_amount: amount,
         },
@@ -40,16 +41,21 @@ export const createCheckoutSession = async (quoteId: string) => {
     ],
     success_url: `${config.stripe.frontendUrl}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.stripe.frontendUrl}/payments/cancel`,
+
     metadata: {
-      quote_id: String(quote._id),
-      service: service.title,
+      shipping_id: String(shipping._id),
+      shipping_type: shipping.shipping_type,
+      from_country: shipping.address_from.country,
+      to_country: shipping.address_to.country,
+      selected_rate: shipping.selected_rate?.price
+        ? String(shipping.selected_rate.price)
+        : "N/A",
+      total_cost: String(shipping.total_cost),
     },
   };
 
+  // 4️⃣ Create session
   const session = await stripe.checkout.sessions.create(params);
 
   return session.url;
 };
-
-
-

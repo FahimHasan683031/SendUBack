@@ -3,8 +3,6 @@ import { AuthRoutes } from '../app/modules/auth/auth.route'
 import express, { Router } from 'express'
 import { NotificationRoutes } from '../app/modules/notifications/notifications.route'
 import { PublicRoutes } from '../app/modules/public/public.route'
-import { PlanRoutes } from '../app/modules/plan/plan.routes'
-import { SubscriptionRoutes } from '../app/modules/subscription/subscription.routes'
 import { ChatRoutes } from '../app/modules/chat/chat.routes'
 import { MessageRoutes } from '../app/modules/message/message.routes'
 import { BusinessDetailsRoute } from '../app/modules/businessDetails/businessDetails.route'
@@ -13,6 +11,7 @@ import { CategoryRoutes } from '../app/modules/category/category.route'
 import { shippoRoutes } from '../app/modules/shippo/shippo.route'
 import { zonePricingRoutes } from '../app/modules/InternationalShipmentRate/zonePricing.route'
 import { shippingRoutes } from '../app/modules/shipping/shipping.route'
+import { PaymentRouts } from '../app/modules/payment/payment.route'
 
 
 
@@ -24,8 +23,6 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/auth', route: AuthRoutes },
   { path: '/notifications', route: NotificationRoutes },
   { path: '/public', route: PublicRoutes },
-  { path: '/plan', route: PlanRoutes },
-  { path: '/subscription', route: SubscriptionRoutes },
   { path: '/chat', route: ChatRoutes },
   { path: '/message', route: MessageRoutes },
   { path: '/business-details', route: BusinessDetailsRoute },
@@ -34,6 +31,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/shippo', route: shippoRoutes },
   { path: '/zone-pricing', route: zonePricingRoutes },
   { path: '/shipping', route: shippingRoutes },
+  {path: '/payment', route: PaymentRouts},
 
 ]
 
