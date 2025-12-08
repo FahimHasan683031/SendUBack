@@ -5,42 +5,12 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
 import { generateParcel } from '../../../utils/shippo-parcel.utils'
 import { ZonePricingService } from '../InternationalShipmentRate/zonePricing.service'
-import { royalMailService } from './royalmail.service'
 import { getZoneByCountry } from '../../../utils/zone.utils'
+import { ZonePricing } from '../InternationalShipmentRate/zonePricing.model'
 
 // Helper function to calculate insurance cost (10% of product value)
 const calculateInsuranceCost = (productValue: number): number => {
   return productValue * 0.1
-}
-
-// Helper function to get shipping rates based on type
-const getShippingRates = async (shipingId:string) => {
-  const shiping= await Shipping.findById(shipingId) 
-  if(!shiping){
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
-  }
-  const { shipping_type, address_from, address_to, parcel } = shiping
-
-  if (shipping_type === 'insideUk') {
-    // Call Royal Mail API for UK domestic shipping
-    const rates = await royalMailService.getRoyalMailRates({
-      address_from,
-      address_to,
-      parcel: parcel as any[]
-    })
-    return rates
-  } else if (shipping_type === 'international') {
-    // Use zone pricing for international shipping
-    const fromCountry = address_from.country
-    const toCountry = address_to.country
-
-    // Get shipping rates from zone pricing
-    const rates = await ZonePricingService.getShippingRate(fromCountry, toCountry)
-
-    return rates
-  }
-
-  throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid shipping type')
 }
 
 // Create shipping
@@ -51,11 +21,14 @@ const createShipping = async (payload: IShipping) => {
     ) || [generateParcel('Other')]
     payload.parcel = parcel
 
-    // Determine shipping type based on countries
-    if (
-      payload.address_from.country === 'UK' &&
-      payload.address_to.country === 'UK'
-    ) {
+    // Check if countries are valid
+    const fromZone = getZoneByCountry(payload.address_from.country)
+    const toZone = getZoneByCountry(payload.address_to.country)
+    if (!fromZone || !toZone) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid country codes')
+    }
+
+    if (fromZone === toZone && fromZone.id === 6) {
       payload.shipping_type = 'insideUk'
     } else {
       payload.shipping_type = 'international'
@@ -67,6 +40,22 @@ const createShipping = async (payload: IShipping) => {
     console.error('Create shipping error:', error)
     throw new ApiError(StatusCodes.BAD_REQUEST, error.message)
   }
+}
+
+// Get shipping rates
+const getShippingRates = async (shipingId: string) => {
+  const shiping = await Shipping.findById(shipingId)
+  if (!shiping) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
+  }
+  const { address_from, address_to } = shiping
+
+  const rates = await ZonePricingService.getShippingRate(
+    address_from.country,
+    address_to.country,
+  )
+
+  return rates
 }
 
 // Get all shippings
@@ -97,8 +86,6 @@ const getShippingById = async (id: string) => {
   return shipping
 }
 
-
-
 // Get shipping by tracking ID
 const getShippingByTrackingId = async (trackingId: string) => {
   const shipping = await Shipping.findOne({ tracking_id: trackingId })
@@ -115,20 +102,29 @@ const getShippingByTrackingId = async (trackingId: string) => {
 
 // Update shipping
 const updateShipping = async (id: string, payload: Partial<IShipping>) => {
-
   const isExistShipping = await Shipping.findById(id)
-  if(!isExistShipping){
+  if (!isExistShipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
 
-  if(payload.selected_rate?.price){
-    payload.total_cost=payload.selected_rate.price + (isExistShipping.insurance?.insuranceCost || 0),
-    payload.shipping_cost=payload.selected_rate.price
+  if (payload.selected_rate) {
+    const selectedRate = await ZonePricing.findById(
+      payload.selected_rate,
+    )
+    if (!selectedRate) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Selected rate not found')
+    }
+    (payload.total_cost =
+      selectedRate.price +
+      (isExistShipping.insurance?.insuranceCost || 0)),
+      (payload.shipping_cost = selectedRate.price)
   }
-  if(payload.insurance?.isInsured && payload.insurance.productValue){
-    const insuranceCost= calculateInsuranceCost(payload.insurance.productValue)
-    payload.insurance.insuranceCost=insuranceCost
-    payload.total_cost=(payload.selected_rate?.price || isExistShipping.shipping_cost || 0) + insuranceCost
+  if (payload.insurance?.isInsured && payload.insurance.productValue) {
+    const insuranceCost = calculateInsuranceCost(payload.insurance.productValue)
+    payload.insurance.insuranceCost = insuranceCost
+    payload.total_cost =
+      (isExistShipping.shipping_cost || 0) +
+      insuranceCost
   }
   const shipping = await Shipping.findByIdAndUpdate(id, payload, {
     new: true,
@@ -137,8 +133,6 @@ const updateShipping = async (id: string, payload: Partial<IShipping>) => {
 
   return shipping
 }
-
-
 
 // Add tracking information
 const addTrackingInfo = async (
@@ -184,5 +178,5 @@ export const shippingService = {
   updateShipping,
   addTrackingInfo,
   deleteShipping,
-  getShippingRates
+  getShippingRates,
 }

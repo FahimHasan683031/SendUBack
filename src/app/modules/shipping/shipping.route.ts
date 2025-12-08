@@ -1,4 +1,3 @@
-// src/modules/shipping/shipping.route.ts
 import express from "express";
 import validateRequest from "../../middleware/validateRequest";
 import { shippingController } from "./shipping.controller";
@@ -49,9 +48,6 @@ router.patch(
   validateRequest(updateShippingZod),
   shippingController.updateShipping
 );
-
-
-
 
 
 // Add tracking information

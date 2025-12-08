@@ -4,6 +4,7 @@ import { ShippingType } from '../../../utils/zone.utils';
 
 export interface IZonePricing {
   _id: Types.ObjectId;
+  title: string;
   fromZone: number;
   toZone: number;
   shippingType: ShippingType;

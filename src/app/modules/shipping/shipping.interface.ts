@@ -34,23 +34,14 @@ export interface IShipping {
   _id: Types.ObjectId;
   shipping_type: ShippingType;
   status: ShippingStatus;
-
-  // Address information
   address_from: IShippingAddress;
   address_to: IShippingAddress;
-
-  // Package information
   parcel: IParcel[] | string[];
-
-  // Pricing information
-  selected_rate?: any; 
-  shipping_cost?: number; // Final calculated shipping cost
+  selected_rate?: Types.ObjectId; 
+  shipping_cost?: number;
   currency: string;
-
-  // Insurance information
   insurance?: IInsurance;
-  total_cost?: number; // shipping cost + insurance cost
-  // Shipping details
+  total_cost?: number;
   shipping_label?: string;
   tracking_id?: string;
   tracking_url?: string;

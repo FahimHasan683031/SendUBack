@@ -14,20 +14,6 @@ const shippingAddressSchema = z.object({
   email: z.string().email("Valid email is required"),
 });
 
-// Parcel validation
-const parcelSchema = z.object({
-  length: z.number().positive("Length must be positive"),
-  width: z.number().positive("Width must be positive"),
-  height: z.number().positive("Height must be positive"),
-  distance_unit: z.enum(['in', 'cm'], {
-    required_error: "Distance unit is required"
-  }),
-  weight: z.number().positive("Weight must be positive"),
-  mass_unit: z.enum(['lb', 'kg'], {
-    required_error: "Mass unit is required"
-  }),
-  
-});
 
 // Insurance validation
 const insuranceSchema = z.object({

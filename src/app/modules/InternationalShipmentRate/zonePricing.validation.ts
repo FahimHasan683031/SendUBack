@@ -7,6 +7,9 @@ const zoneIds = Zones.map(zone => zone.id);
 // create zone pricing validation schema
 export const createZonePricingValidationSchema = z.object({
   body: z.object({
+    title: z.string()
+      .min(1, "Title is required")
+      .max(100, "Title must be at most 100 characters"),
     fromZone: z.number()
       .min(1, "From zone must be between 1 and 6")
       .max(6, "From zone must be between 1 and 6")
@@ -25,15 +28,15 @@ export const createZonePricingValidationSchema = z.object({
     price: z.number().min(0, "Price must be a positive number"),
     duration: z.string().optional(),
     description: z.string().optional(),
-  }).refine(data => data.fromZone !== data.toZone, {
-    message: "From zone and to zone cannot be the same",
-    path: ["toZone"],
-  }),
+  })
 });
 
 // update zone pricing validation schema
 export const updateZonePricingValidationSchema = z.object({
   body: z.object({
+    title: z.string()
+      .min(1, "Title is required")
+      .max(100, "Title must be at most 100 characters"),
     fromZone: z.number()
       .min(1)
       .max(6)
@@ -52,10 +55,7 @@ export const updateZonePricingValidationSchema = z.object({
     price: z.number().min(0).optional(),
     duration: z.string().optional(),
     description: z.string().optional(),
-  }).refine(data => !data.fromZone || !data.toZone || data.fromZone !== data.toZone, {
-    message: "From zone and to zone cannot be the same",
-    path: ["toZone"],
-  }),
+  })
 });
 
 // calculate shipping rate validation schema

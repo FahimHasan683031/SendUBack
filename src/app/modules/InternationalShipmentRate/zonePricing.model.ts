@@ -3,6 +3,12 @@ import { IZonePricing } from "./zonePricing.interface";
 
 const ZonePricingSchema = new Schema<IZonePricing>(
   {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
     fromZone: {
       type: Number,
       required: true,

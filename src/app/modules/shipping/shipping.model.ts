@@ -43,7 +43,7 @@ const shippingSchema = new Schema<IShipping>({
   address_from: { type: shippingAddressSchema, required: true },
   address_to: { type: shippingAddressSchema, required: true },
   parcel: [parcelSchema],
-  selected_rate: Schema.Types.Mixed,
+  selected_rate: { type: Schema.Types.ObjectId, ref: 'ZonePricing' },
   shipping_cost: { type: Number, min: 0 },
   currency: { type: String, default: 'GBP' },
   insurance: { type: insuranceSchema },
@@ -58,7 +58,6 @@ const shippingSchema = new Schema<IShipping>({
   timestamps: true
 });
 
-// Indexes for better query performance
 shippingSchema.index({ tracking_id: 1 });
 shippingSchema.index({ status: 1 });
 shippingSchema.index({ shipping_type: 1 });

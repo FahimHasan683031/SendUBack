@@ -9,14 +9,15 @@ import passport from './app/modules/auth/passport.auth/config/passport'
 import handleStripeWebhook from './app/modules/payment/handleStripeWebhook'
 
 
+
 //application
 const app = express();
 
 
 const allowedOrigins = [
   'https://goroqit.com',
-  'https://www.goroqit.com',   // add www version
-  'http://goroqit.com',        // optional if non-SSL
+  'https://www.goroqit.com', 
+  'http://goroqit.com',        
   'http://localhost:3000',
   'http://10.10.7.45:3000'
 ];
@@ -39,6 +40,7 @@ app.use('/webhook',
     express.raw({ type: 'application/json' }),
     handleStripeWebhook
 );
+
 
 
 //morgan
@@ -77,7 +79,7 @@ app.get('/', (req: Request, res: Response) => {
         box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         max-width: 600px;
       ">
-        <img src="https://i.ibb.co.com/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" alt="Go Roqit" width="80" style="margin-bottom: 1rem; height: 60px; width: 180px;" />
+        <img src="https://i.ibb.co.com/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" alt="SendUBack" width="80" style="margin-bottom: 1rem; height: 60px; width: 180px;" />
         
         <h1 style="
           font-size: 2.4rem;
@@ -93,7 +95,7 @@ app.get('/', (req: Request, res: Response) => {
           line-height: 1.7;
           color: #000000;
         ">
-          You’ve reached the <code style="color:#0096FF;">root</code> of the Go Roqit server.<br>
+          You’ve reached the <code style="color:#0096FF;">root</code> of the SendUBack server.<br>
           Everything’s running smoothly and securely. ✅<br><br>
           Explore the API endpoints or head back to the app for takeoff. 🚀
         </p>
@@ -109,7 +111,7 @@ app.get('/', (req: Request, res: Response) => {
           font-weight: 600;
           transition: background 0.3s ease;
         " onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#0096FF'">
-          🌐 Visit Go Roqit App
+          🌐 Visit SendUBack App
         </a>
 
         <p style="
@@ -117,7 +119,7 @@ app.get('/', (req: Request, res: Response) => {
           font-size: 0.9rem;
           color: #00000099;
         ">
-          © ${new Date().getFullYear()} — Go Roqit Server<br>
+          © ${new Date().getFullYear()} — SendUBack Server<br>
           Built with 💙 and innovation
         </p>
       </div>
@@ -135,7 +137,7 @@ app.use((req, res) => {
     errorMessages: [
       {
         path: req.originalUrl,
-        message: "Looks like you’ve taken a wrong turn — this route doesn’t exist on the Go Roqit API.",
+        message: "Looks like you’ve taken a wrong turn — this route doesn’t exist on the SendUBack API.",
       },
       {
         path: "/api/v1/docs",
