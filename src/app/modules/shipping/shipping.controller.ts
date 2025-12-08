@@ -42,18 +42,6 @@ const getShippingById = catchAsync(async (req: Request, res: Response) => {
 
 
 
-// Get shipping by tracking ID
-const getShippingByTrackingId = catchAsync(async (req: Request, res: Response) => {
-  const { trackingId } = req.params;
-  const result = await shippingService.getShippingByTrackingId(trackingId);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Shipping retrieved successfully",
-    data: result,
-  });
-});     
-
 // Update shipping
 const updateShipping = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -67,21 +55,18 @@ const updateShipping = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-
-
-// Add tracking information
-const addTrackingInfo = catchAsync(async (req: Request, res: Response) => {
+// Add shipping information
+const addShippingInfo = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { tracking_id, tracking_url, carrier } = req.body;
-  const result = await shippingService.addTrackingInfo(id, tracking_id, tracking_url, carrier);
+  const result = await shippingService.addShippingInfo(id,req.body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Tracking information added successfully",
+    message: "Shipping information added successfully",
     data: result,
   });
 });
+
 
 // Delete shipping
 const deleteShipping = catchAsync(async (req: Request, res: Response) => {
@@ -91,7 +76,6 @@ const deleteShipping = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Shipping deleted successfully",
-    data: result,
   });
 });
 
@@ -112,9 +96,8 @@ export const shippingController = {
   createShipping,
   getAllShippings,
   getShippingById,
-  getShippingByTrackingId,
   updateShipping,
-  addTrackingInfo,
   deleteShipping,
-  getShippingRates
+  getShippingRates,
+  addShippingInfo
 };

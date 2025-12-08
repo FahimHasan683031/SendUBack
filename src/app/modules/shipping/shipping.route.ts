@@ -2,10 +2,11 @@ import express from "express";
 import validateRequest from "../../middleware/validateRequest";
 import { shippingController } from "./shipping.controller";
 import {
+  addShippingInfo,
   createShippingZod,
   updateShippingZod,
-  addTrackingInfoZod,
 } from "./shipping.validation";
+import { fileAndBodyProcessorUsingDiskStorage } from "../../middleware/processReqBody";
 
 const router = express.Router();
 
@@ -30,11 +31,6 @@ router.get(
 
 ;
 
-// Get shipping by tracking ID
-router.get(
-  "/track/:trackingId",
-  shippingController.getShippingByTrackingId
-);
 
 // Get shipping by ID
 router.get(
@@ -48,13 +44,12 @@ router.patch(
   validateRequest(updateShippingZod),
   shippingController.updateShipping
 );
-
-
 // Add tracking information
 router.post(
-  "/:id/tracking",
-  validateRequest(addTrackingInfoZod),
-  shippingController.addTrackingInfo
+  "/:id/shippingInfo",
+  fileAndBodyProcessorUsingDiskStorage(),
+  validateRequest(addShippingInfo),
+  shippingController.addShippingInfo
 );
 
 // Delete shipping

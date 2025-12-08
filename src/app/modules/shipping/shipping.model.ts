@@ -37,8 +37,8 @@ const shippingSchema = new Schema<IShipping>({
   },
   status: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending'
+    enum: ['created', 'rateSelected', 'paymentCompleted', 'shipped', 'delivered'],
+    default: 'created'
   },
   address_from: { type: shippingAddressSchema, required: true },
   address_to: { type: shippingAddressSchema, required: true },
@@ -48,11 +48,10 @@ const shippingSchema = new Schema<IShipping>({
   currency: { type: String, default: 'GBP' },
   insurance: { type: insuranceSchema },
   total_cost: { type: Number, default: 0 },
-  shipping_label: String,
+  shippingLabel: String,
   tracking_id: String,
   tracking_url: String,
   carrier: String,
-  service: String,
   notes: String
 }, {
   timestamps: true

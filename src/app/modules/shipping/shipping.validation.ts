@@ -1,4 +1,3 @@
-// src/modules/shipping/shipping.validation.ts
 import { z } from "zod";
 
 // Address validation
@@ -24,7 +23,6 @@ const insuranceSchema = z.object({
   insuranceCost: z.number().positive("Insurance cost must be positive").optional(),
 }).refine(
   (data) => {
-    // If insured, product value must be provided
     if (data.isInsured && !data.productValue) {
       return false;
     }
@@ -57,26 +55,15 @@ export const updateShippingZod = z.object({
   body: baseShippingSchema.partial().strict(),
 });
 
-// Update status validation
-export const updateStatusZod = z.object({
-  body: z.object({
-    status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled'])
-  }).strict(),
-});
 
-// Add shipping label validation
-export const addShippingLabelZod = z.object({
-  body: z.object({
-    shipping_label: z.string().min(1, "Shipping label is required")
-  }).strict(),
-});
 
 // Add tracking info validation
-export const addTrackingInfoZod = z.object({
+export const addShippingInfo = z.object({
   body: z.object({
-    tracking_id: z.string().min(1, "Tracking ID is required"),
-    tracking_url: z.string().url("Valid tracking URL is required"),
-    carrier: z.string().min(1, "Carrier is required"),
+    shippingLabel: z.string().min(1, "Shipping label is required").optional(),
+    tracking_id: z.string().min(1, "Tracking ID is required").optional(),
+    tracking_url: z.string().url("Valid tracking URL is required").optional(),
+    carrier: z.string().min(1, "Carrier is required").optional(),
   }).strict(),
 });
 

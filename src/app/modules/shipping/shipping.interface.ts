@@ -1,6 +1,12 @@
 import { Types } from "mongoose";
 export type ShippingType = 'insideUk' | 'international';
-export type ShippingStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type ShippingStatus =
+  | 'created'
+  | 'rateSelected'
+  | 'paymentCompleted'
+  | 'shipped'
+  | 'delivered';
+
 
 export interface IShippingAddress {
   name: string;
@@ -42,10 +48,9 @@ export interface IShipping {
   currency: string;
   insurance?: IInsurance;
   total_cost?: number;
-  shipping_label?: string;
+  shippingLabel?: string;
   tracking_id?: string;
   tracking_url?: string;
   carrier?: string;
-  service?: string;
   notes?: string;
 }

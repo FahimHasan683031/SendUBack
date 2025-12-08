@@ -8,7 +8,7 @@ import { ZonePricingService } from '../InternationalShipmentRate/zonePricing.ser
 import { getZoneByCountry } from '../../../utils/zone.utils'
 import { ZonePricing } from '../InternationalShipmentRate/zonePricing.model'
 
-// Helper function to calculate insurance cost (10% of product value)
+// Helto calculate insurance cost
 const calculateInsuranceCost = (productValue: number): number => {
   return productValue * 0.1
 }
@@ -86,19 +86,7 @@ const getShippingById = async (id: string) => {
   return shipping
 }
 
-// Get shipping by tracking ID
-const getShippingByTrackingId = async (trackingId: string) => {
-  const shipping = await Shipping.findOne({ tracking_id: trackingId })
 
-  if (!shipping) {
-    throw new ApiError(
-      StatusCodes.NOT_FOUND,
-      'Shipping not found with this tracking ID',
-    )
-  }
-
-  return shipping
-}
 
 // Update shipping
 const updateShipping = async (id: string, payload: Partial<IShipping>) => {
@@ -117,7 +105,8 @@ const updateShipping = async (id: string, payload: Partial<IShipping>) => {
     (payload.total_cost =
       selectedRate.price +
       (isExistShipping.insurance?.insuranceCost || 0)),
-      (payload.shipping_cost = selectedRate.price)
+      (payload.shipping_cost = selectedRate.price),
+      (payload.status = 'rateSelected')
   }
   if (payload.insurance?.isInsured && payload.insurance.productValue) {
     const insuranceCost = calculateInsuranceCost(payload.insurance.productValue)
@@ -134,21 +123,15 @@ const updateShipping = async (id: string, payload: Partial<IShipping>) => {
   return shipping
 }
 
-// Add tracking information
-const addTrackingInfo = async (
+
+// Add shipping information
+const addShippingInfo = async (
   id: string,
-  trackingId: string,
-  trackingUrl: string,
-  carrier: string,
+  payload: Partial<IShipping>,
 ) => {
   const shipping = await Shipping.findByIdAndUpdate(
     id,
-    {
-      tracking_id: trackingId,
-      tracking_url: trackingUrl,
-      carrier: carrier,
-      status: 'shipped',
-    },
+    payload,
     { new: true },
   )
 
@@ -158,6 +141,7 @@ const addTrackingInfo = async (
 
   return shipping
 }
+
 
 // Delete shipping
 const deleteShipping = async (id: string) => {
@@ -174,9 +158,8 @@ export const shippingService = {
   createShipping,
   getAllShippings,
   getShippingById,
-  getShippingByTrackingId,
   updateShipping,
-  addTrackingInfo,
   deleteShipping,
   getShippingRates,
+  addShippingInfo
 }
