@@ -8,7 +8,7 @@ import { MessageRoutes } from '../app/modules/message/message.routes'
 import { BusinessDetailsRoute } from '../app/modules/businessDetails/businessDetails.route'
 import { LostItemRoutes } from '../app/modules/lostItem/lostItem.route'
 import { CategoryRoutes } from '../app/modules/category/category.route'
-import { zonePricingRoutes } from '../app/modules/InternationalShipmentRate/zonePricing.route'
+import { zonePricingRoutes } from '../app/modules/zoonePricing/zonePricing.route'
 import { shippingRoutes } from '../app/modules/shipping/shipping.route'
 import { PaymentRouts } from '../app/modules/payment/payment.route'
 

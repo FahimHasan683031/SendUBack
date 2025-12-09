@@ -4,9 +4,9 @@ import QueryBuilder from '../../builder/QueryBuilder'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
 import { generateParcel } from '../../../utils/shippo-parcel.utils'
-import { ZonePricingService } from '../InternationalShipmentRate/zonePricing.service'
+import { ZonePricingService } from '../zoonePricing/zonePricing.service'
 import { getZoneByCountry } from '../../../utils/zone.utils'
-import { ZonePricing } from '../InternationalShipmentRate/zonePricing.model'
+import { ZonePricing } from '../zoonePricing/zonePricing.model'
 
 // Helto calculate insurance cost
 const calculateInsuranceCost = (productValue: number): number => {

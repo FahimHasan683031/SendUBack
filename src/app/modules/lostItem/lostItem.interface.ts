@@ -12,7 +12,6 @@ export interface ILostItem extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId; 
   images?: string[];
-  qrCode?: string;
   itemName: string;
   itemDescription?: string;
   dateFound: Date;
