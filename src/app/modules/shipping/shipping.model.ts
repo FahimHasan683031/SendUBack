@@ -15,6 +15,7 @@ const shippingAddressSchema = new Schema({
 });
 
 const parcelSchema = new Schema({
+  name: { type: String, required: true },
   length: { type: Number, required: true },
   width: { type: Number, required: true },
   height: { type: Number, required: true },

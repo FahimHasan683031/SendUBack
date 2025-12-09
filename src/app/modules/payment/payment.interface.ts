@@ -4,10 +4,9 @@ export type IPayment = {
   _id: Types.ObjectId;
   email: string;
   dateTime: Date;
-  quoteId: Types.ObjectId;
+  shippingId: Types.ObjectId;
   amount: number;
   transactionId: string;
-  service: string;
   description?: string;
   customerName?: string;
   createdAt: Date;

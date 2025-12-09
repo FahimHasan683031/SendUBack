@@ -46,58 +46,57 @@ const handleStripeWebhook = async (
       const paymentIntent = session.payment_intent as Stripe.PaymentIntent
       console.log('PaymentIntent:', paymentIntent)
 
-      // // extracted data
-      // const email =
-      //   session.customer_email || session.customer_details?.email || 'N/A'
+      // extracted data
+      const email =
+        session.customer_email || session.customer_details?.email || 'N/A'
 
-      // const amount = paymentIntent.amount / 100 // convert cents → currency format
-      // const transactionId = paymentIntent.id
-      // const customerName = session.customer_details?.name || 'N/A'
-      // const shippingId = session.metadata?.shipping_id
+      const amount = paymentIntent.amount / 100 
+      const transactionId = paymentIntent.id
+      const customerName = session.customer_details?.name || 'N/A'
+      const shippingId = session.metadata?.shipping_id
 
-      // // get shipping record
-      // const shipping = await Shipping.findById(shippingId)
+      // get shipping record
+      const shipping = await Shipping.findById(shippingId)
 
-      // if (!shipping) {
-      //   logger.error('Shipping not found for webhook:', shippingId)
-      //   return res.sendStatus(200)
-      // }
+      if (!shipping) {
+        logger.error('Shipping not found for webhook:', shippingId)
+        return res.sendStatus(200)
+      }
 
-      // // Save Payment Record
-      // await PaymentService.createPayment({
-      //   email,
-      //   amount,
-      //   dateTime: new Date(),
-      //   transactionId,
-      //   service: 'Shipping Payment',
-      //   description: `Payment for ${shipping.shipping_type} shipment`,
-      //   customerName,
-      //   shippingId: new mongoose.Types.ObjectId(shippingId),
-      // })
+      // Save Payment Record
+      await PaymentService.createPayment({
+        email,
+        amount,
+        dateTime: new Date(),
+        transactionId,
+        description: `Payment for ${shipping.shipping_type} shipment`,
+        customerName,
+        shippingId: new mongoose.Types.ObjectId(shippingId),
+      })
 
-      // // Update shipping to paid/processing
-      // await Shipping.findByIdAndUpdate(shippingId, {
-      //   status: 'processing',
-      // })
+      // Update shipping to paid/processing
+      await Shipping.findByIdAndUpdate(shippingId, {
+        status: 'paymentCompleted',
+      })
 
       // Send emails
-      // setTimeout(async () => {
-      //   try {
-      //     const confirmationTemplate =
-      //       emailTemplate.sendShippingPaymentConfirmation(shipping)
-      //     await emailHelper.sendEmail(confirmationTemplate)
+      setTimeout(async () => {
+        try {
+          const confirmationTemplate =
+            emailTemplate.sendPaymentConfirmationEmail(shipping)
+          await emailHelper.sendEmail(confirmationTemplate)
 
-      //     const adminNotificationTemplate =
-      //       emailTemplate.sendAdminShippingPaymentNotification(shipping)
-      //     await emailHelper.sendEmail(adminNotificationTemplate)
-      //   } catch (err) {
-      //     logger.error('Email sending failed:', err)
-      //   }
-      // }, 0)
+          const adminNotificationTemplate =
+            emailTemplate.sendAdminPaymentNotificationEmail(shipping)
+          await emailHelper.sendEmail(adminNotificationTemplate)
+        } catch (err) {
+          logger.error('Email sending failed:', err)
+        }
+      }, 0)
 
-      // logger.info(
-      //   `Shipping payment saved for ${email}, transactionId: ${transactionId}`,
-      // )
+      logger.info(
+        `Shipping payment saved for ${email}, transactionId: ${transactionId}`,
+      )
     }
   } catch (error: any) {
     logger.error('Webhook handler error:', error)

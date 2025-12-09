@@ -1,6 +1,6 @@
-// src/modules/shippo/shippo-parcel.utils.ts
 
 export interface ParcelInput {
+  name: string;  
   length: number;
   width: number;
   height: number;
@@ -9,7 +9,7 @@ export interface ParcelInput {
   mass_unit: "lb";
 }
 
-const PARCEL_PRESETS: Record<string, ParcelInput> = {
+const PARCEL_PRESETS: Record<string, Omit<ParcelInput, "name">> = {
   // ------- DOCUMENTS -------
   "Documents": { length: 12, width: 9, height: 1, distance_unit: "in", weight: 0.5, mass_unit: "lb" },
   "ID Card": { length: 6, width: 4, height: 1, distance_unit: "in", weight: 0.2, mass_unit: "lb" },
@@ -76,11 +76,11 @@ const PARCEL_PRESETS: Record<string, ParcelInput> = {
   "Other": { length: 10, width: 10, height: 5, distance_unit: "in", weight: 2, mass_unit: "lb" },
 };
 
-
-
 export const generateParcel = (productType: string): ParcelInput => {
-  return (
-    PARCEL_PRESETS[productType] ||
-    PARCEL_PRESETS["Other"] 
-  );
+  const preset = PARCEL_PRESETS[productType] || PARCEL_PRESETS["Other"];
+
+  return {
+    name: productType in PARCEL_PRESETS ? productType : "Other",
+    ...preset,
+  };
 };

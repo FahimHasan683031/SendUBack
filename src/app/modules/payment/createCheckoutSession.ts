@@ -47,9 +47,7 @@ export const createCheckoutSession = async (shippingId: string) => {
       shipping_type: shipping.shipping_type,
       from_country: shipping.address_from.country,
       to_country: shipping.address_to.country,
-      selected_rate: shipping.selected_rate?.price
-        ? String(shipping.selected_rate.price)
-        : "N/A",
+      selected_rate: shipping.selected_rate && shipping.selected_rate ? String(shipping.selected_rate) : "N/A",
       total_cost: String(shipping.total_cost),
     },
   };

@@ -21,6 +21,7 @@ export interface IShippingAddress {
 }
 
 export interface IParcel {
+  name: string;
   length: number
   width: number
   height: number
