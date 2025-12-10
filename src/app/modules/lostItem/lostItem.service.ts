@@ -18,7 +18,7 @@ export const createLostItem = async (
   
   const lostItem = await LostItem.create({
     ...payload,
-    userId: user.authId
+    user: user.authId
   })
   return lostItem
 }
@@ -41,7 +41,7 @@ export const getSingleLostItem = async (
   id: string,
 ) => {
  
-  const lostItem = await LostItem.findOne({ _id: id })
+  const lostItem = await LostItem.findOne({ _id: id }).populate('user')
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }

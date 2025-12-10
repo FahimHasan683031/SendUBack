@@ -8,7 +8,7 @@ import { Token } from '../../token/token.model'
 import { IAuthResponse, IResetPassword } from '../auth.interface'
 import { emailTemplate } from '../../../../shared/emailTemplate'
 import cryptoToken, { generateOtp } from '../../../../utils/crypto'
-import bcrypt from "bcryptjs";
+import bcrypt from 'bcryptjs'
 import { ILoginData } from '../../../../interfaces/auth'
 import { AuthCommonServices, authResponse } from '../common'
 import { jwtHelper } from '../../../../helpers/jwtHelper'
@@ -19,28 +19,28 @@ import mongoose from 'mongoose'
 import { BusinessDetails } from '../../businessDetails/businessDetails.model'
 
 export const createUser = async (payload: IUser) => {
-  payload.email = payload.email?.toLowerCase().trim();
-  const session = await mongoose.startSession();
+  payload.email = payload.email?.toLowerCase().trim()
+  const session = await mongoose.startSession()
 
   try {
-    session.startTransaction();
+    session.startTransaction()
 
     // 1. Check if user already exists
     const isUserExist = await User.findOne({
       email: payload.email,
       status: { $nin: [USER_STATUS.DELETED] },
-    }).session(session);
+    }).session(session)
 
     if (isUserExist) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        `An account with this email already exists.`
-      );
+        `An account with this email already exists.`,
+      )
     }
 
     // 2. Generate OTP
-    const otp = generateOtp();
-    const otpExpiresIn = new Date(Date.now() + 5 * 60 * 1000);
+    const otp = generateOtp()
+    const otpExpiresIn = new Date(Date.now() + 5 * 60 * 1000)
 
     const authentication = {
       oneTimeCode: otp,
@@ -51,46 +51,54 @@ export const createUser = async (payload: IUser) => {
       restrictionLeftAt: null,
       resetPassword: false,
       wrongLoginAttempts: 0,
-    };
+    }
 
     // 3. Send OTP email
-    const createAccountEmail = emailTemplate.createAccount({
-      name: `${payload.firstName} ${payload.lastName}`,
-      email: payload.email,
-      otp,
-    });
-    await emailHelper.sendEmail(createAccountEmail);
+    setTimeout(() => {
+      const createAccountEmail = emailTemplate.createAccount({
+        name: `${payload.firstName} ${payload.lastName}`,
+        email: payload.email,
+        otp,
+      })
+      emailHelper.sendEmail(createAccountEmail)
+    }, 0)
 
     // 4. Create User
-    const user = await User.create([{ 
-      ...payload, 
-      password: payload.password, 
-      authentication,
-      role: payload.role || USER_ROLES.Business 
-    }], { session });
-    
-    if (!user[0]) throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user.");
+    const user = await User.create(
+      [
+        {
+          ...payload,
+          password: payload.password,
+          authentication,
+          role: payload.role || USER_ROLES.Business,
+        },
+      ],
+      { session },
+    )
+
+    if (!user[0])
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user.')
     // 6. Create Business Details if role is Business
-    if(user[0].role === USER_ROLES.Business){
+    if (user[0].role === USER_ROLES.Business) {
       await BusinessDetails.create({
-        businessEmail: user[0].email, 
+        businessEmail: user[0].email,
         userId: user[0]._id,
       })
     }
 
-    const createdUser = user[0];
+    const createdUser = user[0]
 
     // 5. Commit Transaction
-    await session.commitTransaction();
-    return createdUser._id;
+    await session.commitTransaction()
+    return createdUser._id
   } catch (error) {
     // Rollback on error
-    await session.abortTransaction();
-    throw error;
+    await session.abortTransaction()
+    throw error
   } finally {
-    session.endSession();
+    session.endSession()
   }
-};
+}
 
 const customLogin = async (payload: ILoginData): Promise<IAuthResponse> => {
   const { email, phone } = payload
@@ -102,7 +110,7 @@ const customLogin = async (payload: ILoginData): Promise<IAuthResponse> => {
   })
     .select('+password +authentication')
     .lean()
-    
+
   if (!isUserExist) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -119,11 +127,11 @@ const adminLogin = async (payload: ILoginData): Promise<IAuthResponse> => {
   const query = email ? { email: email.trim().toLowerCase() } : { phone: phone }
 
   const isUserExist = await User.findOne({
-    ...query
+    ...query,
   })
     .select('+password +authentication')
     .lean()
-    
+
   if (!isUserExist) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -142,33 +150,35 @@ const adminLogin = async (payload: ILoginData): Promise<IAuthResponse> => {
     payload.password,
     isUserExist.password as string,
   )
-  
+
   if (!isPasswordMatch) {
     throw new ApiError(
       StatusCodes.UNAUTHORIZED,
       'Please try again with correct credentials.',
     )
   }
-  
+
   // Create tokens
   const tokens = AuthHelper.createToken(
-    isUserExist._id, 
-    isUserExist.role, 
+    isUserExist._id,
+    isUserExist.role,
     `${isUserExist.firstName} ${isUserExist.lastName}`,
-    isUserExist.email
+    isUserExist.email,
   )
 
   return authResponse(
-    StatusCodes.OK, 
-    `Welcome back ${isUserExist.firstName}`, 
-    isUserExist.role, 
-    tokens.accessToken, 
-    tokens.refreshToken
+    StatusCodes.OK,
+    `Welcome back ${isUserExist.firstName}`,
+    isUserExist.role,
+    tokens.accessToken,
+    tokens.refreshToken,
   )
 }
 
 const forgetPassword = async (email?: string, phone?: string) => {
-  const query = email ? { email: email.toLocaleLowerCase().trim() } : { phone: phone }
+  const query = email
+    ? { email: email.toLocaleLowerCase().trim() }
+    : { phone: phone }
   const isUserExist = await User.findOne({
     ...query,
     status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
@@ -183,8 +193,6 @@ const forgetPassword = async (email?: string, phone?: string) => {
 
   const otp = generateOtp()
 
-
-
   const authentication = {
     resetPassword: true,
     oneTimeCode: otp,
@@ -195,7 +203,7 @@ const forgetPassword = async (email?: string, phone?: string) => {
     restrictionLeftAt: null,
     wrongLoginAttempts: 0,
   }
-  
+
   await User.findByIdAndUpdate(
     isUserExist._id,
     {
@@ -212,11 +220,12 @@ const forgetPassword = async (email?: string, phone?: string) => {
       otp,
     })
 
-
-    await emailHelper.sendEmail(forgetPasswordEmailTemplate)
+    setTimeout(() => {
+      emailHelper.sendEmail(forgetPasswordEmailTemplate)
+    }, 0)
   }
 
-  return "OTP sent successfully."
+  return 'OTP sent successfully.'
 }
 
 const resetPassword = async (resetToken: string, payload: IResetPassword) => {
@@ -224,7 +233,6 @@ const resetPassword = async (resetToken: string, payload: IResetPassword) => {
   if (newPassword !== confirmPassword) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Passwords do not match')
   }
-
 
   const isTokenExist = await Token.findOne({ token: resetToken }).lean()
 
@@ -238,7 +246,7 @@ const resetPassword = async (resetToken: string, payload: IResetPassword) => {
   const isUserExist = await User.findById(isTokenExist.user)
     .select('+authentication')
     .lean()
-    console.log(isUserExist)
+  console.log(isUserExist)
 
   if (!isUserExist) {
     throw new ApiError(
@@ -267,7 +275,7 @@ const resetPassword = async (resetToken: string, payload: IResetPassword) => {
     newPassword,
     Number(config.bcrypt_salt_rounds),
   )
-  
+
   const updatedUserData = {
     password: hashPassword,
     authentication: {
@@ -290,7 +298,10 @@ const resetPassword = async (resetToken: string, payload: IResetPassword) => {
   return { message: 'Password reset successfully' }
 }
 
-const verifyAccount = async (email:string, onetimeCode: string):Promise<IAuthResponse> => {
+const verifyAccount = async (
+  email: string,
+  onetimeCode: string,
+): Promise<IAuthResponse> => {
   //verify fo new user
   if (!onetimeCode) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'OTP is required.')
@@ -298,10 +309,11 @@ const verifyAccount = async (email:string, onetimeCode: string):Promise<IAuthRes
   const isUserExist = await User.findOne({
     email: email.toLowerCase().trim(),
     status: { $nin: [USER_STATUS.DELETED] },
-  }).select('+password +authentication')
-  .lean()
+  })
+    .select('+password +authentication')
+    .lean()
 
-  if(!isUserExist){
+  if (!isUserExist) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       `No account found with this ${email}, please register first.`,
@@ -312,7 +324,10 @@ const verifyAccount = async (email:string, onetimeCode: string):Promise<IAuthRes
 
   //check the otp
   if (authentication?.oneTimeCode !== onetimeCode) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid OTP, please try again.')
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Invalid OTP, please try again.',
+    )
   }
 
   const currentDate = new Date()
@@ -323,7 +338,6 @@ const verifyAccount = async (email:string, onetimeCode: string):Promise<IAuthRes
     )
   }
 
-
   //either newly created user or existing user
   if (!isUserExist.verified) {
     await User.findByIdAndUpdate(
@@ -332,15 +346,35 @@ const verifyAccount = async (email:string, onetimeCode: string):Promise<IAuthRes
       { new: true },
     )
 
-    const tokens = AuthHelper.createToken(isUserExist._id, isUserExist.role, isUserExist.firstName + ' ' + isUserExist.lastName, isUserExist.email )
+    const tokens = AuthHelper.createToken(
+      isUserExist._id,
+      isUserExist.role,
+      isUserExist.firstName + ' ' + isUserExist.lastName,
+      isUserExist.email,
+    )
 
-
-   return authResponse(StatusCodes.OK, `Welcome ${isUserExist.firstName} ${isUserExist.lastName} to our platform.`, isUserExist.role, tokens.accessToken, tokens.refreshToken)
-  }else{
-
+    return authResponse(
+      StatusCodes.OK,
+      `Welcome ${isUserExist.firstName} ${isUserExist.lastName} to our platform.`,
+      isUserExist.role,
+      tokens.accessToken,
+      tokens.refreshToken,
+    )
+  } else {
     await User.findByIdAndUpdate(
       isUserExist._id,
-      { $set: { authentication: { oneTimeCode: '', expiresAt: null, latestRequestAt: null, requestCount: 0, authType: '', resetPassword: true } } },
+      {
+        $set: {
+          authentication: {
+            oneTimeCode: '',
+            expiresAt: null,
+            latestRequestAt: null,
+            requestCount: 0,
+            authType: '',
+            resetPassword: true,
+          },
+        },
+      },
       { new: true },
     )
 
@@ -351,21 +385,29 @@ const verifyAccount = async (email:string, onetimeCode: string):Promise<IAuthRes
     })
     console.log(token.token)
 
-    if(!token){
-      throw new ApiError(StatusCodes.BAD_REQUEST, ' please try again. or contact support.')
+    if (!token) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        ' please try again. or contact support.',
+      )
     }
-    
 
-    return authResponse(StatusCodes.OK, 'OTP verified successfully, please reset your password.', undefined,undefined,undefined, token.token)
+    return authResponse(
+      StatusCodes.OK,
+      'OTP verified successfully, please reset your password.',
+      undefined,
+      undefined,
+      undefined,
+      token.token,
+    )
   }
-
 }
 
 const getAccessToken = async (token: string) => {
   if (!token) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, 'Refresh Token is required')
   }
-  
+
   try {
     const decodedToken = jwtHelper.verifyToken(
       token,
@@ -375,10 +417,10 @@ const getAccessToken = async (token: string) => {
     const { userId, role } = decodedToken
 
     const tokens = AuthHelper.createToken(
-      userId, 
-      role, 
-      decodedToken.name, 
-      decodedToken.email
+      userId,
+      role,
+      decodedToken.name,
+      decodedToken.email,
     )
 
     return {
@@ -392,12 +434,15 @@ const getAccessToken = async (token: string) => {
   }
 }
 
-const socialLogin = async (appId: string, deviceToken: string): Promise<IAuthResponse> => {
+const socialLogin = async (
+  appId: string,
+  deviceToken: string,
+): Promise<IAuthResponse> => {
   const isUserExist = await User.findOne({
     appId,
     status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
   })
-  
+
   if (!isUserExist) {
     const createdUser = await User.create({
       appId,
@@ -417,23 +462,23 @@ const socialLogin = async (appId: string, deviceToken: string): Promise<IAuthRes
         latestRequestAt: new Date(),
       },
     })
-    
+
     if (!createdUser)
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user.')
-      
+
     const tokens = AuthHelper.createToken(
-      createdUser._id, 
-      createdUser.role, 
+      createdUser._id,
+      createdUser.role,
       `${createdUser.firstName} ${createdUser.lastName}`,
-      createdUser.email
+      createdUser.email,
     )
-    
+
     return authResponse(
-      StatusCodes.OK, 
-      `Welcome ${createdUser.firstName} to our platform.`, 
-      createdUser.role, 
-      tokens.accessToken, 
-      tokens.refreshToken
+      StatusCodes.OK,
+      `Welcome ${createdUser.firstName} to our platform.`,
+      createdUser.role,
+      tokens.accessToken,
+      tokens.refreshToken,
     )
   } else {
     await User.findByIdAndUpdate(isUserExist._id, {
@@ -443,18 +488,18 @@ const socialLogin = async (appId: string, deviceToken: string): Promise<IAuthRes
     })
 
     const tokens = AuthHelper.createToken(
-      isUserExist._id, 
-      isUserExist.role, 
+      isUserExist._id,
+      isUserExist.role,
       `${isUserExist.firstName} ${isUserExist.lastName}`,
-      isUserExist.email
+      isUserExist.email,
     )
-    
+
     return authResponse(
-      StatusCodes.OK, 
-      `Welcome back ${isUserExist.firstName}`, 
-      isUserExist.role, 
-      tokens.accessToken, 
-      tokens.refreshToken
+      StatusCodes.OK,
+      `Welcome back ${isUserExist.firstName}`,
+      isUserExist.role,
+      tokens.accessToken,
+      tokens.refreshToken,
     )
   }
 }
@@ -469,7 +514,7 @@ const resendOtpToPhoneOrEmail = async (
     ...query,
     status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
   }).select('+authentication')
-  
+
   if (!isUserExist) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -485,7 +530,7 @@ const resendOtpToPhoneOrEmail = async (
       'You have exceeded the maximum number of requests. Please try again later.',
     )
   }
-  
+
   const otp = generateOtp()
   const updatedAuthentication = {
     ...authentication,
@@ -512,7 +557,7 @@ const resendOtpToPhoneOrEmail = async (
       },
       { new: true },
     )
-    
+
     await emailHelper.sendEmail(forgetPasswordEmailTemplate)
   }
 
@@ -531,9 +576,12 @@ const resendOtpToPhoneOrEmail = async (
 const deleteAccount = async (user: JwtPayload, password: string) => {
   const { authId } = user
   const isUserExist = await User.findById(authId).select('+password')
-  
+
   if (!isUserExist) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to delete account. Please try again.')
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Failed to delete account. Please try again.',
+    )
   }
 
   if (isUserExist.status === USER_STATUS.DELETED) {
@@ -543,13 +591,13 @@ const deleteAccount = async (user: JwtPayload, password: string) => {
     )
   }
 
-  const isPasswordMatched = await bcrypt.compare(
-    password,
-    isUserExist.password,
-  )
+  const isPasswordMatched = await bcrypt.compare(password, isUserExist.password)
 
   if (!isPasswordMatched) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Please provide a valid password to delete your account.')
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Please provide a valid password to delete your account.',
+    )
   }
 
   const deletedData = await User.findByIdAndUpdate(authId, {
@@ -563,12 +611,15 @@ const deleteAccount = async (user: JwtPayload, password: string) => {
   }
 }
 
-const resendOtp = async (email: string, authType: 'createAccount' | 'resetPassword') => {
+const resendOtp = async (
+  email: string,
+  authType: 'createAccount' | 'resetPassword',
+) => {
   const isUserExist = await User.findOne({
     email: email.toLowerCase().trim(),
     status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
   }).select('+authentication')
-  
+
   if (!isUserExist) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -610,8 +661,10 @@ const resendOtp = async (email: string, authType: 'createAccount' | 'resetPasswo
       otp,
       type: authType,
     })
-    
-    await emailHelper.sendEmail(forgetPasswordEmailTemplate)
+
+    setTimeout(() => {
+      emailHelper.sendEmail(forgetPasswordEmailTemplate)
+    }, 0)
   }
 
   return 'OTP sent successfully.'
@@ -638,10 +691,7 @@ const changePassword = async (
   )
 
   if (!isPasswordMatch) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'Current password is incorrect',
-    )
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Current password is incorrect')
   }
 
   // Hash the new password

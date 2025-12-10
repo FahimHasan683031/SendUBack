@@ -1,12 +1,17 @@
 import { model, Schema } from "mongoose";
-import { ILostItem } from "./lostItem.interface";
+import { ILostItem, LOST_ITEM_STATUS } from "./lostItem.interface";
 
 const lostItemSchema = new Schema<ILostItem>(
   {
-    userId: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
+    },
+    status: {
+      type: String,
+      enum: Object.values(LOST_ITEM_STATUS),
+      default: LOST_ITEM_STATUS.PENDING
     },
     images: [{
       type: String,

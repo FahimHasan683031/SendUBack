@@ -3,6 +3,7 @@ import { IShipping } from './shipping.interface';
 
 
 const shippingAddressSchema = new Schema({
+  hotelName: String,
   name: { type: String, required: true },
   street1: { type: String, required: true },
   street2: String,
@@ -53,6 +54,7 @@ const shippingSchema = new Schema<IShipping>({
   tracking_id: String,
   tracking_url: String,
   carrier: String,
+  lostItemId: { type: Schema.Types.ObjectId, ref: 'LostItem' },
   notes: String
 }, {
   timestamps: true

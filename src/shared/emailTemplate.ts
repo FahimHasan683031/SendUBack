@@ -445,168 +445,74 @@ const sendPaymentConfirmationEmail = (data: any) => {
   const parcelsHtml = data.parcel
     .map(
       (p: any, i: number) => `
-        <tr style="border-top:1px solid #e8e8e822;">
-          <td style="padding:8px 0; color:#00000099;">Parcel ${i + 1}:</td>
-          <td style="padding:8px 0; color:#000000; text-align:right;">
+        <tr>
+          <td style="padding:6px 0; color:#00000099;">Parcel ${i + 1}:</td>
+          <td style="padding:6px 0; color:#000000; text-align:right;">
             ${p.name}, ${p.weight}${p.mass_unit}
           </td>
         </tr>
-      `,
+      `
     )
     .join('')
 
   return {
     to: data.address_to.email,
-    subject: `✅ Payment Completed – Shipping Order`,
+    subject: `✅ Payment Completed – SendUBack Order`,
     html: `
-<body style="margin:0; padding:0; font-family:'Inter','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0"
-         style="max-width:640px; margin:40px auto; background:#ffffff; border-radius:16px;
-                overflow:hidden; border:1px solid #0096FF33; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+<body style="margin:0; padding:0; font-family:'Inter','Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:40px auto; background:#ffffff; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
 
     <!-- Header -->
- <td align="center" 
-  style="
-    background: linear-gradient(135deg, #F5FAFF, #E6F0FF);
-    padding: 35px 20px; 
-    border-bottom: 1px solid #0096FF33;
-  "
->
-  <img 
-    src="https://i.ibb.co.com/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
-    alt="SendUBack Logo"
-    style="height:85px; width:auto; margin-bottom:10px;" 
-  />
-  
-  <h1 style="
-    color:#0096FF;  
-    font-size:24px; 
-    font-weight:700; 
-    margin:0;
-  ">
-    Payment Completed Notification
-  </h1>
-</td>
-
+    <tr>
+      <td align="center" style="background:linear-gradient(135deg, #F5FAFF, #E6F0FF); padding:30px 20px;">
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" alt="SendUBack Logo" style="height:70px; width:auto; margin-bottom:10px;" />
+        <h1 style="color:#0096FF; font-size:22px; margin:0;">Payment Successful ✅</h1>
+      </td>
+    </tr>
 
     <!-- Body -->
     <tr>
-      <td style="padding:40px;">
-        <p style="color:#000000; font-size:15px; line-height:1.7; text-align:center;">
-          Hello <strong style="color:#0096FF;">${data.address_from.name}</strong>,  
-          your payment for your <strong>shipping order</strong> has been successfully completed. ✅
+      <td style="padding:30px 25px;">
+        <p style="color:#000; font-size:15px; line-height:1.6; text-align:center;">
+          Hello <strong style="color:#0096FF;">${data.address_from.name}</strong>, your payment for your shipping order has been successfully completed.
         </p>
 
+        <!-- Sender & Receiver -->
+        <h2 style="color:#0096FF; font-size:17px; margin-top:25px;">📨 Sender & Receiver</h2>
+        <p style="font-size:14px; margin:3px 0;"><strong>From:</strong> ${data.address_from.name}, ${data.address_from.city}, ${data.address_from.country}</p>
+        <p style="font-size:14px; margin:3px 0;"><strong>To:</strong> ${data.address_to.name}, ${data.address_to.city}, ${data.address_to.country}</p>
+
         <!-- Shipping Summary -->
-        <h2 style="color:#0096FF; font-size:19px; margin-bottom:15px; margin-top:30px;">
-          📦 Shipping Details
-        </h2>
-
-        <table style="width:100%; border-collapse:collapse;">
-          <tr>
-            <td style="padding:8px 0; color:#00000099;">Shipping Type:</td>
-            <td style="padding:8px 0; color:#000000; text-align:right;">${data.shipping_type}</td>
-          </tr>
-
-          <tr style="border-top:1px solid #e8e8e822;">
-            <td style="padding:8px 0; color:#00000099;">Order Status:</td>
-            <td style="padding:8px 0; color:#000000; text-align:right;">${data.status}</td>
-          </tr>
-        </table>
-
-        <!-- Sender Info -->
-        <h3 style="color:#0096FF; font-size:17px; margin-top:30px;">📨 Sender Information</h3>
-        <table style="width:100%; border-collapse:collapse;">
-          <tr><td style="padding:6px 0; color:#00000099;">Name:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">${data.address_from.name}</td></tr>
-          <tr><td style="padding:6px 0; color:#00000099;">Address:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">
-                ${data.address_from.street1}, ${data.address_from.city}, 
-                ${data.address_from.state}, ${data.address_from.postal_code}, ${data.address_from.country}
-              </td>
-          </tr>
-          <tr><td style="padding:6px 0; color:#00000099;">Phone:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">${data.address_from.phone}</td></tr>
-          <tr><td style="padding:6px 0; color:#00000099;">Email:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">${data.address_from.email}</td></tr>
-        </table>
-
-        <!-- Receiver Info -->
-        <h3 style="color:#0096FF; font-size:17px; margin-top:30px;">📬 Receiver Information</h3>
-        <table style="width:100%; border-collapse:collapse;">
-          <tr><td style="padding:6px 0; color:#00000099;">Name:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">${data.address_to.name}</td></tr>
-          <tr><td style="padding:6px 0; color:#00000099;">Address:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">
-                ${data.address_to.street1}, ${data.address_to.city}, 
-                ${data.address_to.state}, ${data.address_to.postal_code}, ${data.address_to.country}
-              </td>
-          </tr>
-          <tr><td style="padding:6px 0; color:#00000099;">Phone:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">${data.address_to.phone}</td></tr>
-          <tr><td style="padding:6px 0; color:#00000099;">Email:</td>
-              <td style="padding:6px 0; color:#000000; text-align:right;">${data.address_to.email}</td></tr>
-        </table>
+        <h3 style="color:#0096FF; font-size:16px; margin-top:20px;">📦 Shipping Details</h3>
+        <p style="font-size:14px; margin:3px 0;">Type: <strong>${data.shipping_type}</strong></p>
+        <p style="font-size:14px; margin:3px 0;">Status: <strong>${data.status}</strong></p>
 
         <!-- Parcel Details -->
-        <h3 style="color:#0096FF; font-size:17px; margin-top:30px;">📦 Parcel Details</h3>
-        <table style="width:100%; border-collapse:collapse;">
-          ${parcelsHtml}
-        </table>
+        <h3 style="color:#0096FF; font-size:16px; margin-top:20px;">🛍 Parcels</h3>
+        <table style="width:100%; border-collapse:collapse;">${parcelsHtml}</table>
 
         <!-- Insurance -->
-        <h3 style="color:#0096FF; font-size:17px; margin-top:30px;">🛡 Insurance</h3>
-        <table style="width:100%; border-collapse:collapse;">
-          <tr>
-            <td style="padding:8px 0; color:#00000099;">Insured:</td>
-            <td style="padding:8px 0; color:#000000; text-align:right;">${data.insurance.isInsured ? 'Yes' : 'No'}</td>
-          </tr>
-          <tr style="border-top:1px solid #e8e8e822;">
-            <td style="padding:8px 0; color:#00000099;">Product Value:</td>
-            <td style="padding:8px 0; color:#000000; text-align:right;">£${data.insurance.productValue}</td>
-          </tr>
-          <tr style="border-top:1px solid #e8e8e822;">
-            <td style="padding:8px 0; color:#00000099;">Insurance Cost:</td>
-            <td style="padding:8px 0; color:#0096FF; font-weight:700; text-align:right;">
-              £${data.insurance.insuranceCost}
-            </td>
-          </tr>
-        </table>
+        <h3 style="color:#0096FF; font-size:16px; margin-top:20px;">🛡 Insurance</h3>
+        <p style="font-size:14px; margin:3px 0;">Insured: <strong>${data.insurance.isInsured ? 'Yes' : 'No'}</strong></p>
+        <p style="font-size:14px; margin:3px 0;">Product Value: £${data.insurance.productValue}</p>
+        <p style="font-size:14px; margin:3px 0; color:#0096FF; font-weight:700;">Insurance Cost: £${data.insurance.insuranceCost}</p>
 
-        <!-- Cost -->
-        <h3 style="color:#0096FF; font-size:17px; margin-top:30px;">💰 Payment Summary</h3>
-        <table style="width:100%; border-collapse:collapse;">
-          <tr>
-            <td style="padding:8px 0; color:#00000099;">Shipping Cost:</td>
-            <td style="padding:8px 0; color:#000000; text-align:right;">£${data.shipping_cost}</td>
-          </tr>
-          <tr style="border-top:1px solid #e8e8e822;">
-            <td style="padding:8px 0; color:#00000099; font-weight:700;">Total Paid:</td>
-            <td style="padding:8px 0; color:#0096FF; font-weight:700; text-align:right;">
-              £${data.total_cost}
-            </td>
-          </tr>
-        </table>
+        <!-- Payment Summary -->
+        <h3 style="color:#0096FF; font-size:16px; margin-top:20px;">💰 Payment</h3>
+        <p style="font-size:14px; margin:3px 0;">Shipping Cost: £${data.shipping_cost}</p>
+        <p style="font-size:14px; margin:3px 0; color:#0096FF; font-weight:700;">Total Paid: £${data.total_cost}</p>
 
         <!-- Notes -->
-        <div style="background:#0096FF22; padding:15px 18px; border-radius:12px; border-left:4px solid #0096FF; margin-top:25px;">
-          <p style="margin:0; color:#000000; font-size:14px;">
-            💬 <strong>Notes:</strong> ${data.notes || 'No additional notes'}
-          </p>
+        <div style="background:#0096FF22; padding:12px 15px; border-radius:10px; margin-top:15px;">
+          <p style="margin:0; font-size:13px; color:#000;">💬 Notes: ${data.notes || 'None'}</p>
         </div>
-
       </td>
     </tr>
 
     <!-- Footer -->
     <tr>
-      <td align="center" style="background:#ffffff; padding:22px; border-top:1px solid #e8e8e22;">
-        <p style="margin:0; color:#00000099; font-size:12px;">
-          © ${new Date().getFullYear()} — SendUBack Services
-        </p>
-        <p style="margin:5px 0 0; color:#00000099; font-size:12px;">
-          Built with 💙 for your comfort
-        </p>
+      <td align="center" style="background:#f5f5f5; padding:15px; font-size:12px; color:#777;">
+        © ${new Date().getFullYear()} — SendUBack Services. Built with 💙 for your comfort
       </td>
     </tr>
 
@@ -615,6 +521,8 @@ const sendPaymentConfirmationEmail = (data: any) => {
     `,
   }
 }
+
+
 
 const sendAdminPaymentNotificationEmail = (data: any) => {
   return {
@@ -740,6 +648,167 @@ const sendAdminPaymentNotificationEmail = (data: any) => {
   }
 }
 
+const businessUserShipmentInfoEmail = (data: any) => {
+  const parcels = data.parcel
+    .map(
+      (p: any, i: number) => `<tr>
+        <td style="padding:4px 0; color:#555;">Parcel ${i + 1}:</td>
+        <td style="padding:4px 0; text-align:right; color:#000;">
+          ${p.name} — ${p.weight}${p.mass_unit} (${p.length}x${p.width}x${p.height}${p.distance_unit})
+        </td>
+      </tr>`
+    )
+    .join("");
+
+  return {
+    to: data.address_from.email,
+    subject: `📦 Your Lost Item Has Been Booked – #${data._id}`,
+    html: `
+<body style="margin:0;padding:0;font-family:Inter,Segoe UI,sans-serif;background:#f7f9fc;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+    
+    <!-- Header -->
+    <tr>
+      <td align="center" style="background:#EAF4FF;padding:25px 20px;">
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" style="height:60px;margin-bottom:8px;" />
+        <h2 style="margin:0;color:#0077DD;font-size:20px;">Your Lost Item Has Been Booked!</h2>
+        <p style="margin:4px 0 0;color:#555;font-size:13px;">Booking ID: <strong>${data._id}</strong></p>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:25px 20px;">
+        <p style="font-size:14px;color:#000;line-height:1.5;">
+          Hello <strong style="color:#0077DD;">${data.address_from.name}</strong>,<br>
+          Your added lost item has been successfully booked for shipment. ✅
+        </p>
+
+        <!-- Shipment Summary -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">📦 Shipment Summary</h3>
+        <p style="font-size:13px;margin:2px 0;"><strong>Type:</strong> ${data.shipping_type}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>To:</strong> ${data.address_to.name}, ${data.address_to.city}, ${data.address_to.country}</p>
+
+        <!-- Parcels -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">🛍 Parcels</h3>
+        <table width="100%" style="margin-top:6px;">${parcels}</table>
+
+        <!-- Notes & Insurance -->
+        <div style="background:#E8F6FF;padding:10px;border-radius:8px;margin-top:15px;">
+          <p style="margin:2px 0;font-size:13px;"><strong>Notes:</strong> ${data.notes || "None"}</p>
+          ${data.insurance ? `<p style="margin:2px 0;font-size:13px;"><strong>Insurance:</strong> Yes — ${data.insurance.amount}</p>` : ''}
+        </div>
+
+        <!-- Dashboard Button -->
+        <div style="text-align:center;margin-top:20px;">
+          <a href="https://yourdomain.com/dashboard"
+             style="background:#0077DD;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:14px;display:inline-block;">
+            Go to Dashboard & Check Shipment
+          </a>
+        </div>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td align="center" style="background:#f0f0f0;padding:12px;font-size:12px;color:#555;">
+        © ${new Date().getFullYear()} SendUBack • Business Services
+      </td>
+    </tr>
+  </table>
+</body>
+`
+  }
+}
+
+
+const businessUserRegistrationInviteEmail = (data: any) => {
+  const parcels = data.parcel
+    .map(
+      (p: any, i: number) => `
+        <tr>
+          <td style="padding:4px 0; color:#555;">Parcel ${i + 1}:</td>
+          <td style="padding:4px 0; text-align:right; color:#000;">
+            ${p.name} — ${p.weight}${p.mass_unit} (${p.length}x${p.width}x${p.height}${p.distance_unit})
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  return {
+    to: data.address_from.email,
+    subject: `📦 Action Required – Create Your SendUBack Account`,
+    html: `
+<body style="margin:0;padding:0;font-family:Inter,Segoe UI,sans-serif;background:#f7f9fc;">
+  <table width="100%" cellpadding="0" cellspacing="0"
+         style="max-width:620px;margin:30px auto;background:#fff;
+         border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+
+    <!-- Header -->
+    <tr>
+      <td align="center" style="background:#EAF4FF;padding:25px 20px;">
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
+             style="height:60px;margin-bottom:8px;" />
+        <h2 style="margin:0;color:#0077DD;font-size:20px;">A Lost Item Shipment Was Created</h2>
+        <p style="margin:4px 0 0;color:#555;font-size:13px;">Booking ID: <strong>${data._id}</strong></p>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:25px 20px;">
+        <p style="font-size:14px;color:#000;line-height:1.5;">
+          Hello <strong style="color:#0077DD;">${data.address_from.name}</strong>,<br>
+          A customer has booked a shipment for the lost item you found.  
+          To continue and provide shipping information, you must register a business account.
+        </p>
+
+        <!-- Summary -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">📦 Shipment Summary</h3>
+        <p style="font-size:13px;margin:2px 0;"><strong>Type:</strong> ${data.shipping_type}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>To:</strong> ${data.address_to.name}, ${data.address_to.city}, ${data.address_to.country}</p>
+
+        <!-- Parcels -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">🛍 Parcels</h3>
+        <table width="100%" style="margin-top:6px;">${parcels}</table>
+
+        <!-- Notes -->
+        <div style="background:#E8F6FF;padding:10px;border-radius:8px;margin-top:15px;">
+          <p style="margin:2px 0;font-size:13px;">
+            <strong>Notes:</strong> ${data.notes || "None"}
+          </p>
+        </div>
+
+        <!-- Register Button -->
+        <div style="text-align:center;margin-top:20px;">
+          <a href="https://yourdomain.com/register"
+             style="background:#0077DD;color:#fff;padding:12px 28px;border-radius:8px;
+             text-decoration:none;font-size:14px;display:inline-block;">
+            Create Your SendUBack Account
+          </a>
+        </div>
+
+        <p style="font-size:13px;color:#555;text-align:center;margin-top:10px;">
+          Registration is required to collect shipping information and proceed with the delivery.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td align="center" style="background:#f0f0f0;padding:12px;font-size:12px;color:#555;">
+        © ${new Date().getFullYear()} SendUBack • Business Services
+      </td>
+    </tr>
+
+  </table>
+</body>`
+  };
+};
+
+
+
+
 export const emailTemplate = {
   createAccount,
   resetPassword,
@@ -748,4 +817,7 @@ export const emailTemplate = {
   adminContactNotificationEmail,
   sendPaymentConfirmationEmail,
   sendAdminPaymentNotificationEmail,
+  businessUserShipmentInfoEmail,
+  businessUserRegistrationInviteEmail
+  
 }

@@ -7,6 +7,10 @@ import { generateParcel } from '../../../utils/shippo-parcel.utils'
 import { ZonePricingService } from '../zoonePricing/zonePricing.service'
 import { getZoneByCountry } from '../../../utils/zone.utils'
 import { ZonePricing } from '../zoonePricing/zonePricing.model'
+import { User } from '../user/user.model'
+import { emailTemplate } from '../../../shared/emailTemplate'
+import { emailHelper } from '../../../helpers/emailHelper'
+import { logger } from '../../../shared/logger'
 
 // Helto calculate insurance cost
 const calculateInsuranceCost = (productValue: number): number => {

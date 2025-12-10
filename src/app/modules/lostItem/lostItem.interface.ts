@@ -2,20 +2,18 @@ import { Schema, model, Types, Document } from "mongoose";
 
 export enum LOST_ITEM_STATUS {
   PENDING = "pending",
-  FOUND = "found",
-  RETURNED = "returned",
-  CLAIMED = "claimed",
-  DISCARDED = "discarded"
+  SHIPMENT_BOOKED = "Shipment Booked",
 }
 
 export interface ILostItem extends Document {
   _id: Types.ObjectId;
-  userId: Types.ObjectId; 
+  user: Types.ObjectId; 
   images?: string[];
   itemName: string;
   itemDescription?: string;
   dateFound: Date;
   locationFound: string;
+  status: LOST_ITEM_STATUS;
   guestName?: string;
   guestEmail?: string;
   guestPhone?: string;

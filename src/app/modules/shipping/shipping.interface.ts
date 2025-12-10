@@ -9,6 +9,7 @@ export type ShippingStatus =
 
 
 export interface IShippingAddress {
+  hotelName?: string;
   name: string;
   street1: string;
   street2?: string;
@@ -43,6 +44,7 @@ export interface IShipping {
   status: ShippingStatus;
   address_from: IShippingAddress;
   address_to: IShippingAddress;
+  images?: string[];
   parcel: IParcel[] | string[];
   selected_rate?: Types.ObjectId; 
   shipping_cost?: number;
@@ -53,5 +55,6 @@ export interface IShipping {
   tracking_id?: string;
   tracking_url?: string;
   carrier?: string;
+  lostItemId?: Types.ObjectId;
   notes?: string;
 }

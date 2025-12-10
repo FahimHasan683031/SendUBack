@@ -9,11 +9,11 @@ import mongoose from 'mongoose'
 import { Shipping } from '../shipping/shipping.model'
 import { emailHelper } from '../../../helpers/emailHelper'
 import { emailTemplate } from '../../../shared/emailTemplate'
+import { User } from '../user/user.model'
+import { LostItem } from '../lostItem/lostItem.model'
+import { LOST_ITEM_STATUS } from '../lostItem/lostItem.interface'
 
-const handleStripeWebhook = async (
-  req: Request,
-  res: Response,
-)=> {
+const handleStripeWebhook = async (req: Request, res: Response) => {
   const signature = req.headers['stripe-signature'] as string
   let event: Stripe.Event
 
@@ -50,7 +50,7 @@ const handleStripeWebhook = async (
       const email =
         session.customer_email || session.customer_details?.email || 'N/A'
 
-      const amount = paymentIntent.amount / 100 
+      const amount = paymentIntent.amount / 100
       const transactionId = paymentIntent.id
       const customerName = session.customer_details?.name || 'N/A'
       const shippingId = session.metadata?.shipping_id
@@ -79,7 +79,15 @@ const handleStripeWebhook = async (
         status: 'paymentCompleted',
       })
 
-      // Send emails
+      // Update lost item status to Shipment Booked
+      if(shipping.lostItemId) {
+        await LostItem.findByIdAndUpdate(
+          { _id: shipping.lostItemId },
+          { status: LOST_ITEM_STATUS.SHIPMENT_BOOKED },
+        )
+      }
+
+      // Send confermation email andmin and also customer 
       setTimeout(async () => {
         try {
           const confirmationTemplate =
@@ -93,6 +101,31 @@ const handleStripeWebhook = async (
           logger.error('Email sending failed:', err)
         }
       }, 0)
+
+      // Send business email if user is registered or not
+      if (await User.findOne({ email: shipping.address_from.email })) {
+        console.log('User found for email:', shipping.address_from.email)
+        setTimeout(async () => {
+          try {
+            const confirmationBusinessTemplate =
+              emailTemplate.businessUserShipmentInfoEmail(shipping)
+            await emailHelper.sendEmail(confirmationBusinessTemplate)
+          } catch (err) {
+            logger.error('Email sending failed:', err)
+          }
+        }, 0)
+      } else {
+        console.log('User not found for email:', shipping.address_from.email)
+        setTimeout(async () => {
+          try {
+            const businessInviteTemplate =
+              emailTemplate.businessUserRegistrationInviteEmail(shipping)
+            await emailHelper.sendEmail(businessInviteTemplate)
+          } catch (err) {
+            logger.error('Email sending failed:', err)
+          }
+        }, 0)
+      }
 
       logger.info(
         `Shipping payment saved for ${email}, transactionId: ${transactionId}`,

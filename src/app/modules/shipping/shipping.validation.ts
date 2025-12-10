@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Address validation
 const shippingAddressSchema = z.object({
+  hotelName: z.string().optional(),
   name: z.string().min(1, "Name is required"),
   street1: z.string().min(1, "Street address is required"),
   street2: z.string().optional(),
@@ -42,6 +43,7 @@ const baseShippingSchema = z.object({
   selected_rate: z.any().optional(),
   insurance: insuranceSchema.optional(),
   notes: z.string().optional(),
+  lostItemId: z.string().optional(),
   currency: z.string().min(1, "Currency is required"),
 });
 
