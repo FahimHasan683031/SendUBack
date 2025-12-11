@@ -53,20 +53,9 @@ export interface IZone {
 }
 
 // Helper functions
-export const getZoneByCountry = (countryCode: string): IZone | undefined => {
+export const getZoneByCountry = (countryCode: string): number => {
   return Zones.find(zone => 
     zone.countries.includes(countryCode.toUpperCase())
-  );
+  )?.id || 5;
 };
 
-export const getZoneById = (zoneId: number): IZone | undefined => {
-  return Zones.find(zone => zone.id === zoneId);
-};
-
-export const getAllCountries = (): string[] => {
-  return Zones.flatMap(zone => zone.countries);
-};
-
-export const formatCountryCode = (countryCode: string): string => {
-  return countryCode.toUpperCase().trim();
-};

@@ -29,8 +29,6 @@ router.get(
   shippingController.getAllShippings
 );
 
-;
-
 
 // Get shipping by ID
 router.get(

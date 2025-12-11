@@ -20,20 +20,8 @@ const insuranceSchema = z.object({
   isInsured: z.boolean({
     required_error: "Insurance selection is required"
   }),
-  productValue: z.number().positive("Product value must be positive"),
-  insuranceCost: z.number().positive("Insurance cost must be positive").optional(),
-}).refine(
-  (data) => {
-    if (data.isInsured && !data.productValue) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Product value is required when insurance is selected",
-    path: ["productValue"],
-  }
-);
+  productValue: z.number().positive("Product value must be positive").min(100, "Product value must be at least 100").max(1000, "Product value must be less than 1000"),
+})
 
 // Base shipping validation
 const baseShippingSchema = z.object({

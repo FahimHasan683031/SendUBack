@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-export type ShippingType = 'insideUk' | 'international';
+export type ShippingType = 'insideUk' | 'international'|"Europe Near"|"Europe Far"|"North America"|"Middle East & Asia"|"Australia / Africa / Rest of World";
 export type ShippingStatus =
   | 'created'
   | 'rateSelected'

@@ -55,6 +55,8 @@ const updateShipping = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+
 // Add shipping information
 const addShippingInfo = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -85,7 +87,7 @@ const getShippingRates = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Shipping rates calculated successfully",
+    message: "Shipping rates retrieved successfully",
     data: result,
   });
 });

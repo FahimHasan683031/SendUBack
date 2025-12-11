@@ -11,6 +11,7 @@ import { CategoryRoutes } from '../app/modules/category/category.route'
 import { zonePricingRoutes } from '../app/modules/zoonePricing/zonePricing.route'
 import { shippingRoutes } from '../app/modules/shipping/shipping.route'
 import { PaymentRouts } from '../app/modules/payment/payment.route'
+import { SettingsRoutes } from '../app/modules/settings/settings.route'
 
 
 
@@ -30,6 +31,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/zone-pricing', route: zonePricingRoutes },
   { path: '/shipping', route: shippingRoutes },
   {path: '/payment', route: PaymentRouts},
+  {path: '/settings', route: SettingsRoutes},
 
 ]
 

@@ -71,8 +71,8 @@ const getShippingRate = async (from:string,to:string) => {
   
   // Find pricing for the route
   const pricing = await ZonePricing.find({
-    fromZone: fromZone.id,
-    toZone: toZone.id,
+    fromZone: fromZone,
+    toZone: toZone,
   });
   
   if (!pricing) {

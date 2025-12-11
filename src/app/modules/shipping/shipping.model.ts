@@ -34,7 +34,7 @@ const insuranceSchema = new Schema({
 const shippingSchema = new Schema<IShipping>({
   shipping_type: {
     type: String,
-    enum: ['insideUk', 'international'],
+    enum: ['insideUk', 'international',"Europe Near","Europe Far","North America","Middle East & Asia","Australia / Africa / Rest of World"],
     required: true
   },
   status: {
