@@ -24,7 +24,6 @@ const createPublic = async (payload: IPublic) => {
         new: true,
       },
     )
-    
   } else {
     const result = await Public.create(payload)
     if (!result)
@@ -37,7 +36,6 @@ const createPublic = async (payload: IPublic) => {
 const getAllPublics = async (
   type: 'privacy-policy' | 'terms-and-condition',
 ) => {
- 
   const result = await Public.findOne({ type: type }).lean()
   return result || null
 }
@@ -62,14 +60,14 @@ const createContact = async (payload: IContact) => {
     const result = await Contact.create(payload)
     if (!result)
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create Contact')
-    // send admin email
-    await emailHelper.sendEmail(
-      emailTemplate.adminContactNotificationEmail(payload),
-    )
-    // send user email
-    await emailHelper.sendEmail(
-      emailTemplate.userContactConfirmationEmail(payload),
-    )
+    setTimeout(() => {
+      // send admin email
+      emailHelper.sendEmail(
+        emailTemplate.adminContactNotificationEmail(payload),
+      )
+      // send user email
+      emailHelper.sendEmail(emailTemplate.userContactConfirmationEmail(payload))
+    }, 0)
 
     return {
       message: 'Contact form submitted successfully',

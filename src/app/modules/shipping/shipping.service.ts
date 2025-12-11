@@ -102,8 +102,34 @@ const getShippingById = async (id: string) => {
   return shipping
 }
 
+
+
 // Update shipping
 const updateShipping = async (id: string, payload: Partial<IShipping>) => {
+  // Check if shipping exists
+  const isExistShipping = await Shipping.findById(id)
+  if (!isExistShipping) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
+  }
+ 
+  if(payload.selected_rate || payload.insurance) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot update selected rate or insurance')
+  }
+
+  const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
+
+  if (!shipping) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
+  }
+
+
+  return shipping
+}
+
+
+
+// Add shipping rate OR insurance
+const addShippingRateORInsurance = async (id: string, payload: Partial<IShipping>) => {
   const isExistShipping = await Shipping.findById(id)
   if (!isExistShipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
@@ -188,6 +214,7 @@ export const shippingService = {
   getAllShippings,
   getShippingById,
   updateShipping,
+  addShippingRateORInsurance,
   deleteShipping,
   getShippingRates,
   addShippingInfo,

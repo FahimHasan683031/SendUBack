@@ -55,6 +55,19 @@ const updateShipping = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Add shipping rate OR insurance
+const addShippingRateORInsurance = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const payload = req.body;
+  const result = await shippingService.addShippingRateORInsurance(id, payload);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shipping rate or insurance added successfully",
+    data: result,
+  });
+});
+
 
 
 // Add shipping information
@@ -101,5 +114,6 @@ export const shippingController = {
   updateShipping,
   deleteShipping,
   getShippingRates,
-  addShippingInfo
+  addShippingInfo,
+  addShippingRateORInsurance
 };

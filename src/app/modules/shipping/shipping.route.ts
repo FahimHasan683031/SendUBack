@@ -29,6 +29,14 @@ router.get(
   shippingController.getAllShippings
 );
 
+// Add shipping rate OR insurance
+router.post(
+  "/addRateOrInsurance/:id",
+  validateRequest(updateShippingZod),
+  shippingController.addShippingRateORInsurance
+);
+
+
 
 // Get shipping by ID
 router.get(
