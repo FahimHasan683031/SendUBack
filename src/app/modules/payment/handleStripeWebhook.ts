@@ -1,4 +1,3 @@
-// src/app/modules/payment/webhook.ts
 import { Request, Response } from 'express'
 import Stripe from 'stripe'
 import stripe from '../../../config/stripe'

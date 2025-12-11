@@ -143,6 +143,17 @@ const addShippingInfo = async (
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
 
+if(shipping.shippingLabel && shipping.tracking_id){
+  setTimeout(() => {
+    try {
+      emailHelper.sendEmail(emailTemplate.businessShippingDetailsUpdateEmail(shipping))
+      emailHelper.sendEmail(emailTemplate.customerShippingDetailsUpdateEmail(shipping))
+    } catch (error) {
+      logger.error('Failed to send business shipping details update email:', error)
+    }
+  }, 0)
+}
+
   return shipping
 }
 

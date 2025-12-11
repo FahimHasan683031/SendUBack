@@ -64,4 +64,6 @@ export default {
   shippo: {
     shippo_api_key: process.env.SHIPPO_API_KEY,
   },
+  frontend_url: process.env.FRONTEND_URL,
+  backend_url: process.env.BACKEND_URL,
 }

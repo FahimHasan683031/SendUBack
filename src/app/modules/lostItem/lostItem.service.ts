@@ -5,6 +5,9 @@ import { User } from '../user/user.model'
 import ApiError from '../../../errors/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { USER_ROLES } from '../user/user.interface'
+import { emailHelper } from '../../../helpers/emailHelper'
+import { emailTemplate } from '../../../shared/emailTemplate'
+import { logger } from '../../../shared/logger'
 
 // create lost item
 export const createLostItem = async (
@@ -110,11 +113,32 @@ const addOrReplaceImages = async (
   return item;
 };
 
+const sendGestEmail=async(lostItemId:string)=>{
+const lostItem = await LostItem.findById(lostItemId)
+  if (!lostItem) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
+  }
+  if(!lostItem.guestEmail){
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Guest email not found')
+  }
+  setTimeout(() => {
+    try {
+      emailHelper.sendEmail(emailTemplate.guestLostItemNotificationEmail(lostItem,"fldkjf"))
+    } catch (error) {
+      logger.error('Failed to send guest lost item notification email:', error)
+    }
+  }, 0)
+  return {
+    message: "Guest email sent successfully",
+  }
+}
+
 export const lostItemServices = {
   createLostItem,
   getMyLostItems,
   getSingleLostItem,
   updateLostItem,
   deleteLostItem,
-  addOrReplaceImages
+  addOrReplaceImages,
+  sendGestEmail
 }

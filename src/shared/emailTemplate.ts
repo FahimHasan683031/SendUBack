@@ -55,7 +55,7 @@ const createAccount = (values: ICreateAccount) => {
 
         <!-- Button -->
         <div style="text-align:center; margin-top:45px;">
-          <a href="https://goroqit.com/otp-verify" 
+          <a href="${config.frontend_url}/otp-verify" 
              style="background-color:#0096FF; color:#ffffff; padding:14px 32px; font-size:16px; 
                     font-weight:600; border-radius:10px; text-decoration:none; display:inline-block; 
                     box-shadow:0 4px 12px rgba(0,150,255,0.3); transition:all 0.3s;">
@@ -83,7 +83,6 @@ const createAccount = (values: ICreateAccount) => {
   }
   return data
 }
-
 
 const resetPassword = (values: IResetPassword) => {
   console.log(values, 'values')
@@ -140,7 +139,7 @@ const resetPassword = (values: IResetPassword) => {
 
         <!-- Button -->
         <div style="text-align:center; margin-top:45px;">
-          <a href="https://goroqit.com/otp-verify" target="_blank"
+          <a href="${config.frontend_url}/otp-verify" target="_blank"
              style="background-color:#0096FF; color:#ffffff; padding:14px 32px; font-size:16px;
                     font-weight:600; border-radius:10px; text-decoration:none; display:inline-block;
                     box-shadow:0 4px 12px rgba(0,150,255,0.3); transition:all 0.3s;">
@@ -169,7 +168,6 @@ const resetPassword = (values: IResetPassword) => {
 
   return data
 }
-
 
 const resendOtp = (values: {
   email: string
@@ -240,7 +238,7 @@ const resendOtp = (values: {
 
         <!-- Button -->
         <div style="text-align:center; margin-top:45px;">
-          <a href="https://goroqit.com/otp-verify"
+          <a href="${config.frontend_url}/otp-verify"
              style="background-color:#2d6a4f; color:#ffffff; padding:14px 32px;
                     font-size:16px; font-weight:600; border-radius:10px;
                     text-decoration:none; display:inline-block;
@@ -270,7 +268,6 @@ const resendOtp = (values: {
 
   return data
 }
-
 
 const adminContactNotificationEmail = (payload: {
   name: string
@@ -362,7 +359,6 @@ const adminContactNotificationEmail = (payload: {
   }
 }
 
-
 const userContactConfirmationEmail = (payload: {
   name: string
   email: string
@@ -440,7 +436,6 @@ const userContactConfirmationEmail = (payload: {
   }
 }
 
-
 const sendPaymentConfirmationEmail = (data: any) => {
   const parcelsHtml = data.parcel
     .map(
@@ -451,7 +446,7 @@ const sendPaymentConfirmationEmail = (data: any) => {
             ${p.name}, ${p.weight}${p.mass_unit}
           </td>
         </tr>
-      `
+      `,
     )
     .join('')
 
@@ -521,8 +516,6 @@ const sendPaymentConfirmationEmail = (data: any) => {
     `,
   }
 }
-
-
 
 const sendAdminPaymentNotificationEmail = (data: any) => {
   return {
@@ -656,9 +649,9 @@ const businessUserShipmentInfoEmail = (data: any) => {
         <td style="padding:4px 0; text-align:right; color:#000;">
           ${p.name} — ${p.weight}${p.mass_unit} (${p.length}x${p.width}x${p.height}${p.distance_unit})
         </td>
-      </tr>`
+      </tr>`,
     )
-    .join("");
+    .join('')
 
   return {
     to: data.address_from.email,
@@ -670,7 +663,7 @@ const businessUserShipmentInfoEmail = (data: any) => {
     <!-- Header -->
     <tr>
       <td align="center" style="background:#EAF4FF;padding:25px 20px;">
-        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" style="height:60px;margin-bottom:8px;" />
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" style="height:70px;margin-bottom:8px;" />
         <h2 style="margin:0;color:#0077DD;font-size:20px;">Your Lost Item Has Been Booked!</h2>
         <p style="margin:4px 0 0;color:#555;font-size:13px;">Booking ID: <strong>${data._id}</strong></p>
       </td>
@@ -695,13 +688,13 @@ const businessUserShipmentInfoEmail = (data: any) => {
 
         <!-- Notes & Insurance -->
         <div style="background:#E8F6FF;padding:10px;border-radius:8px;margin-top:15px;">
-          <p style="margin:2px 0;font-size:13px;"><strong>Notes:</strong> ${data.notes || "None"}</p>
+          <p style="margin:2px 0;font-size:13px;"><strong>Notes:</strong> ${data.notes || 'None'}</p>
           ${data.insurance ? `<p style="margin:2px 0;font-size:13px;"><strong>Insurance:</strong> Yes — ${data.insurance.amount}</p>` : ''}
         </div>
 
         <!-- Dashboard Button -->
         <div style="text-align:center;margin-top:20px;">
-          <a href="https://yourdomain.com/dashboard"
+          <a href="${config.frontend_url}/dashboard"
              style="background:#0077DD;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:14px;display:inline-block;">
             Go to Dashboard & Check Shipment
           </a>
@@ -717,10 +710,9 @@ const businessUserShipmentInfoEmail = (data: any) => {
     </tr>
   </table>
 </body>
-`
+`,
   }
 }
-
 
 const businessUserRegistrationInviteEmail = (data: any) => {
   const parcels = data.parcel
@@ -731,9 +723,9 @@ const businessUserRegistrationInviteEmail = (data: any) => {
           <td style="padding:4px 0; text-align:right; color:#000;">
             ${p.name} — ${p.weight}${p.mass_unit} (${p.length}x${p.width}x${p.height}${p.distance_unit})
           </td>
-        </tr>`
+        </tr>`,
     )
-    .join("");
+    .join('')
 
   return {
     to: data.address_from.email,
@@ -748,7 +740,7 @@ const businessUserRegistrationInviteEmail = (data: any) => {
     <tr>
       <td align="center" style="background:#EAF4FF;padding:25px 20px;">
         <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
-             style="height:60px;margin-bottom:8px;" />
+             style="height:70px;margin-bottom:8px;" />
         <h2 style="margin:0;color:#0077DD;font-size:20px;">A Lost Item Shipment Was Created</h2>
         <p style="margin:4px 0 0;color:#555;font-size:13px;">Booking ID: <strong>${data._id}</strong></p>
       </td>
@@ -775,13 +767,13 @@ const businessUserRegistrationInviteEmail = (data: any) => {
         <!-- Notes -->
         <div style="background:#E8F6FF;padding:10px;border-radius:8px;margin-top:15px;">
           <p style="margin:2px 0;font-size:13px;">
-            <strong>Notes:</strong> ${data.notes || "None"}
+            <strong>Notes:</strong> ${data.notes || 'None'}
           </p>
         </div>
 
         <!-- Register Button -->
         <div style="text-align:center;margin-top:20px;">
-          <a href="https://yourdomain.com/register"
+          <a href="${config.frontend_url}/register"
              style="background:#0077DD;color:#fff;padding:12px 28px;border-radius:8px;
              text-decoration:none;font-size:14px;display:inline-block;">
             Create Your SendUBack Account
@@ -802,12 +794,238 @@ const businessUserRegistrationInviteEmail = (data: any) => {
     </tr>
 
   </table>
-</body>`
-  };
-};
+</body>`,
+  }
+}
 
+const guestLostItemNotificationEmail = (data: any, bookingLink: string) => {
+  return {
+    to: data.guestEmail,
+    subject: `📦 We Found Your Lost Item – Action Required`,
+    html: `
+<body style="margin:0;padding:0;font-family:Inter,Segoe UI,sans-serif;background:#f7f9fc;">
+  <table width="100%" cellpadding="0" cellspacing="0"
+         style="max-width:620px;margin:30px auto;background:#fff;
+         border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
 
+    <!-- Header -->
+    <tr>
+      <td align="center" style="background:#EAF4FF;padding:25px 20px;">
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
+             style="height:70px;margin-bottom:8px;" />
+        <h2 style="margin:0;color:#0077DD;font-size:20px;">Good News! We Found Your Item</h2>
+      </td>
+    </tr>
 
+    <!-- Body -->
+    <tr>
+      <td style="padding:25px 20px;">
+        <p style="font-size:14px;color:#000;line-height:1.6;">
+          Hello <strong style="color:#0077DD;">${data.guestName}</strong>,<br>
+          We hope you're doing well. Our team has located an item that matches your belongings.
+          Please review the details below.
+        </p>
+
+        <!-- Item Information -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">🟦 Lost Item Details</h3>
+        <p style="font-size:13px;margin:2px 0;"><strong>Item Name:</strong> ${data.itemName}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Description:</strong> ${data.itemDescription}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Date Found:</strong> ${new Date(data.dateFound).toDateString()}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Location Found:</strong> ${data.locationFound}</p>
+
+        <!-- Hotel Information -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">🏨 Your Stay Information</h3>
+        <p style="font-size:13px;margin:2px 0;"><strong>Name on Reservation:</strong> ${data.guestReservationName}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Room Number:</strong> ${data.guestRoomNumber}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Contact Number:</strong> ${data.guestPhone}</p>
+
+        <!-- Action Box -->
+        <div style="background:#E8F6FF;padding:12px;border-radius:8px;margin-top:16px;">
+          <p style="margin:0;font-size:13px;color:#000;">
+            To have your item safely shipped to your address, please complete your shipping details below.
+          </p>
+        </div>
+
+        <!-- Book Shipping Button -->
+        <div style="text-align:center;margin-top:22px;">
+          <a href="${bookingLink}"
+             style="background:#0077DD;color:#fff;padding:12px 30px;border-radius:8px;
+             text-decoration:none;font-size:14px;display:inline-block;">
+            Book Shipping for Your Item
+          </a>
+        </div>
+
+        <p style="font-size:13px;color:#555;text-align:center;margin-top:12px;">
+          If this item does not belong to you, please ignore this email.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td align="center" style="background:#f0f0f0;padding:12px;font-size:12px;color:#555;">
+        © ${new Date().getFullYear()} SendUBack • Lost & Found Services
+      </td>
+    </tr>
+
+  </table>
+</body>
+`,
+  }
+}
+
+const businessShippingDetailsUpdateEmail = (data: any) => {
+  return {
+    to: data.address_from.email,
+    subject: `📦 Shipping Details Updated – #${data._id}`,
+    html: `
+<body style="margin:0;padding:0;font-family:Inter,Segoe UI,sans-serif;background:#f7f9fc;">
+  <table width="100%" cellpadding="0" cellspacing="0"
+         style="max-width:620px;margin:30px auto;background:#fff;
+         border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+
+    <!-- Header -->
+    <tr>
+      <td align="center" style="background:#EAF4FF;padding:25px 20px;">
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
+             style="height:70px;margin-bottom:8px;" />
+        <h2 style="margin:0;color:#0077DD;font-size:20px;">Shipping Details Updated</h2>
+        <p style="margin:4px 0 0;color:#555;font-size:13px;">Shipment ID: <strong>${data._id}</strong></p>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:25px 20px;">
+
+        <p style="font-size:14px;color:#000;line-height:1.6;">
+          Hello <strong style="color:#0077DD;">${data.address_from.name}</strong>,<br>
+          The shipping for this lost-item shipment has now been <strong>booked with <span style="color:#0077DD;">${data.carrier || 'the carrier'}</span></strong>.
+        </p>
+
+        <div style="background:#E8F6FF;padding:12px;border-radius:8px;margin:14px 0;">
+          <p style="margin:0;font-size:13px;color:#005999;line-height:1.5;">
+            This shipment is scheduled for delivery to the item owner. Please <strong>collect the required recipient information</strong> (Shipping Label, Tracking Number) and <strong>prepare the parcel for dispatch</strong> so it's ready for carrier pickup.
+          </p>
+        </div>
+
+        <!-- Shipping Info -->
+        <h3 style="color:#0077DD;font-size:15px;margin:12px 0 6px;">🚚 Current Shipping Details</h3>
+        <p style="font-size:13px;margin:2px 0;"><strong>Carrier:</strong> ${data.carrier || 'N/A'}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Tracking Number:</strong> ${data.tracking_id || 'N/A'}</p>
+        ${data.tracking_url ? `<p style="font-size:13px;margin:2px 0;"><strong>Tracking URL:</strong> <a href="${data.tracking_url}" style="color:#0077DD;">Track Package</a></p>` : ''}
+
+        ${
+          data.shippingLabel
+            ? `
+        <div style="margin-top:12px;">
+      <a href="${config.backend_url}/${data.shippingLabel}"
+   download
+   style="background:#0077DD;color:#fff;padding:10px 26px;border-radius:8px;
+   text-decoration:none;font-size:14px;display:inline-block;">
+  Download Shipping Label
+</a>
+
+        </div>`
+            : ''
+        }
+
+        <!-- Action -->
+        <div style="text-align:center;margin-top:18px;">
+          <a href="${config.frontend_url}/dashboard"
+             style="background:#0077DD;color:#fff;padding:10px 26px;border-radius:8px;
+             text-decoration:none;font-size:14px;display:inline-block;">
+            Open Shipment in Dashboard
+          </a>
+        </div>
+
+        <p style="font-size:12px;color:#666;text-align:center;margin-top:12px;">
+          If you need assistance, contact support or check the shipment in your dashboard.
+        </p>
+
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td align="center" style="background:#f0f0f0;padding:12px;font-size:12px;color:#555;">
+        © ${new Date().getFullYear()} SendUBack • Business Portal
+      </td>
+    </tr>
+
+  </table>
+</body>
+`,
+  }
+}
+
+const customerShippingDetailsUpdateEmail = (data: any) => {
+  return {
+    to: data.address_to.email,
+    subject: `📦 Your Shipment Tracking Details Updated – #${data._id}`,
+    html: `
+<body style="margin:0;padding:0;font-family:Inter,Segoe UI,sans-serif;background:#f7f9fc;">
+  <table width="100%" cellpadding="0" cellspacing="0"
+         style="max-width:620px;margin:30px auto;background:#fff;
+         border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+
+    <!-- Header -->
+    <tr>
+      <td align="center" style="background:#EAF4FF;padding:25px 20px;">
+        <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
+             style="height:70px;margin-bottom:8px;" />
+        <h2 style="margin:0;color:#0077DD;font-size:20px;">Your Shipment Is Now Trackable</h2>
+        <p style="margin:4px 0 0;color:#555;font-size:13px;">Shipment ID: <strong>${data._id}</strong></p>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:25px 20px;">
+
+        <p style="font-size:14px;color:#000;line-height:1.6;">
+          Hello <strong style="color:#0077DD;">${data.address_to.name}</strong>,<br>
+          Your shipment has now been <strong>booked with the carrier</strong> and is ready for delivery.
+          You can use the tracking details below to monitor your package.
+        </p>
+
+        <!-- Tracking Info -->
+        <h3 style="color:#0077DD;font-size:15px;margin:16px 0 6px;">🚚 Tracking Details</h3>
+        <p style="font-size:13px;margin:2px 0;"><strong>Carrier:</strong> ${data.carrier || 'N/A'}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Tracking Number:</strong> ${data.tracking_id || 'N/A'}</p>
+
+        ${
+          data.tracking_url
+            ? `
+        <div style="margin-top:18px;text-align:center;">
+          <a href="${data.tracking_url}"
+             style="background:#0077DD;color:#fff;padding:10px 28px;border-radius:8px;
+             text-decoration:none;font-size:14px;font-weight:500;display:inline-block;">
+            🔍 Track Your Shipment
+          </a>
+        </div>`
+            : ''
+        }
+
+        <p style="font-size:12px;color:#666;text-align:center;margin-top:16px;">
+          If the tracking number is not active yet, please allow a few hours for the carrier to update their system.
+        </p>
+
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td align="center" style="background:#f0f0f0;padding:12px;font-size:12px;color:#555;">
+        © ${new Date().getFullYear()} SendUBack • Customer Services
+      </td>
+    </tr>
+
+  </table>
+</body>
+`,
+  }
+}
 
 export const emailTemplate = {
   createAccount,
@@ -818,6 +1036,8 @@ export const emailTemplate = {
   sendPaymentConfirmationEmail,
   sendAdminPaymentNotificationEmail,
   businessUserShipmentInfoEmail,
-  businessUserRegistrationInviteEmail
-  
+  businessUserRegistrationInviteEmail,
+  guestLostItemNotificationEmail,
+  businessShippingDetailsUpdateEmail,
+  customerShippingDetailsUpdateEmail,
 }

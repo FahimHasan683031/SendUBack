@@ -30,6 +30,13 @@ router.post(
   lostItemControllers.addOrReplaceImages
 );
 
+// send guest email
+router.post(
+  "/send-email/:id",
+  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  lostItemControllers.sendGestEmail
+);
+
 
 // Get single lost item
 router.get(
