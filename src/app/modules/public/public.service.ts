@@ -115,6 +115,10 @@ const getSingleFaq = async (id: string) => {
 }
 
 const updateFaq = async (id: string, payload: Partial<IFaq>) => {
+  const isExist = await Faq.findById(id)
+  if (!isExist) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Faq not found')
+  }
   const result = await Faq.findByIdAndUpdate(
     id,
     { $set: payload },
@@ -126,6 +130,10 @@ const updateFaq = async (id: string, payload: Partial<IFaq>) => {
 }
 
 const deleteFaq = async (id: string) => {
+  const isExist = await Faq.findById(id)
+  if (!isExist) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Faq not found')
+  }
   const result = await Faq.findByIdAndDelete(id)
   return result
 }

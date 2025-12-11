@@ -121,7 +121,6 @@ const deleteFaq = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'Faq deleted successfully',
-    data: result,
   })
 })
 
