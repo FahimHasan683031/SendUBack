@@ -277,7 +277,7 @@ const adminContactNotificationEmail = (payload: {
 }) => {
   return {
     to: config.super_admin.email as string,
-    subject: '📩 New Contact Form Submission – Go.Roqit',
+    subject: '📩 New Contact Form Submission – SendUBack',
     html: `
 <body style="margin:0; padding:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0"
@@ -286,56 +286,57 @@ const adminContactNotificationEmail = (payload: {
 
     <!-- Header -->
     <tr>
-      <td align="center" style="background-color:#f1f8f4; padding:35px 20px; border-top:1px solid #e6f4ea;">
-        <img src="https://api.goroqit.com/image/1761168795060-ant6f7.png" alt="Go.Roqit"
-             style="width:210px; height:auto; filter:drop-shadow(0 0 6px rgba(0,0,0,0.3));">
+      <td align="center" 
+          style="background:linear-gradient(135deg,#F5FAFF,#E6F0FF); padding:35px 20px; border-bottom:1px solid #0096FF33;">
+        <img src="https://i.ibb.co.com/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" alt="SendUBack"
+             style="width:220px; height:75px; filter:drop-shadow(0 0 6px rgba(0,0,0,0.25));">
       </td>
     </tr>
 
     <!-- Body -->
     <tr>
       <td style="padding:45px;">
-        <h1 style="color:#1b4332; font-size:26px; font-weight:700; margin-bottom:20px; text-align:center;">
-          📬 New Contact Form Submission
+        <h1 style="color:#0096FF; font-size:26px; font-weight:700; margin-bottom:20px; text-align:center;">
+          📬 New Contact Submission
         </h1>
 
-        <p style="color:#3a5a40; font-size:16px; text-align:center; margin-bottom:30px;">
-          A new message has been submitted through the Go.Roqit contact form.
+        <p style="color:#003060; font-size:16px; text-align:center; margin-bottom:30px;">
+          A new contact message has been submitted on <strong>SendUBack</strong>.
         </p>
 
         <!-- Contact Details -->
         <table style="width:100%; border-collapse:collapse; margin:20px 0;">
           <tr>
-            <td style="padding:12px 0; font-size:15px; color:#3a5a40;">👤 <strong>Name:</strong></td>
-            <td style="padding:12px 0; font-size:15px; color:#1b4332; text-align:right;">
+            <td style="padding:12px 0; font-size:15px; color:#003060;">👤 <strong>Name:</strong></td>
+            <td style="padding:12px 0; font-size:15px; color:#003060; text-align:right;">
               ${payload.name}
             </td>
           </tr>
 
-          <tr style="border-top:1px solid #e6f4ea;">
-            <td style="padding:12px 0; font-size:15px; color:#3a5a40;">📧 <strong>Email:</strong></td>
-            <td style="padding:12px 0; font-size:15px; color:#1b4332; text-align:right;">
+          <tr style="border-top:1px solid #0096FF22;">
+            <td style="padding:12px 0; font-size:15px; color:#003060;">📧 <strong>Email:</strong></td>
+            <td style="padding:12px 0; font-size:15px; color:#003060; text-align:right;">
               ${payload.email}
             </td>
           </tr>
 
-          <tr style="border-top:1px solid #e6f4ea;">
-            <td style="padding:12px 0; font-size:15px; color:#3a5a40;">📞 <strong>Phone:</strong></td>
-            <td style="padding:12px 0; font-size:15px; color:#1b4332; text-align:right;">
+          <tr style="border-top:1px solid #0096FF22;">
+            <td style="padding:12px 0; font-size:15px; color:#003060;">📞 <strong>Phone:</strong></td>
+            <td style="padding:12px 0; font-size:15px; color:#003060; text-align:right;">
               ${payload.phone || 'N/A'}
             </td>
           </tr>
         </table>
 
         <!-- Message Box -->
-        <div style="background-color:#f1f8f4; border-left:6px solid #2d6a4f;
-                    border-radius:8px; padding:20px; margin-top:30px;">
-          <p style="margin:0; font-size:15px; color:#1b4332; line-height:1.6;">
-            "${payload.message}"
+        <div style="background:linear-gradient(145deg,#EAF4FF,#D7E9FF); border:2px solid #0096FF;
+                    border-radius:12px; padding:20px; margin-top:30px;">
+          <p style="margin:0; font-size:15px; color:#003060; line-height:1.6;">
+            “${payload.message}”
           </p>
         </div>
 
-        <p style="color:#3a5a40; font-size:14px; margin-top:30px; text-align:center;">
+        <p style="color:#003060; font-size:14px; margin-top:30px; text-align:center;">
           You can respond directly to <strong>${payload.email}</strong>.
         </p>
       </td>
@@ -343,12 +344,13 @@ const adminContactNotificationEmail = (payload: {
 
     <!-- Footer -->
     <tr>
-      <td align="center" style="background-color:#f1f8f4; padding:25px 20px; border-top:1px solid #e6f4ea;">
-        <p style="margin:0; color:#52796f; font-size:13px;">
-          © ${new Date().getFullYear()} <strong>Go.Roqit</strong>. All rights reserved.
+      <td align="center" 
+          style="background:linear-gradient(135deg,#F5FAFF,#E6F0FF); padding:25px 20px; border-top:1px solid #0096FF33;">
+        <p style="margin:0; color:#003060; font-size:13px;">
+          © ${new Date().getFullYear()} <strong>SendUBack</strong>. All rights reserved.
         </p>
-        <p style="margin:6px 0 0; color:#3a5a40; font-size:13px;">
-          Powered by <strong style="color:#1b4332;">Go.Roqit API</strong> 🚀
+        <p style="margin:6px 0 0; color:#003060; font-size:13px;">
+          Powered by <strong style="color:#0096FF;">SendUBack API</strong> 
         </p>
       </td>
     </tr>
@@ -358,6 +360,7 @@ const adminContactNotificationEmail = (payload: {
     `,
   }
 }
+
 
 const userContactConfirmationEmail = (payload: {
   name: string
@@ -375,44 +378,45 @@ const userContactConfirmationEmail = (payload: {
 
     <!-- Header -->
     <tr>
-      <td align="center" style="background-color:#f1f8f4; padding:35px 20px; border-top:1px solid #e6f4ea;">
-        <img src="https://api.goroqit.com/image/1761168795060-ant6f7.png" alt="SendUBack"
-             style="width:210px; height:auto; filter:drop-shadow(0 0 6px rgba(0,0,0,0.3));">
+      <td align="center" 
+          style="background:linear-gradient(135deg,#F5FAFF,#E6F0FF); padding:35px 20px; border-bottom:1px solid #0096FF33;">
+        <img src="https://i.ibb.co.com/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" alt="SendUBack"
+             style="width:220px; height:75px; filter:drop-shadow(0 0 6px rgba(0,0,0,0.25));">
       </td>
     </tr>
 
     <!-- Body -->
     <tr>
       <td style="padding:45px;">
-        <h1 style="color:#1b4332; font-size:26px; font-weight:700; margin-bottom:20px; text-align:center;">
-          Thank You for Contacting Us 💚
+        <h1 style="color:#0096FF; font-size:26px; font-weight:700; margin-bottom:20px; text-align:center;">
+          Thank You for Contacting Us 💙
         </h1>
 
-        <p style="color:#3a5a40; font-size:16px; line-height:1.6; text-align:center;">
+        <p style="color:#003060; font-size:16px; line-height:1.6; text-align:center;">
           Dear <strong>${payload.name}</strong>,<br>
-          We’ve received your message and our team will get back to you shortly!
+          We’ve received your message! Our support team will reach out to you shortly.
         </p>
 
-        <!-- Your Message -->
-        <div style="background:linear-gradient(145deg,#d8f3dc,#b7e4c7); border:2px solid #52b788; 
+        <!-- User Message -->
+        <div style="background:linear-gradient(145deg,#EAF4FF,#D7E9FF); border:2px solid #0096FF; 
                     border-radius:12px; padding:25px 20px; text-align:center; margin:30px auto; max-width:500px;">
-          <p style="font-size:15px; color:#1b4332; line-height:1.6; margin:0;">
+          <p style="font-size:15px; color:#003060; line-height:1.6; margin:0;">
             <em>“${payload.message}”</em>
           </p>
         </div>
 
-        <p style="color:#3a5a40; font-size:15px; line-height:1.6; text-align:center;">
-          We appreciate you taking the time to reach out to <strong>SendUBack</strong>.<br>
-          Expect a reply from our team shortly 🚀
+        <p style="color:#003060; font-size:15px; line-height:1.6; text-align:center;">
+          Thanks for reaching out to <strong>SendUBack</strong>.<br>
+          We truly appreciate your message 💙
         </p>
 
         <!-- Button -->
         <div style="text-align:center; margin-top:40px;">
-          <a href="https://goroqit.com"
-             style="background-color:#2d6a4f; color:#ffffff; padding:14px 32px; font-size:16px; 
+          <a href="${config.frontend_url}"
+             style="background-color:#0096FF; color:#ffffff; padding:14px 32px; font-size:16px; 
                     font-weight:600; border-radius:10px; text-decoration:none; display:inline-block; 
-                    box-shadow:0 4px 12px rgba(45,106,79,0.3); transition:all 0.3s;">
-            Visit SendUBack 🌐
+                    box-shadow:0 4px 12px rgba(0,150,255,0.3); transition:all 0.3s;">
+            Open SendUBack 
           </a>
         </div>
       </td>
@@ -420,12 +424,13 @@ const userContactConfirmationEmail = (payload: {
 
     <!-- Footer -->
     <tr>
-      <td align="center" style="background-color:#f1f8f4; padding:25px 20px; border-top:1px solid #e6f4ea;">
-        <p style="margin:0; color:#52796f; font-size:13px;">
+      <td align="center" 
+          style="background:linear-gradient(135deg,#F5FAFF,#E6F0FF); padding:25px 20px; border-top:1px solid #0096FF33;">
+        <p style="margin:0; color:#003060; font-size:13px;">
           © ${new Date().getFullYear()} <strong>SendUBack</strong>. All rights reserved.
         </p>
-        <p style="margin:6px 0 0; color:#3a5a40; font-size:13px;">
-          Powered by <strong style="color:#1b4332;">SendUBack API</strong> 🚀
+        <p style="margin:6px 0 0; color:#003060; font-size:13px;">
+          Powered by <strong style="color:#0096FF;">SendUBack API</strong> ✨
         </p>
       </td>
     </tr>
@@ -435,6 +440,7 @@ const userContactConfirmationEmail = (payload: {
     `,
   }
 }
+
 
 const sendPaymentConfirmationEmail = (data: any) => {
   const parcelsHtml = data.parcel
