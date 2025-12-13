@@ -12,6 +12,7 @@ import { zonePricingRoutes } from '../app/modules/zoonePricing/zonePricing.route
 import { shippingRoutes } from '../app/modules/shipping/shipping.route'
 import { PaymentRouts } from '../app/modules/payment/payment.route'
 import { SettingsRoutes } from '../app/modules/settings/settings.route'
+import { ReviewRoutes } from '../app/modules/review/review.route'
 
 
 
@@ -32,6 +33,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/shipping', route: shippingRoutes },
   {path: '/payment', route: PaymentRouts},
   {path: '/settings', route: SettingsRoutes},
+  {path: '/review', route: ReviewRoutes},
 
 ]
 

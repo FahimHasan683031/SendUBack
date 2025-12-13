@@ -13,7 +13,6 @@ import { emailHelper } from '../../../helpers/emailHelper'
 import { logger } from '../../../shared/logger'
 import { SettingsService } from '../settings/settings.service'
 
-
 // Create shipping
 const createShipping = async (payload: IShipping) => {
   try {
@@ -29,20 +28,31 @@ const createShipping = async (payload: IShipping) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid country codes')
     }
 
-    if (fromZone === toZone && fromZone === 6) {
-      payload.shipping_type = 'insideUk'
-    } else if(fromZone === toZone && fromZone === 1){
+    if (fromZone === toZone && fromZone === 1) {
+      payload.shipping_type = 'UK & Near'
+    } else if (fromZone === toZone && fromZone === 2) {
       payload.shipping_type = 'Europe Near'
-    } else if(fromZone === toZone && fromZone === 2){
+    } else if (fromZone === toZone && fromZone === 3) {
       payload.shipping_type = 'Europe Far'
-    } else if(fromZone === toZone && fromZone === 3){
-      payload.shipping_type = 'North America'
-    } else if(fromZone === toZone && fromZone === 4){
-      payload.shipping_type = 'Middle East & Asia'
-    } else if(fromZone === toZone && fromZone === 5){
-      payload.shipping_type = 'Australia / Africa / Rest of World'
-    }
-    else {
+    } else if (fromZone === toZone && fromZone === 4) {
+      payload.shipping_type = 'US & Canada'
+    } else if (fromZone === toZone && fromZone === 6) {
+      payload.shipping_type = 'Middle East'
+    } else if (fromZone === toZone && fromZone === 5) {
+      payload.shipping_type = 'Americas (Non-US/CA)'
+    } else if (fromZone === toZone && fromZone === 7) {
+      payload.shipping_type = 'South & Central Asia'
+    } else if (fromZone === toZone && fromZone === 8) {
+      payload.shipping_type = 'East & Southeast Asia'
+    } else if (fromZone === toZone && fromZone === 9) {
+      payload.shipping_type = 'Africa (North)'
+    } else if (fromZone === toZone && fromZone === 10) {
+      payload.shipping_type = 'Africa (Sub-Saharan)'
+    } else if (fromZone === toZone && fromZone === 11) {
+      payload.shipping_type = 'Oceania & Pacific'
+    } else if (fromZone === toZone && fromZone === 12) {
+      payload.shipping_type = 'Unlisted / Other (Fallback)'
+    } else {
       payload.shipping_type = 'international'
     }
 
@@ -77,17 +87,27 @@ const getShippingRates = async (shipingId: string) => {
 // Get all shippings
 const getAllShippings = async (query: Record<string, unknown>) => {
   const shippingQueryBuilder = new QueryBuilder(Shipping.find(), query)
+    .search([
+      'address_from',
+      'address_to',
+      'tracking_id',
+      '_id',
+      'address_to.email',
+      'address_from.email',
+      'address_from.name',
+      'address_to.name',
+    ])
     .filter()
     .sort()
     .fields()
     .paginate()
 
-  const totalShippings = await Shipping.countDocuments()
   const shippings = await shippingQueryBuilder.modelQuery
+  const paginationInfo = await shippingQueryBuilder.getPaginationInfo()
 
   return {
     shippings,
-    total: totalShippings,
+    meta: paginationInfo,
   }
 }
 
@@ -102,8 +122,6 @@ const getShippingById = async (id: string) => {
   return shipping
 }
 
-
-
 // Update shipping
 const updateShipping = async (id: string, payload: Partial<IShipping>) => {
   // Check if shipping exists
@@ -111,9 +129,12 @@ const updateShipping = async (id: string, payload: Partial<IShipping>) => {
   if (!isExistShipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
- 
-  if(payload.selected_rate || payload.insurance) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot update selected rate or insurance')
+
+  if (payload.selected_rate || payload.insurance) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Cannot update selected rate or insurance',
+    )
   }
 
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
@@ -122,14 +143,14 @@ const updateShipping = async (id: string, payload: Partial<IShipping>) => {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
 
-
   return shipping
 }
 
-
-
 // Add shipping rate OR insurance
-const addShippingRateORInsurance = async (id: string, payload: Partial<IShipping>) => {
+const addShippingRateORInsurance = async (
+  id: string,
+  payload: Partial<IShipping>,
+) => {
   const isExistShipping = await Shipping.findById(id)
   if (!isExistShipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
@@ -141,10 +162,13 @@ const addShippingRateORInsurance = async (id: string, payload: Partial<IShipping
       throw new ApiError(StatusCodes.NOT_FOUND, 'Selected rate not found')
     }
     const fromZone = getZoneByCountry(isExistShipping.address_from.country)
-    const toZone = getZoneByCountry(isExistShipping.address_to.country) 
-    
-    if(fromZone  !== selectedRate.fromZone || toZone !== selectedRate.toZone) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Rate for selected country')
+    const toZone = getZoneByCountry(isExistShipping.address_to.country)
+
+    if (fromZone !== selectedRate.fromZone || toZone !== selectedRate.toZone) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Invalid Rate for selected country',
+      )
     }
     ;(payload.total_cost =
       selectedRate.price + (isExistShipping.insurance?.insuranceCost || 0)),
@@ -166,8 +190,6 @@ const addShippingRateORInsurance = async (id: string, payload: Partial<IShipping
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
   return shipping
 }
-
-
 
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {

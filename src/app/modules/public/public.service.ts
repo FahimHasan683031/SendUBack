@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
 import { IContact, IFaq, IPublic } from './public.interface'
 import { Contact, Faq, Public } from './public.model'
-
 import { User } from '../user/user.model'
 import { emailHelper } from '../../../helpers/emailHelper'
 import QueryBuilder from '../../builder/QueryBuilder'

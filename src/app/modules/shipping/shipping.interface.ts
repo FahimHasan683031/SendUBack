@@ -1,28 +1,40 @@
-import { Types } from "mongoose";
-export type ShippingType = 'insideUk' | 'international'|"Europe Near"|"Europe Far"|"North America"|"Middle East & Asia"|"Australia / Africa / Rest of World";
+import { Types } from 'mongoose'
+export type ShippingType =
+  | 'UK & Near'
+  | 'Europe Near'
+  | 'Europe Far'
+  | 'US & Canada'
+  | 'Americas (Non-US/CA)'
+  | 'Middle East'
+  | 'South & Central Asia'
+  | 'East & Southeast Asia'
+  | 'Africa (North)'
+  | 'Africa (Sub-Saharan)'
+  | 'Oceania & Pacific'
+  | 'Unlisted / Other (Fallback)'
+  | 'international'
 export type ShippingStatus =
   | 'created'
   | 'rateSelected'
   | 'paymentCompleted'
   | 'shipped'
-  | 'delivered';
-
+  | 'delivered'
 
 export interface IShippingAddress {
-  hotelName?: string;
-  name: string;
-  street1: string;
-  street2?: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-  phone: string;
-  email: string;
+  hotelName?: string
+  name: string
+  street1: string
+  street2?: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  phone: string
+  email: string
 }
 
 export interface IParcel {
-  name: string;
+  name: string
   length: number
   width: number
   height: number
@@ -31,30 +43,29 @@ export interface IParcel {
   mass_unit: 'lb' | 'kg'
 }
 
-
 export interface IInsurance {
-  isInsured: boolean;
-  productValue?: number;
-  insuranceCost?: number;
+  isInsured: boolean
+  productValue?: number
+  insuranceCost?: number
 }
 
 export interface IShipping {
-  _id: Types.ObjectId;
-  shipping_type: ShippingType;
-  status: ShippingStatus;
-  address_from: IShippingAddress;
-  address_to: IShippingAddress;
-  images?: string[];
-  parcel: IParcel[] | string[];
-  selected_rate?: Types.ObjectId; 
-  shipping_cost?: number;
-  currency: string;
-  insurance?: IInsurance;
-  total_cost?: number;
-  shippingLabel?: string;
-  tracking_id?: string;
-  tracking_url?: string;
-  carrier?: string;
-  lostItemId?: Types.ObjectId;
-  notes?: string;
+  _id: Types.ObjectId
+  shipping_type: ShippingType
+  status: ShippingStatus
+  address_from: IShippingAddress
+  address_to: IShippingAddress
+  images?: string[]
+  parcel: IParcel[] | string[]
+  selected_rate?: Types.ObjectId
+  shipping_cost?: number
+  currency: string
+  insurance?: IInsurance
+  total_cost?: number
+  shippingLabel?: string
+  tracking_id?: string
+  tracking_url?: string
+  carrier?: string
+  lostItemId?: Types.ObjectId
+  notes?: string
 }
