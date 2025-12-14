@@ -1,4 +1,5 @@
 import { Types } from 'mongoose'
+
 export type ShippingType =
   | 'UK & Near'
   | 'Europe Near'
@@ -13,6 +14,7 @@ export type ShippingType =
   | 'Oceania & Pacific'
   | 'Unlisted / Other (Fallback)'
   | 'international'
+
 export type ShippingStatus =
   | 'created'
   | 'rateSelected'
@@ -68,4 +70,15 @@ export interface IShipping {
   carrier?: string
   lostItemId?: Types.ObjectId
   notes?: string
+}
+
+// Service layer-এ ব্যবহারের জন্য নতুন ইন্টারফেস
+export interface IShippingCreateInput {
+  address_from: IShippingAddress & { place_id: string }
+  address_to: IShippingAddress & { place_id: string }
+  parcel: string[]
+  insurance?: IInsurance
+  notes?: string
+  lostItemId?: string
+  currency: string
 }

@@ -1,9 +1,11 @@
-import { Types } from "mongoose"
+import { Types } from 'mongoose'
 
-export interface ISettings{
-    _id?:Types.ObjectId
-    insurance:number
-    profitMargin?:number
-    allowCountrys?:string[]
+export interface ISettings {
+  _id?: Types.ObjectId
+  insurance: {
+    percentage: number
+    maxValue: number
+  }
+  profitMargin?: number
+  allowCountrys?: string[]
 }
-

@@ -13,6 +13,7 @@ import { logger } from '../../../shared/logger'
 import { SettingsService } from '../settings/settings.service'
 import { JwtPayload } from 'jsonwebtoken'
 import { USER_ROLES } from '../user/user.interface'
+import { resolveAddressByPlaceId } from '../../../utils/googleMapsAddress.util'
 
 // Create shipping
 const createShipping = async (payload: IShipping) => {
@@ -57,8 +58,11 @@ const createShipping = async (payload: IShipping) => {
       payload.shipping_type = 'international'
     }
 
+//     const adddressDetails = await resolveAddressByPlaceId(payload.address_from.place_id )
+// console.log(adddressDetails)
     const shipping = await Shipping.create(payload)
     return shipping
+    // return adddressDetails
   } catch (error: any) {
     console.error('Create shipping error:', error)
     throw new ApiError(StatusCodes.BAD_REQUEST, error.message)
@@ -186,7 +190,11 @@ const addShippingRateORInsurance = async (
       throw new ApiError(StatusCodes.NOT_FOUND, 'Settings not found')
     }
     const { insurance } = settings
-    const insuranceCost = (payload.insurance.productValue / 100) * insurance
+    // check if product value exceeds max insurance value
+    if(payload.insurance.productValue > insurance.maxValue){
+      throw new ApiError(StatusCodes.BAD_REQUEST, `Product value must be less than or equal to ${insurance.maxValue}`)
+    }
+    const insuranceCost = (payload.insurance.productValue / 100) * insurance.percentage
     payload.insurance.insuranceCost = insuranceCost
     payload.total_cost = (isExistShipping.shipping_cost || 0) + insuranceCost
   }

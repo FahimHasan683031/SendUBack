@@ -66,4 +66,5 @@ export default {
   },
   frontend_url: process.env.FRONTEND_URL,
   backend_url: process.env.BACKEND_URL,
+  google_maps_api_key: process.env.GOOGLE_MAPS_API_KEY,
 }

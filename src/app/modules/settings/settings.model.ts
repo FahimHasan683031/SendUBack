@@ -3,7 +3,10 @@ import { ISettings } from "./settings.interface";
 
 const SettingsSchema = new Schema<ISettings>({
     insurance:{
-        type:Number,
+        type:{
+            percentage:Number,
+            maxValue:Number
+        },
         required:true
     },
     profitMargin:{
