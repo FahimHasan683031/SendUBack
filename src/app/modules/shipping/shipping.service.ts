@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
 import { generateParcel } from '../../../utils/shippo-parcel.utils'
 import { ZonePricingService } from '../zoonePricing/zonePricing.service'
-import { getZoneByCountry } from '../../../utils/zone.utils'
 import { ZonePricing } from '../zoonePricing/zonePricing.model'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { emailHelper } from '../../../helpers/emailHelper'
@@ -14,6 +13,7 @@ import { SettingsService } from '../settings/settings.service'
 import { JwtPayload } from 'jsonwebtoken'
 import { USER_ROLES } from '../user/user.interface'
 import { resolveAddressByPlaceId } from '../../../utils/googleMapsAddress.util'
+import { getZoneByCountry } from '../zoone/zone.utils'
 
 // Create shipping
 const createShipping = async (payload: IShipping) => {
@@ -24,8 +24,8 @@ const createShipping = async (payload: IShipping) => {
     payload.parcel = parcel
 
     // Check if countries are valid
-    const fromZone = getZoneByCountry(payload.address_from.country)
-    const toZone = getZoneByCountry(payload.address_to.country)
+    const fromZone = await getZoneByCountry(payload.address_from.country)
+    const toZone = await getZoneByCountry(payload.address_to.country)
     if (!fromZone || !toZone) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid country codes')
     }
@@ -169,8 +169,8 @@ const addShippingRateORInsurance = async (
     if (!selectedRate) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Selected rate not found')
     }
-    const fromZone = getZoneByCountry(isExistShipping.address_from.country)
-    const toZone = getZoneByCountry(isExistShipping.address_to.country)
+    const fromZone = await getZoneByCountry(isExistShipping.address_from.country)
+    const toZone = await getZoneByCountry(isExistShipping.address_to.country)
 
     if (fromZone !== selectedRate.fromZone || toZone !== selectedRate.toZone) {
       throw new ApiError(

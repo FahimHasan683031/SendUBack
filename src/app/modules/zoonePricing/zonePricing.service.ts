@@ -1,7 +1,8 @@
 import QueryBuilder from "../../builder/QueryBuilder";
 import { ZonePricing } from "./zonePricing.model";
-import { IZonePricing, IShippingRateRequest, IShippingRateResponse } from "./zonePricing.interface";
-import { getZoneByCountry } from "../../../utils/zone.utils";
+import { IZonePricing } from "./zonePricing.interface";
+import { getZoneByCountry } from "../zoone/zone.utils";
+
 
 
 // create zone pricing
@@ -62,8 +63,8 @@ const getShippingRate = async (from:string,to:string) => {
 
   
   // Get zones for countries
-  const fromZone = getZoneByCountry(from);
-  const toZone = getZoneByCountry(to);
+  const fromZone = await getZoneByCountry(from);
+  const toZone = await getZoneByCountry(to);
   
   if (!fromZone || !toZone) {
     throw new Error("Invalid country codes");

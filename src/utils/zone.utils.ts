@@ -1,3 +1,5 @@
+import { getZoneByCountry } from "../app/modules/zoone/zone.utils";
+
 export const Zones = [
   {
     id: 1,
@@ -101,9 +103,13 @@ export interface IZone {
 }
 
 // Helper functions
-export const getZoneByCountry = (countryCode: string) => {
-  return Zones.find(zone => 
-    zone.countries.includes(countryCode.toUpperCase())
-  )?.id;
-};
+export const getZoneByCountrycode = async (countryCode: string) => {
+  const id = await getZoneByCountry(countryCode);
+  // return Zones.find(zone => 
+  //   zone.countries.includes(countryCode.toUpperCase())
+  // )?.id;
 
+  console.log(countryCode, id);
+
+  return id;
+};

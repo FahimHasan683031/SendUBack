@@ -190,7 +190,7 @@ const resendOtp = (values: {
     <!-- Header -->
     <tr>
       <td align="center" style="background-color:#f1f8f4; padding:35px 20px; border-top:1px solid #e6f4ea;">
-        <img src="https://api.goroqit.com/image/1761168795060-ant6f7.png" alt="Go.Roqit"
+        <img src="https://i.ibb.co.com/Hf7XccNJ/Send-you-back-Final-logo-02-3.png" alt="SendUBack"
              style="width:210px; height:auto; filter:drop-shadow(0 0 6px rgba(0,0,0,0.3));">
       </td>
     </tr>
