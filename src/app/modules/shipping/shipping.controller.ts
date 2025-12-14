@@ -3,6 +3,7 @@ import { shippingService } from "./shipping.service";
 import { StatusCodes } from "http-status-codes";
 import sendResponse from "../../../shared/sendResponse";
 import catchAsync from "../../../shared/catchAsync";
+import { JwtPayload } from 'jsonwebtoken';
 
 
 // Create shipping
@@ -19,7 +20,7 @@ const createShipping = catchAsync(async (req: Request, res: Response) => {
 
 // Get all shippings
 const getAllShippings = catchAsync(async (req: Request, res: Response) => {
-  const result = await shippingService.getAllShippings(req.query);
+  const result = await shippingService.getAllShippings(req.query, req.user as JwtPayload);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,

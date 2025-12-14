@@ -24,6 +24,13 @@ export const createUser = async (payload: IUser) => {
 
   try {
     session.startTransaction()
+    
+    if(payload.role === USER_ROLES.ADMIN){
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        `Admin account creation is not allowed.`,
+      )
+    }
 
     // 1. Check if user already exists
     const isUserExist = await User.findOne({
@@ -80,10 +87,12 @@ export const createUser = async (payload: IUser) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user.')
     // 6. Create Business Details if role is Business
     if (user[0].role === USER_ROLES.Business) {
-      await BusinessDetails.create({
+      const businessDetails = await BusinessDetails.create({
         businessEmail: user[0].email,
         userId: user[0]._id,
       })
+      user[0].businessDetails = businessDetails._id
+      await user[0].save({ session })
     }
 
     const createdUser = user[0]

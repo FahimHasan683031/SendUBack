@@ -44,6 +44,11 @@ const UserSchema = new Schema(
       enum: ["admin", "business"],
       default: "business",
     },
+    businessDetails: {
+      type: Schema.Types.ObjectId,
+      ref: 'BusinessDetails',
+      default: null,
+    },
     authentication: {
       restrictionLeftAt: {
         type: Date,

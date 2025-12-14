@@ -804,7 +804,7 @@ const businessUserRegistrationInviteEmail = (data: any) => {
   }
 }
 
-const guestLostItemNotificationEmail = (data: any, bookingLink: string) => {
+const guestLostItemNotificationEmail = (data: any) => {
   return {
     to: data.guestEmail,
     subject: `📦 We Found Your Lost Item – Action Required`,
@@ -854,7 +854,7 @@ const guestLostItemNotificationEmail = (data: any, bookingLink: string) => {
 
         <!-- Book Shipping Button -->
         <div style="text-align:center;margin-top:22px;">
-          <a href="${bookingLink}"
+          <a href="${config.frontend_url}/book-shipping/${data._id}"
              style="background:#0077DD;color:#fff;padding:12px 30px;border-radius:8px;
              text-decoration:none;font-size:14px;display:inline-block;">
             Book Shipping for Your Item

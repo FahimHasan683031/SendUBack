@@ -47,7 +47,7 @@ const createAdmin = async (): Promise<Partial<IUser> | null> => {
 }
 
 const getAllUser = async (query: Record<string, unknown>) => {
-  const userQueryBuilder = new QueryBuilder(User.find().select('-password -authentication'), query)
+  const userQueryBuilder = new QueryBuilder(User.find().populate('businessDetails').select('-password -authentication'), query)
     .filter()
     .sort()
     .fields()
@@ -75,7 +75,7 @@ const getAllUser = async (query: Record<string, unknown>) => {
 }
 
 const getSingleUser = async (id: string) => {
-  const result = await User.findById(id).select('-password -authentication')
+  const result = await User.findById(id).populate('businessDetails').select('-password -authentication')
   return result
 }
 

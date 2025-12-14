@@ -7,11 +7,12 @@ import { generateParcel } from '../../../utils/shippo-parcel.utils'
 import { ZonePricingService } from '../zoonePricing/zonePricing.service'
 import { getZoneByCountry } from '../../../utils/zone.utils'
 import { ZonePricing } from '../zoonePricing/zonePricing.model'
-import { User } from '../user/user.model'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { emailHelper } from '../../../helpers/emailHelper'
 import { logger } from '../../../shared/logger'
 import { SettingsService } from '../settings/settings.service'
+import { JwtPayload } from 'jsonwebtoken'
+import { USER_ROLES } from '../user/user.interface'
 
 // Create shipping
 const createShipping = async (payload: IShipping) => {
@@ -85,7 +86,10 @@ const getShippingRates = async (shipingId: string) => {
 }
 
 // Get all shippings
-const getAllShippings = async (query: Record<string, unknown>) => {
+const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload) => {
+   if (user.role === USER_ROLES.Business) {
+    query['address_from.email'] = user.email;
+  }
   const shippingQueryBuilder = new QueryBuilder(Shipping.find(), query)
     .search([
       'address_from',

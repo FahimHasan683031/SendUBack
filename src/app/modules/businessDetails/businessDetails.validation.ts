@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+
+export const addressSchema = z.object({
+  street1: z.string().trim().min(1, "Street 1 is required"),
+  street2: z.string().trim().optional(),
+  city: z.string().trim().min(1, "City is required"),
+  state: z.string().trim().min(1, "State is required"),
+  postal_code: z.string().trim().min(1, "Postal code is required"),
+  country: z.string().trim().min(1, "Country is required"),
+})
+
+
+
 export const createBusinessDetailsSchema = z.object({
   body: z.object({
     businessName: z.string().trim().min(1, "Business name is required").optional(),
@@ -13,10 +25,7 @@ export const createBusinessDetailsSchema = z.object({
     companyScope: z.string().trim().optional(),
     taxOffice: z.string().trim().optional(),
     vatTaxNumber: z.string().trim().optional(),
-    address: z.string().trim().min(1, "Address is required").optional(),
-    city: z.string().trim().min(1, "City is required").optional(),
-    zipCode: z.string().trim().min(1, "ZIP code is required").optional(),
-    country: z.string().trim().min(1, "Country is required").optional(),
+    address: addressSchema.optional(),
     invoicingEmail: z.string().email("Invalid invoicing email").toLowerCase().trim().optional(),
   }).strict("Unknown fields are not allowed")
 });
@@ -34,10 +43,7 @@ export const updateBusinessDetailsSchema = z.object({
     companyScope: z.string().trim().optional(),
     taxOffice: z.string().trim().optional(),
     vatTaxNumber: z.string().trim().optional(),
-    address: z.string().trim().min(1, "Address is required").optional(),
-    city: z.string().trim().min(1, "City is required").optional(),
-    zipCode: z.string().trim().min(1, "ZIP code is required").optional(),
-    country: z.string().trim().min(1, "Country is required").optional(),
+    address: addressSchema.optional(),
     invoicingEmail: z.string().email("Invalid invoicing email").toLowerCase().trim().optional(),
   }).strict("Unknown fields are not allowed")
 });

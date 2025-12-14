@@ -1,5 +1,17 @@
 import { Types, Document } from "mongoose";
 
+
+
+export interface IAddress {
+  street1: string
+  street2?: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+}
+
+
 export interface IBusinessDetails extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
@@ -14,10 +26,7 @@ export interface IBusinessDetails extends Document {
   companyScope?: string;
   taxOffice?: string;
   vatTaxNumber?: string;
-  address?: string;
-  city?: string;
-  zipCode?: string;
-  country?: string;
+  address?: IAddress;
   invoicingEmail?: string;
 }
 

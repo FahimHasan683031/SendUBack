@@ -1,5 +1,5 @@
 import express from "express";
-import { createCategoryZod, updateCategoryZod } from "./category.validation";
+import { createCategoryZod } from "./category.validation";
 import { fileAndBodyProcessorUsingDiskStorage } from "../../middleware/processReqBody";
 import validateRequest from "../../middleware/validateRequest";
 import { categoryController } from "./category.controller";

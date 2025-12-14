@@ -34,22 +34,30 @@ export const getMyLostItems = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
+
   
-  const lostItems = await LostItem.find({ userId: user.authId })
+  const lostItems = await LostItem.find({ user: isExistUser._id })
   return lostItems
 }
 
 // get single lost item
-export const getSingleLostItem = async (
-  id: string,
-) => {
- 
-  const lostItem = await LostItem.findOne({ _id: id }).populate('user')
+export const getSingleLostItem = async (id: string) => {
+  const lostItem = await LostItem.findById(id)
+    .populate({
+      path: 'user',
+      select: '-authentication -password -__v',
+      populate: {
+        path: 'businessDetails'
+      }
+    })
+
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
+
   return lostItem
 }
+
 
 // update lost item
 export const updateLostItem = async (
@@ -123,7 +131,7 @@ const lostItem = await LostItem.findById(lostItemId)
   }
   setTimeout(() => {
     try {
-      emailHelper.sendEmail(emailTemplate.guestLostItemNotificationEmail(lostItem,"fldkjf"))
+      emailHelper.sendEmail(emailTemplate.guestLostItemNotificationEmail(lostItem))
     } catch (error) {
       logger.error('Failed to send guest lost item notification email:', error)
     }

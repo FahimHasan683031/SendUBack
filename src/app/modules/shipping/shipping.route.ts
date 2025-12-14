@@ -7,6 +7,8 @@ import {
   updateShippingZod,
 } from "./shipping.validation";
 import { fileAndBodyProcessorUsingDiskStorage } from "../../middleware/processReqBody";
+import { USER_ROLES } from "../user/user.interface";
+import auth from "../../middleware/auth";
 
 const router = express.Router();
 
@@ -26,6 +28,7 @@ router.post(
 // Get all shippings
 router.get(
   "/",
+  auth(USER_ROLES.Business, USER_ROLES.ADMIN),
   shippingController.getAllShippings
 );
 

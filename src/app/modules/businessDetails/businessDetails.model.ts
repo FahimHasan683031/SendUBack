@@ -1,5 +1,41 @@
 import { model, Schema } from "mongoose";
-import { IBusinessDetails } from "./businessDetails.interface";
+import { IAddress, IBusinessDetails } from "./businessDetails.interface";
+
+
+const addressSchema = new Schema<IAddress>({
+  street1: {
+    type: String,
+    trim: true,
+    required: true
+  },
+  street2: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  city: {
+    type: String,
+    trim: true,
+    required: true
+  },
+  state: {
+    type: String,
+    trim: true,
+    required: true
+  },
+  postal_code: {
+    type: String,
+    trim: true,
+    required: true
+  },
+  country: {
+    type: String,
+    trim: true,
+    required: true
+  }
+},{
+    _id: false
+  })
 
 const businessDetailsSchema = new Schema<IBusinessDetails>(
   {
@@ -63,26 +99,7 @@ const businessDetailsSchema = new Schema<IBusinessDetails>(
       trim: true,
       required:false
     },
-    address: {
-      type: String,
-      trim: true,
-      required:false
-    },
-    city: {
-      type: String,
-      trim: true,
-      required:false
-    },
-    zipCode: {
-      type: String,
-      trim: true,
-      required:false
-    },
-    country: {
-      type: String,
-      trim: true,
-      required:false
-    },
+    address: addressSchema,
     invoicingEmail: {
       type: String,
       trim: true,

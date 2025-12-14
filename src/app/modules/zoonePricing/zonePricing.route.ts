@@ -18,6 +18,7 @@ router.route("/")
     zonePricingController.createZonePricingController
   )
   .get(
+    auth('admin'),
     zonePricingController.getZonePricingsController
   );
 

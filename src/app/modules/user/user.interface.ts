@@ -33,6 +33,7 @@ export type IUser = {
   status: USER_STATUS;
   verified: boolean;
   role: USER_ROLES;
+  businessDetails?: Types.ObjectId;
   authentication: IAuthentication;
 };
 
