@@ -13,6 +13,7 @@ import { shippingRoutes } from '../app/modules/shipping/shipping.route'
 import { PaymentRouts } from '../app/modules/payment/payment.route'
 import { SettingsRoutes } from '../app/modules/settings/settings.route'
 import { ReviewRoutes } from '../app/modules/review/review.route'
+import { DashboardRoutes } from '../app/modules/dashboard/dashboard.route'
 
 
 
@@ -34,6 +35,7 @@ const apiRoutes: { path: string; route: Router }[] = [
   {path: '/payment', route: PaymentRouts},
   {path: '/settings', route: SettingsRoutes},
   {path: '/review', route: ReviewRoutes},
+  {path: '/dashboard', route: DashboardRoutes},
 
 ]
 
