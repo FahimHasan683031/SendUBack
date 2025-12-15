@@ -88,8 +88,6 @@ const UserSchema = new Schema(
 );
 
 
-// UserSchema.index({ email: 1, status: 1 });
-
 UserSchema.statics.isPasswordMatched = async function (
   givenPassword: string,
   savedPassword: string
@@ -98,36 +96,40 @@ UserSchema.statics.isPasswordMatched = async function (
 };
 
 
-UserSchema.pre<IUser>("save", async function (next) {
-  const email = this.email;
-  if (email) {
-    const isExist = await User.findOne({
-      email: this.email,
-      status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
-    });
-console.log(isExist)
-    if (isExist) {
-      throw new ApiError(
-        StatusCodes.BAD_REQUEST,
-        "An account with this email already exists"
+UserSchema.pre("save", async function (next) {
+  try {
+    if (this.isModified("email")) {
+      const isExist = await User.findOne({
+        email: this.email,
+        status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
+        _id: { $ne: this._id },
+      });
+
+      if (isExist) {
+        return next(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            "An account with this email already exists"
+          )
+        );
+      }
+    }
+    if (this.isModified("password")) {
+      this.password = await bcrypt.hash(
+        this.password,
+        Number(config.bcrypt_salt_rounds)
       );
     }
-  }
 
-  if (this.password) {
-    this.password = await bcrypt.hash(
-      this.password,
-      Number(config.bcrypt_salt_rounds)
-    );
+    next();
+  } catch (error) {
+    next(error as Error);
   }
-
-  next();
 });
 
 
-
-
 export const User = mongoose.model<IUser, UserModel>("User", UserSchema);
+
 
 
 

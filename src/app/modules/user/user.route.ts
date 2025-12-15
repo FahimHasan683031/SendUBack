@@ -28,7 +28,7 @@ router.delete(
 
 // get single user
 router.get('/:id', UserController.getSingleUser)
-// update user role and create profile
+
 
 // delete user
 router.delete('/:id', auth(USER_ROLES.ADMIN), UserController.deleteUser)

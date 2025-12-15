@@ -9,6 +9,7 @@ import { IAuthResponse } from './auth.interface'
 import { IUser } from '../user/user.interface'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { emailHelper } from '../../../helpers/emailHelper'
+import bcrypt from "bcryptjs";
 
 
 const handleLoginLogic = async (payload: ILoginData, isUserExist: IUser):Promise<IAuthResponse> => {
@@ -72,6 +73,7 @@ const handleLoginLogic = async (payload: ILoginData, isUserExist: IUser):Promise
     })
   }
 
+  console.log(payload.password, password)
   const isPasswordMatched = await User.isPasswordMatched(
     payload.password,
     password,
