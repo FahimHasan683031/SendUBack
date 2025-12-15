@@ -12,14 +12,10 @@ const ZonePricingSchema = new Schema<IZonePricing>(
     fromZone: {
       type: Number,
       required: true,
-      min: 1,
-      max: 6,
     },
     toZone: {
       type: Number,
       required: true,
-      min: 1,
-      max: 6,
     },
     shippingType: {
       type: String,
@@ -44,8 +40,6 @@ const ZonePricingSchema = new Schema<IZonePricing>(
   },
   { 
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
   }
 );
 

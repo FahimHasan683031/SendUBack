@@ -1,19 +1,5 @@
 import { Types } from 'mongoose'
 
-export type ShippingType =
-  | 'UK & Near'
-  | 'Europe Near'
-  | 'Europe Far'
-  | 'US & Canada'
-  | 'Americas (Non-US/CA)'
-  | 'Middle East'
-  | 'South & Central Asia'
-  | 'East & Southeast Asia'
-  | 'Africa (North)'
-  | 'Africa (Sub-Saharan)'
-  | 'Oceania & Pacific'
-  | 'Unlisted / Other (Fallback)'
-  | 'international'
 
 export type ShippingStatus =
   | 'created'
@@ -53,7 +39,7 @@ export interface IInsurance {
 
 export interface IShipping {
   _id: Types.ObjectId
-  shipping_type: ShippingType
+  zoneName: string
   status: ShippingStatus
   address_from: IShippingAddress
   address_to: IShippingAddress
@@ -72,10 +58,10 @@ export interface IShipping {
   notes?: string
 }
 
-// Service layer-এ ব্যবহারের জন্য নতুন ইন্টারফেস
+
 export interface IShippingCreateInput {
-  address_from: IShippingAddress & { place_id: string }
-  address_to: IShippingAddress & { place_id: string }
+  address_from: IShippingAddress 
+  address_to: IShippingAddress
   parcel: string[]
   insurance?: IInsurance
   notes?: string

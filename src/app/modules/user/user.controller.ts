@@ -55,7 +55,7 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
 // get profile
 const getProfile = catchAsync(async (req: Request, res: Response) => {
   const result = await UserServices.getProfile(req.user! as JwtPayload)
-  sendResponse<IUser>(res, {
+  sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'Profile fetched successfully',

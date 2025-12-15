@@ -1,6 +1,6 @@
 export interface IZone {
-  id: number; // Auto-increment
+  id: number; 
   name: string;
-  countries: string[]; // ISO 2-letter country codes
+  countries: string[]; 
   isActive?: boolean;
 }

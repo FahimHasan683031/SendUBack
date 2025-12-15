@@ -1,9 +1,7 @@
 import express from "express";
 
 import {
-  createZonePricingValidationSchema,
-  updateZonePricingValidationSchema,
-  calculateShippingRateValidationSchema,
+  createZonePricingValidationSchema
 } from "./zonePricing.validation";
 import validateRequest from "../../middleware/validateRequest";
 import auth from "../../middleware/auth";
@@ -22,23 +20,12 @@ router.route("/")
     zonePricingController.getZonePricingsController
   );
 
-router.route("/get-shipping-rate")
-  .post(
-    validateRequest(calculateShippingRateValidationSchema),
-    zonePricingController.calculateShippingRateController
-  );
-
 
 
 
 router.route("/:id")
   .get(
     zonePricingController.getZonePricingByIdController
-  )
-  .patch(
-    auth('admin'),
-    validateRequest(updateZonePricingValidationSchema),
-    zonePricingController.updateZonePricingController
   )
   .delete(
     auth('admin'),

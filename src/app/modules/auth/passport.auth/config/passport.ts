@@ -50,7 +50,7 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       req.body.profile = profile
-      req.body.role = USER_ROLES.APPLICANT
+      req.body.role = USER_ROLES.ADMIN
 
       try {
         return done(null, req.body)

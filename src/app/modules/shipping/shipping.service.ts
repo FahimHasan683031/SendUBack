@@ -14,6 +14,7 @@ import { JwtPayload } from 'jsonwebtoken'
 import { USER_ROLES } from '../user/user.interface'
 import { resolveAddressByPlaceId } from '../../../utils/googleMapsAddress.util'
 import { getZoneByCountry } from '../zoone/zone.utils'
+import { Zone } from '../zoone/zone.model'
 
 // Create shipping
 const createShipping = async (payload: IShipping) => {
@@ -30,32 +31,12 @@ const createShipping = async (payload: IShipping) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid country codes')
     }
 
-    if (fromZone === toZone && fromZone === 1) {
-      payload.shipping_type = 'UK & Near'
-    } else if (fromZone === toZone && fromZone === 2) {
-      payload.shipping_type = 'Europe Near'
-    } else if (fromZone === toZone && fromZone === 3) {
-      payload.shipping_type = 'Europe Far'
-    } else if (fromZone === toZone && fromZone === 4) {
-      payload.shipping_type = 'US & Canada'
-    } else if (fromZone === toZone && fromZone === 6) {
-      payload.shipping_type = 'Middle East'
-    } else if (fromZone === toZone && fromZone === 5) {
-      payload.shipping_type = 'Americas (Non-US/CA)'
-    } else if (fromZone === toZone && fromZone === 7) {
-      payload.shipping_type = 'South & Central Asia'
-    } else if (fromZone === toZone && fromZone === 8) {
-      payload.shipping_type = 'East & Southeast Asia'
-    } else if (fromZone === toZone && fromZone === 9) {
-      payload.shipping_type = 'Africa (North)'
-    } else if (fromZone === toZone && fromZone === 10) {
-      payload.shipping_type = 'Africa (Sub-Saharan)'
-    } else if (fromZone === toZone && fromZone === 11) {
-      payload.shipping_type = 'Oceania & Pacific'
-    } else if (fromZone === toZone && fromZone === 12) {
-      payload.shipping_type = 'Unlisted / Other (Fallback)'
-    } else {
-      payload.shipping_type = 'international'
+    if (fromZone === toZone) {
+
+      const zone = await Zone.findOne({id: fromZone})
+      payload.zoneName = zone?.name || ''
+    }  else {
+      payload.zoneName = 'international'
     }
 
 //     const adddressDetails = await resolveAddressByPlaceId(payload.address_from.place_id )

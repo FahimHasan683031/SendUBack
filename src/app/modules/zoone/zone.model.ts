@@ -29,8 +29,7 @@ const zoneSchema = new Schema<IZone>(
     },
   },
   {
-    timestamps: true,
-    versionKey: false,
+    timestamps: true
   }
 );
 

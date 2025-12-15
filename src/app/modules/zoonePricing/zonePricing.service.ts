@@ -2,11 +2,18 @@ import QueryBuilder from "../../builder/QueryBuilder";
 import { ZonePricing } from "./zonePricing.model";
 import { IZonePricing } from "./zonePricing.interface";
 import { getZoneByCountry } from "../zoone/zone.utils";
+import { Zone } from "../zoone/zone.model";
 
 
 
 // create zone pricing
 const createZonePricing = async (payload: Partial<IZonePricing>) => {
+  const zones = await Zone.find().select('id');
+  const zoneIds = zones.map((zone) => zone.id);
+  if(!zoneIds.includes(payload.fromZone) || !zoneIds.includes(payload.toZone)){
+    throw new Error("Invalid zone ids");
+  }
+
     const isExist = await ZonePricing.findOne({
         fromZone: payload.fromZone,
         toZone: payload.toZone,

@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { ShippingType } from '../../../utils/zone.utils';
+
 
 
 export interface IZonePricing {
@@ -7,7 +7,7 @@ export interface IZonePricing {
   title: string;
   fromZone: number;
   toZone: number;
-  shippingType: ShippingType;
+  shippingType: "standard" | "express";
   price: number;
   duration?: string;
   description?: string;
@@ -18,7 +18,7 @@ export interface IZonePricing {
 export interface IShippingRateRequest {
   fromCountry: string;
   toCountry: string;
-  shippingType: ShippingType;
+  shippingType: "standard" | "express";
   weight?: number;
   dimensions?: {
     length: number;
@@ -30,7 +30,7 @@ export interface IShippingRateRequest {
 export interface IShippingRateResponse {
   fromZone: number;
   toZone: number;
-  shippingType: ShippingType;
+  shippingType: "standard" | "express";
   price: number;
   duration?: string;
   estimatedDelivery?: string;

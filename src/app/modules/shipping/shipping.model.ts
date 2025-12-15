@@ -35,23 +35,8 @@ const insuranceSchema = new Schema(
 
 const shippingSchema = new Schema<IShipping>(
   {
-    shipping_type: {
+    zoneName: {
       type: String,
-      enum: [
-        'UK & Near',
-        'Europe Near',
-        'Europe Far',
-        'US & Canada',
-        'Americas (Non-US/CA)',
-        'Middle East',
-        'South & Central Asia',
-        'East & Southeast Asia',
-        'Africa (North)',
-        'Africa (Sub-Saharan)',
-        'Oceania & Pacific',
-        'Unlisted / Other (Fallback)',
-        'international',
-      ],
       required: true,
     },
     status: {

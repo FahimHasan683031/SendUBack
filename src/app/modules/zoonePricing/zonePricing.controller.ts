@@ -65,17 +65,7 @@ import catchAsync from "../../../shared/catchAsync";
   });
 });
 
-// calculate shipping rate
- const calculateShippingRateController = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
-  const rate = await ZonePricingService.getShippingRate(payload);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: 'Shipping rate calculated successfully',
-    data: rate,
-  });
-});
+
 
 
 
@@ -86,6 +76,6 @@ export const zonePricingController = {
   getZonePricingByIdController,
   deleteZonePricingController,
   updateZonePricingController,
-  calculateShippingRateController
+  
   
 }

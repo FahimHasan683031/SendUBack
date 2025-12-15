@@ -11,8 +11,9 @@ import { emailTemplate } from '../../../shared/emailTemplate'
 import { User } from '../user/user.model'
 import { LostItem } from '../lostItem/lostItem.model'
 import { LOST_ITEM_STATUS } from '../lostItem/lostItem.interface'
+import catchAsync from '../../../shared/catchAsync'
 
-const handleStripeWebhook = async (req: Request, res: Response) => {
+const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
   const signature = req.headers['stripe-signature'] as string
   let event: Stripe.Event
 
@@ -26,117 +27,111 @@ const handleStripeWebhook = async (req: Request, res: Response) => {
     )
   } catch (err: any) {
     logger.error('Webhook verification failed:', err.message)
-    res.status(400).send(`Webhook Error: ${err.message}`)
-    return
+    throw new Error(`Webhook Error: ${err.message}`)
   }
 
   const eventType = event.type
   const data = event.data.object as any
 
-  try {
-    // -------------------------------
-    // CHECKOUT SESSION COMPLETED
-    // -------------------------------
-    if (eventType === 'checkout.session.completed') {
-      const session = await stripe.checkout.sessions.retrieve(data.id, {
-        expand: ['payment_intent'],
-      })
+  // -------------------------------
+  // CHECKOUT SESSION COMPLETED
+  // -------------------------------
+  if (eventType === 'checkout.session.completed') {
+    const session = await stripe.checkout.sessions.retrieve(data.id, {
+      expand: ['payment_intent'],
+    })
 
-      const paymentIntent = session.payment_intent as Stripe.PaymentIntent
-      console.log('PaymentIntent:', paymentIntent)
+    const paymentIntent = session.payment_intent as Stripe.PaymentIntent
+    console.log('PaymentIntent:', paymentIntent)
 
-      // extracted data
-      const email =
-        session.customer_email || session.customer_details?.email || 'N/A'
+    // extracted data
+    const email =
+      session.customer_email || session.customer_details?.email || 'N/A'
 
-      const amount = paymentIntent.amount / 100
-      const transactionId = paymentIntent.id
-      const customerName = session.customer_details?.name || 'N/A'
-      const shippingId = session.metadata?.shipping_id
+    const amount = paymentIntent.amount / 100
+    const transactionId = paymentIntent.id
+    const customerName = session.customer_details?.name || 'N/A'
+    const shippingId = session.metadata?.shipping_id
 
-      // get shipping record
-      const shipping = await Shipping.findById(shippingId)
+    // get shipping record
+    const shipping = await Shipping.findById(shippingId)
 
-      if (!shipping) {
-        logger.error('Shipping not found for webhook:', shippingId)
-        return res.sendStatus(200)
+    if (!shipping) {
+      logger.error('Shipping not found for webhook:', shippingId)
+      res.sendStatus(200)
+      return
+    }
+
+    // Save Payment Record
+    await PaymentService.createPayment({
+      email,
+      amount,
+      dateTime: new Date(),
+      transactionId,
+      description: `Payment for ${shipping.zoneName} shipment`,
+      customerName,
+      shippingId: new mongoose.Types.ObjectId(shippingId),
+    })
+
+    // Update shipping to paid/processing
+    await Shipping.findByIdAndUpdate(shippingId, {
+      status: 'paymentCompleted',
+    })
+
+    // Update lost item status to Shipment Booked
+    if(shipping.lostItemId) {
+      await LostItem.findByIdAndUpdate(
+        { _id: shipping.lostItemId },
+        { status: LOST_ITEM_STATUS.SHIPMENT_BOOKED },
+      )
+    }
+
+    // Send confermation email andmin and also customer 
+    setTimeout(async () => {
+      try {
+        const confirmationTemplate =
+          emailTemplate.sendPaymentConfirmationEmail(shipping)
+        await emailHelper.sendEmail(confirmationTemplate)
+
+        const adminNotificationTemplate =
+          emailTemplate.sendAdminPaymentNotificationEmail(shipping)
+        await emailHelper.sendEmail(adminNotificationTemplate)
+      } catch (err) {
+        logger.error('Email sending failed:', err)
       }
+    }, 0)
 
-      // Save Payment Record
-      await PaymentService.createPayment({
-        email,
-        amount,
-        dateTime: new Date(),
-        transactionId,
-        description: `Payment for ${shipping.shipping_type} shipment`,
-        customerName,
-        shippingId: new mongoose.Types.ObjectId(shippingId),
-      })
-
-      // Update shipping to paid/processing
-      await Shipping.findByIdAndUpdate(shippingId, {
-        status: 'paymentCompleted',
-      })
-
-      // Update lost item status to Shipment Booked
-      if(shipping.lostItemId) {
-        await LostItem.findByIdAndUpdate(
-          { _id: shipping.lostItemId },
-          { status: LOST_ITEM_STATUS.SHIPMENT_BOOKED },
-        )
-      }
-
-      // Send confermation email andmin and also customer 
+    // Send business email if user is registered or not
+    if (await User.findOne({ email: shipping.address_from.email })) {
+      console.log('User found for email:', shipping.address_from.email)
       setTimeout(async () => {
         try {
-          const confirmationTemplate =
-            emailTemplate.sendPaymentConfirmationEmail(shipping)
-          await emailHelper.sendEmail(confirmationTemplate)
-
-          const adminNotificationTemplate =
-            emailTemplate.sendAdminPaymentNotificationEmail(shipping)
-          await emailHelper.sendEmail(adminNotificationTemplate)
+          const confirmationBusinessTemplate =
+            emailTemplate.businessUserShipmentInfoEmail(shipping)
+          await emailHelper.sendEmail(confirmationBusinessTemplate)
         } catch (err) {
           logger.error('Email sending failed:', err)
         }
       }, 0)
-
-      // Send business email if user is registered or not
-      if (await User.findOne({ email: shipping.address_from.email })) {
-        console.log('User found for email:', shipping.address_from.email)
-        setTimeout(async () => {
-          try {
-            const confirmationBusinessTemplate =
-              emailTemplate.businessUserShipmentInfoEmail(shipping)
-            await emailHelper.sendEmail(confirmationBusinessTemplate)
-          } catch (err) {
-            logger.error('Email sending failed:', err)
-          }
-        }, 0)
-      } else {
-        console.log('User not found for email:', shipping.address_from.email)
-        setTimeout(async () => {
-          try {
-            const businessInviteTemplate =
-              emailTemplate.businessUserRegistrationInviteEmail(shipping)
-            await emailHelper.sendEmail(businessInviteTemplate)
-          } catch (err) {
-            logger.error('Email sending failed:', err)
-          }
-        }, 0)
-      }
-
-      logger.info(
-        `Shipping payment saved for ${email}, transactionId: ${transactionId}`,
-      )
+    } else {
+      console.log('User not found for email:', shipping.address_from.email)
+      setTimeout(async () => {
+        try {
+          const businessInviteTemplate =
+            emailTemplate.businessUserRegistrationInviteEmail(shipping)
+          await emailHelper.sendEmail(businessInviteTemplate)
+        } catch (err) {
+          logger.error('Email sending failed:', err)
+        }
+      }, 0)
     }
-  } catch (error: any) {
-    logger.error('Webhook handler error:', error)
-    res.status(500).send('Webhook internal error')
-    return
+
+    logger.info(
+      `Shipping payment saved for ${email}, transactionId: ${transactionId}`,
+    )
   }
 
   res.sendStatus(200)
-}
+})
 
 export default handleStripeWebhook
