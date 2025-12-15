@@ -18,7 +18,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
     { deviceToken: deviceToken, password: password },
     user as IUser,
   )
-  const { status, message, accessToken, refreshToken, role } = result
+  const { status, message, accessToken, refreshToken, userInfo } = result
 
 
     res.cookie("refreshToken", refreshToken, {
@@ -30,7 +30,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
     statusCode: status,
     success: true,
     message: message,
-    data: { accessToken, refreshToken, role },
+    data: { accessToken, refreshToken, userInfo },
   })
 })
 

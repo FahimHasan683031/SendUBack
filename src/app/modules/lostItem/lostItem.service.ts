@@ -8,6 +8,7 @@ import { USER_ROLES } from '../user/user.interface'
 import { emailHelper } from '../../../helpers/emailHelper'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { logger } from '../../../shared/logger'
+import QueryBuilder from '../../builder/QueryBuilder'
 
 // create lost item
 export const createLostItem = async (
@@ -27,17 +28,32 @@ export const createLostItem = async (
 }
 
 // get all lost items for a user
-export const getMyLostItems = async (
+export const getAllLostItems = async (
   user: JwtPayload,
+  query: Record<string, unknown>,
 ) => {
   const isExistUser = await User.findById(user.authId)
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
+  if(isExistUser.role === USER_ROLES.Business){
+    query.user = isExistUser._id
+  }
+  const lostQueryBiilder= new QueryBuilder(LostItem.find(), query)
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
 
-  
-  const lostItems = await LostItem.find({ user: isExistUser._id })
-  return lostItems
+    const lostItems = await lostQueryBiilder.modelQuery
+    const paginateInfo = await lostQueryBiilder.getPaginationInfo()
+
+
+
+  return {
+    lostItems,
+    meta: paginateInfo
+  }
 }
 
 // get single lost item
@@ -143,7 +159,7 @@ const lostItem = await LostItem.findById(lostItemId)
 
 export const lostItemServices = {
   createLostItem,
-  getMyLostItems,
+  getAllLostItems,
   getSingleLostItem,
   updateLostItem,
   deleteLostItem,

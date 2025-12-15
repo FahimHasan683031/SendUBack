@@ -361,13 +361,22 @@ const verifyAccount = async (
       isUserExist.firstName + ' ' + isUserExist.lastName,
       isUserExist.email,
     )
+    const userInfo = {
+      id: isUserExist._id,
+      role: isUserExist.role,
+      name: `${isUserExist.firstName!} ${isUserExist.lastName!}`,
+      email: isUserExist.email!,
+      image: isUserExist.image!,
+    }
 
     return authResponse(
       StatusCodes.OK,
       `Welcome ${isUserExist.firstName} ${isUserExist.lastName} to our platform.`,
-      isUserExist.role,
+      undefined,
       tokens.accessToken,
       tokens.refreshToken,
+      undefined,
+      userInfo,
     )
   } else {
     await User.findByIdAndUpdate(

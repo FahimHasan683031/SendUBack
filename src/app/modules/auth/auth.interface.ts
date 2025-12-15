@@ -1,3 +1,6 @@
+import { Types } from "mongoose"
+import { USER_ROLES } from "../user/user.interface"
+
 export type IEmailOrPhoneOtpVerification = {
     oneTimeCode: string
     email?: string
@@ -29,4 +32,11 @@ export type IAuthResponse = {
     token?: string
     accessToken?: string
     refreshToken?: string
+    userInfo?: {
+        id: Types.ObjectId
+        role: USER_ROLES
+        name: string
+        email: string
+        image?: string
+    }
 }

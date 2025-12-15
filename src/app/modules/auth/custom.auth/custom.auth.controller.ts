@@ -70,7 +70,7 @@ const verifyAccount = catchAsync(async (req: Request, res: Response) => {
   const { oneTimeCode, phone, email } = req.body
 
   const result = await CustomAuthServices.verifyAccount(email, oneTimeCode)
-  const { status, message, accessToken, refreshToken, role, token } = result
+  const { status, message, accessToken, refreshToken, token, userInfo } = result
   if (refreshToken) {
     res.cookie('refreshToken', refreshToken, {
       secure: config.node_env === 'production',
@@ -82,7 +82,7 @@ const verifyAccount = catchAsync(async (req: Request, res: Response) => {
     statusCode: status,
     success: true,
     message: message,
-    data: { accessToken, role, token },
+    data: { accessToken, refreshToken, token, userInfo },
   })
 })
 
@@ -155,6 +155,19 @@ const socialLogin = catchAsync(async (req: Request, res: Response) => {
     data: { accessToken, role },
   })
 })
+
+const logOut = catchAsync(async (req: Request, res: Response) => {
+ res.clearCookie('refreshToken',{
+      secure: config.node_env === 'production',
+      httpOnly: true,
+    })
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Logged out successfully',
+  })
+})
+
 export const CustomAuthController = {
   forgetPassword,
   resetPassword,
@@ -167,4 +180,5 @@ export const CustomAuthController = {
   deleteAccount,
   adminLogin,
   socialLogin,
+  logOut
 }

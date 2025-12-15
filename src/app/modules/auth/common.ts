@@ -9,7 +9,7 @@ import { IAuthResponse } from './auth.interface'
 import { IUser } from '../user/user.interface'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { emailHelper } from '../../../helpers/emailHelper'
-// import { emailQueue } from '../../../helpers/bull-mq-producer'
+
 
 const handleLoginLogic = async (payload: ILoginData, isUserExist: IUser):Promise<IAuthResponse> => {
   const { authentication, verified, status, password } = isUserExist
@@ -39,8 +39,9 @@ const handleLoginLogic = async (payload: ILoginData, isUserExist: IUser):Promise
       email: isUserExist.email!,   
       otp,
     })
-    // await emailHelper.sendEmail(otpTemplate)
-    // emailQueue.add('emails', otpTemplate)
+    setTimeout(() => {
+      emailHelper.sendEmail(otpTemplate)
+    }, 0)
     return authResponse(StatusCodes.PROXY_AUTHENTICATION_REQUIRED, `An OTP has been sent to your ${payload.email}. Please verify.`)
   }
 
@@ -124,15 +125,40 @@ const handleLoginLogic = async (payload: ILoginData, isUserExist: IUser):Promise
   )
 
   const tokens = AuthHelper.createToken(isUserExist._id, isUserExist.role, `${isUserExist.firstName!} ${isUserExist.lastName!}`, isUserExist.email)
+  const userInfo={
+    id: isUserExist._id,
+    role: isUserExist.role,
+    name: `${isUserExist.firstName!} ${isUserExist.lastName!}`,
+    email: isUserExist.email!,
+    image: isUserExist.image!,
+  }
 
-  return authResponse(StatusCodes.OK, `Welcome back ${isUserExist.firstName!} ${isUserExist.lastName!}`, isUserExist.role, tokens.accessToken, tokens.refreshToken)
+  return  authResponse(
+  StatusCodes.OK,
+  `Welcome back ${isUserExist.firstName!} ${isUserExist.lastName!}`,
+  undefined,           
+  tokens.accessToken,     
+  tokens.refreshToken,     
+  undefined,                 
+  userInfo                   
+)
 }
+
 
 export const AuthCommonServices = {
   handleLoginLogic,
 }
 
-export const authResponse = (status: number, message: string,role?: string, accessToken?: string, refreshToken?: string, token?: string): IAuthResponse => {
+
+export const authResponse = (
+  status: number,
+  message: string,
+  role?: string,
+  accessToken?: string,
+  refreshToken?: string,
+  token?: string,
+  userInfo?: IAuthResponse['userInfo'],
+): IAuthResponse => {
   return {
     status,
     message,
@@ -140,5 +166,6 @@ export const authResponse = (status: number, message: string,role?: string, acce
     ...(accessToken && { accessToken }),
     ...(refreshToken && { refreshToken }),
     ...(token && { token }),
+    ...(userInfo && { userInfo }),
   }
 }

@@ -20,9 +20,10 @@ const createLostItem = catchAsync(async (req: Request, res: Response) => {
 })
 
 // get all lost items for a user
-const getMyLostItems = catchAsync(async (req: Request, res: Response) => {
-  const lostItems = await lostItemServices.getMyLostItems(
-    req.user as JwtPayload
+const getAllLostItems = catchAsync(async (req: Request, res: Response) => {
+  const lostItems = await lostItemServices.getAllLostItems(
+    req.user as JwtPayload,
+    req.query
   )
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -107,7 +108,7 @@ const addOrReplaceImages = catchAsync(async (req: Request, res: Response) => {
 
 export const lostItemControllers = {
   createLostItem,
-  getMyLostItems,
+  getAllLostItems,
   getSingleLostItem,
   updateLostItem,
   deleteLostItem,

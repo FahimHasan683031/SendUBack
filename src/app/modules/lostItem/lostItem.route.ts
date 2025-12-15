@@ -19,9 +19,9 @@ router.post(
 
 // Get all lost items for a user
 router.get(
-  "/myLostItems",
+  "/",
   auth(USER_ROLES.Business,USER_ROLES.ADMIN),
-  lostItemControllers.getMyLostItems
+  lostItemControllers.getAllLostItems
 );
 router.post(
   "/upload-image/:id",
