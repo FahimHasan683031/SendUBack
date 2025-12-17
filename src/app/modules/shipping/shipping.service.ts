@@ -187,6 +187,7 @@ const addShippingRateORInsurance = async (
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
+  await Shipping.findByIdAndUpdate(id, { status: 'SHIPPINGBOOKED' })
 
   if (!shipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
@@ -224,6 +225,12 @@ const deleteShipping = async (id: string) => {
   return shipping
 }
 
+// get address from google maps api
+const getAddressFromGoogleMaps = async (placeId: string) => {
+  const address = await resolveAddressByPlaceId(placeId)
+  return address
+}
+
 export const shippingService = {
   createShipping,
   getAllShippings,
@@ -233,4 +240,5 @@ export const shippingService = {
   deleteShipping,
   getShippingRates,
   addShippingInfo,
+  getAddressFromGoogleMaps
 }

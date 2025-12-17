@@ -39,7 +39,11 @@ router.post(
   shippingController.addShippingRateORInsurance
 );
 
-
+// Get address from google maps api
+router.get(
+  "/getAddress/:placeId",
+  shippingController.getAddressFromGoogleMaps
+);
 
 // Get shipping by ID
 router.get(
@@ -66,5 +70,7 @@ router.delete(
   "/:id",
   shippingController.deleteShipping
 );
+
+
 
 export const shippingRoutes = router;

@@ -106,6 +106,18 @@ const getShippingRates = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Get address from google maps api
+const getAddressFromGoogleMaps = catchAsync(async (req: Request, res: Response) => {
+  const { placeId } = req.params;
+  const result = await shippingService.getAddressFromGoogleMaps(placeId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Address retrieved successfully",
+    data: result,
+  });
+});
+
 
 
 export const shippingController = {
@@ -116,5 +128,6 @@ export const shippingController = {
   deleteShipping,
   getShippingRates,
   addShippingInfo,
-  addShippingRateORInsurance
+  addShippingRateORInsurance,
+  getAddressFromGoogleMaps
 };

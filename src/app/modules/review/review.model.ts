@@ -17,6 +17,8 @@ const ReviewSchema = new mongoose.Schema<IReview>({
   comment: {
     type: String
   },
+}, {
+  timestamps: true,
 })
 
 export const Review = mongoose.model<IReview>('Review', ReviewSchema)
