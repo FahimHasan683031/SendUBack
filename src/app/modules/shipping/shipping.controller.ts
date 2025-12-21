@@ -30,7 +30,7 @@ const getAllShippings = catchAsync(async (req: Request, res: Response) => {
 });
 
 // Get shipping by ID
-const getShippingById = catchAsync(async (req: Request, res: Response) => { 
+const getShippingById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await shippingService.getShippingById(id);
   sendResponse(res, {
@@ -74,7 +74,7 @@ const addShippingRateORInsurance = catchAsync(async (req: Request, res: Response
 // Add shipping information
 const addShippingInfo = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await shippingService.addShippingInfo(id,req.body);
+  const result = await shippingService.addShippingInfo(id, req.body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -106,14 +106,16 @@ const getShippingRates = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get address from google maps api
-const getAddressFromGoogleMaps = catchAsync(async (req: Request, res: Response) => {
-  const { placeId } = req.params;
-  const result = await shippingService.getAddressFromGoogleMaps(placeId);
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Address retrieved successfully",
+
+
+// Search locations using Google Maps API
+const searchLocations = catchAsync(async (req: Request, res: Response) => {
+  const { search, type } = req.query;
+  const result = await shippingService.searchLocations(search as string, type as string);
+
+  // Send response in the exact format matching the hotel API
+  res.status(StatusCodes.OK).json({
+    status: "ok",
     data: result,
   });
 });
@@ -129,5 +131,5 @@ export const shippingController = {
   getShippingRates,
   addShippingInfo,
   addShippingRateORInsurance,
-  getAddressFromGoogleMaps
+  searchLocations
 };

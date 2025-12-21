@@ -10,7 +10,7 @@ export type ShippingStatus =
   | 'delivered'
 
 export interface IShippingAddress {
-  hotelName?: string
+  placeName?: string
   name: string
   street1: string
   street2?: string

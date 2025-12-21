@@ -39,10 +39,12 @@ router.post(
   shippingController.addShippingRateORInsurance
 );
 
-// Get address from google maps api
+
+
+// Search locations using Google Maps API
 router.get(
-  "/getAddress/:placeId",
-  shippingController.getAddressFromGoogleMaps
+  "/searchLocations",
+  shippingController.searchLocations
 );
 
 // Get shipping by ID

@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose'
 import { IShipping } from './shipping.interface'
 
 const shippingAddressSchema = new Schema({
-  hotelName: String,
+  placeName: String,
   name: { type: String, required: true },
   street1: { type: String, required: true },
   street2: String,

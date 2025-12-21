@@ -12,9 +12,10 @@ import { logger } from '../../../shared/logger'
 import { SettingsService } from '../settings/settings.service'
 import { JwtPayload } from 'jsonwebtoken'
 import { USER_ROLES } from '../user/user.interface'
-import { resolveAddressByPlaceId } from '../../../utils/googleMapsAddress.util'
 import { getZoneByCountry } from '../zoone/zone.utils'
 import { Zone } from '../zoone/zone.model'
+import { searchLocationsByQuery } from '../../../utils/googleMapsAddress.util'
+
 
 // Create shipping
 const createShipping = async (payload: IShipping) => {
@@ -39,8 +40,8 @@ const createShipping = async (payload: IShipping) => {
       payload.zoneName = 'international'
     }
 
-//     const adddressDetails = await resolveAddressByPlaceId(payload.address_from.place_id )
-// console.log(adddressDetails)
+    //     const adddressDetails = await resolveAddressByPlaceId(payload.address_from.place_id )
+    // console.log(adddressDetails)
     const shipping = await Shipping.create(payload)
     return shipping
     // return adddressDetails
@@ -72,7 +73,7 @@ const getShippingRates = async (shipingId: string) => {
 
 // Get all shippings
 const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload) => {
-   if (user.role === USER_ROLES.Business) {
+  if (user.role === USER_ROLES.Business) {
     query['address_from.email'] = user.email;
   }
   const shippingQueryBuilder = new QueryBuilder(Shipping.find(), query)
@@ -225,10 +226,11 @@ const deleteShipping = async (id: string) => {
   return shipping
 }
 
-// get address from google maps api
-const getAddressFromGoogleMaps = async (placeId: string) => {
-  const address = await resolveAddressByPlaceId(placeId)
-  return address
+
+// search locations using google maps api
+const searchLocations = async (search: string, type?: string) => {
+  const locations = await searchLocationsByQuery(search, type)
+  return locations
 }
 
 export const shippingService = {
@@ -240,5 +242,5 @@ export const shippingService = {
   deleteShipping,
   getShippingRates,
   addShippingInfo,
-  getAddressFromGoogleMaps
+  searchLocations
 }

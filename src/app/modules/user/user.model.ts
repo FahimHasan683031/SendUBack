@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IUser, USER_ROLES, USER_STATUS, UserModel } from "./user.interface";
+import { IUser, USER_STATUS, UserModel } from "./user.interface";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
 import config from "../../../config";
