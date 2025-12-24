@@ -40,8 +40,7 @@ const createShipping = async (payload: IShipping) => {
       payload.zoneName = 'international'
     }
 
-    //     const adddressDetails = await resolveAddressByPlaceId(payload.address_from.place_id )
-    // console.log(adddressDetails)
+
     const shipping = await Shipping.create(payload)
     return shipping
     // return adddressDetails
@@ -76,6 +75,11 @@ const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload)
   if (user.role === USER_ROLES.Business) {
     query['address_from.email'] = user.email;
   }
+
+ if(query.status !== "shipped"){
+  query.status = "shipped"
+ }
+
   const shippingQueryBuilder = new QueryBuilder(Shipping.find(), query)
     .search([
       'address_from',
@@ -187,8 +191,8 @@ const addShippingRateORInsurance = async (
 
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
+  payload.status = 'shipped'
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
-  await Shipping.findByIdAndUpdate(id, { status: 'SHIPPINGBOOKED' })
 
   if (!shipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')

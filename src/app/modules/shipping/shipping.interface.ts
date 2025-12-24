@@ -5,7 +5,6 @@ export type ShippingStatus =
   | 'created'
   | 'rateSelected'
   | 'paymentCompleted'
-  |'SHIPPINGBOOKED'
   | 'shipped'
   | 'delivered'
 

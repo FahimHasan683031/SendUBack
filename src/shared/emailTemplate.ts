@@ -854,7 +854,7 @@ const guestLostItemNotificationEmail = (data: any) => {
 
         <!-- Book Shipping Button -->
         <div style="text-align:center;margin-top:22px;">
-          <a href="${config.frontend_url}/book-shipping/${data._id}"
+          <a href="${config.frontend_url}/orders/${data._id}"
              style="background:#0077DD;color:#fff;padding:12px 30px;border-radius:8px;
              text-decoration:none;font-size:14px;display:inline-block;">
             Book Shipping for Your Item
