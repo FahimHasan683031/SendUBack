@@ -15,9 +15,9 @@ const app = express();
 
 
 const allowedOrigins = [
-  'https://goroqit.com',
-  'https://www.goroqit.com', 
-  'http://goroqit.com',        
+  'http://160.153.181.155:3000',
+  'https://senduback.com',  
+  'https://www.senduback.com',  
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
@@ -29,7 +29,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || origin.endsWith('.goroqit.com') || origin === 'https://goroqit.com') {
+    if (allowedOrigins.includes(origin) || origin.endsWith('.senduback.com') || origin === 'https://senduback.com') {
       callback(null, true);
     } else {
       console.log('🚫 Blocked by CORS:', origin);
