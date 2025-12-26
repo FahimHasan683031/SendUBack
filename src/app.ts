@@ -22,7 +22,8 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3002',
   'http://localhost:3003',
-  'http://10.10.7.45:3000'
+  'http://10.10.7.45:3000',
+  "https://mangal-frontend.vercel.app"
 ];
 
 app.use(cors({

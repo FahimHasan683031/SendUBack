@@ -2,6 +2,7 @@ import { Zone } from './zone.model';
 import { IZone } from './zone.interface';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../../errors/ApiError';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // CREATE zone
 const createZone = async (payload: { name: string; countries: string[] }): Promise<IZone> => {
@@ -37,8 +38,15 @@ const createZone = async (payload: { name: string; countries: string[] }): Promi
 };
 
 // GET all zones
-const getAllZones = async () => {
-  return await Zone.find().sort({ id: 1 });
+const getAllZones = async (query: Record<string, unknown>) => {
+  const zonQuryBuilder =new QueryBuilder(Zone.find(),query)
+  .filter()
+  .search(['name'])
+  .sort()
+  .paginate();
+  const zones = await zonQuryBuilder.modelQuery;
+  const paginateInfo = await zonQuryBuilder.getPaginationInfo();
+  return {data:zones,meta:paginateInfo};
 };
 
 // GET zone by ID

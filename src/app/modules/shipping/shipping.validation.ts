@@ -7,8 +7,8 @@ const shippingAddressSchema = z.object({
   street1: z.string().min(1, "Street address is required"),
   street2: z.string().optional(),
   city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  postal_code: z.string().min(1, "Postal code is required"),
+  state: z.string().min(1, "State is required").optional(),
+  postal_code: z.string().min(1, "Postal code is required").optional(),
   country: z.string().min(1, "Country is required"),
   phone: z.string().min(1, "Phone is required"),
   email: z.string().email("Valid email is required"),
@@ -31,8 +31,7 @@ const baseShippingSchema = z.object({
   selected_rate: z.any().optional(),
   insurance: insuranceSchema.optional(),
   notes: z.string().optional(),
-  lostItemId: z.string().optional(),
-  currency: z.string().min(1, "Currency is required"),
+  lostItemId: z.string().optional()
 });
 
 // Create shipping validation

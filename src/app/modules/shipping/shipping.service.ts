@@ -76,9 +76,6 @@ const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload)
     query['address_from.email'] = user.email;
   }
 
- if(query.status !== "shipped"){
-  query.status = "shipped"
- }
 
   const shippingQueryBuilder = new QueryBuilder(Shipping.find(), query)
     .search([

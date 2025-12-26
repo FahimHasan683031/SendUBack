@@ -14,8 +14,8 @@ export interface IShippingAddress {
   street1: string
   street2?: string
   city: string
-  state: string
-  postal_code: string
+  state?: string
+  postal_code?: string
   country: string
   phone: string
   email: string
@@ -47,7 +47,6 @@ export interface IShipping {
   parcel: IParcel[] | string[]
   selected_rate?: Types.ObjectId
   shipping_cost?: number
-  currency: string
   insurance?: IInsurance
   total_cost?: number
   shippingLabel?: string
