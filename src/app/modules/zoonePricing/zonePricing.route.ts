@@ -20,14 +20,6 @@ router.route("/")
     zonePricingController.getZonePricingsController
   );
 
-router.post(
-  "/seed/all-pricing",
-  auth("admin"),
-  zonePricingController.seedAllZonePricingController
-);
-
-
-
 
 router.route("/:id")
   .get(

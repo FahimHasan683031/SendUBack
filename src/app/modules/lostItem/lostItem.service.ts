@@ -9,6 +9,7 @@ import { emailHelper } from '../../../helpers/emailHelper'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { logger } from '../../../shared/logger'
 import QueryBuilder from '../../builder/QueryBuilder'
+import { BusinessDetails } from '../businessDetails/businessDetails.model'
 
 // create lost item
 export const createLostItem = async (
@@ -19,7 +20,25 @@ export const createLostItem = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-  
+
+  if (isExistUser.role === USER_ROLES.Business) {
+    const businessDetails = await BusinessDetails.findOne({ userId: user.authId })
+    if (!businessDetails) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Business details are required')
+    }
+    if (
+      !businessDetails.address ||
+      !businessDetails.businessEmail ||
+      !businessDetails.businessName ||
+      !businessDetails.businessPhone
+    ) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Please complete your business details (Address, Email, Name, Phone) before adding a lost item',
+      )
+    }
+  }
+
   const lostItem = await LostItem.create({
     ...payload,
     user: user.authId
@@ -36,17 +55,17 @@ export const getAllLostItems = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-  if(isExistUser.role === USER_ROLES.Business){
+  if (isExistUser.role === USER_ROLES.Business) {
     query.user = isExistUser._id
   }
-  const lostQueryBiilder= new QueryBuilder(LostItem.find(), query)
+  const lostQueryBiilder = new QueryBuilder(LostItem.find(), query)
     .filter()
     .sort()
     .paginate()
     .fields()
 
-    const lostItems = await lostQueryBiilder.modelQuery
-    const paginateInfo = await lostQueryBiilder.getPaginationInfo()
+  const lostItems = await lostQueryBiilder.modelQuery
+  const paginateInfo = await lostQueryBiilder.getPaginationInfo()
 
 
 
@@ -80,12 +99,12 @@ export const updateLostItem = async (
   id: string,
   payload: Partial<ILostItem>,
 ) => {
-  
+
   const isExistLostItem = await LostItem.findOne({ _id: id })
   if (!isExistLostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
-  
+
   const lostItem = await LostItem.findOneAndUpdate(
     { _id: id },
     payload,
@@ -103,16 +122,16 @@ export const deleteLostItem = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-  if(isExistUser.role !== USER_ROLES.Business && isExistUser.role !== USER_ROLES.ADMIN){
+  if (isExistUser.role !== USER_ROLES.Business && isExistUser.role !== USER_ROLES.ADMIN) {
     throw new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to delete this lost item')
   }
-  
+
   const isExistLostItem = await LostItem.findOne({ _id: id })
   if (!isExistLostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
-  
-  const lostItem = await LostItem.findOneAndDelete({ _id: id})
+
+  const lostItem = await LostItem.findOneAndDelete({ _id: id })
   return lostItem
 }
 
@@ -127,7 +146,7 @@ const addOrReplaceImages = async (
   // Update images
   item.images = images;
   await item.save();
-  
+
   //@ts-ignore
   const io = global.io
   if (io && itemId) {
@@ -137,12 +156,12 @@ const addOrReplaceImages = async (
   return item;
 };
 
-const sendGestEmail=async(lostItemId:string)=>{
-const lostItem = await LostItem.findById(lostItemId)
+const sendGestEmail = async (lostItemId: string) => {
+  const lostItem = await LostItem.findById(lostItemId)
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
-  if(!lostItem.guestEmail){
+  if (!lostItem.guestEmail) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Guest email not found')
   }
   setTimeout(() => {

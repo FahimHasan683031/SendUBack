@@ -71,21 +71,11 @@ const updateZonePricingController = catchAsync(async (req: Request, res: Respons
 
 
 // seed all zone pricing
-const seedAllZonePricingController = catchAsync(async (req: Request, res: Response) => {
-  const result = await ZonePricingService.seedAllZonePricing();
-  sendResponse(res, {
-    statusCode: StatusCodes.CREATED,
-    success: true,
-    message: 'All zone pricing seeded successfully',
-    data: result,
-  });
-});
+
 
 export const zonePricingController = {
   createZonePricingController,
   getZonePricingsController,
   getZonePricingByIdController,
-  deleteZonePricingController,
-  updateZonePricingController,
-  seedAllZonePricingController
+  deleteZonePricingController, updateZonePricingController,
 }

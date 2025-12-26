@@ -9,6 +9,7 @@ export interface IAddress {
   state: string
   postal_code: string
   country: string
+  countryCode: string
 }
 
 

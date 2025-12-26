@@ -32,6 +32,11 @@ const addressSchema = new Schema<IAddress>({
     type: String,
     trim: true,
     required: true
+  },
+  countryCode: {
+    type: String,
+    trim: true,
+    required: true
   }
 },{
     _id: false

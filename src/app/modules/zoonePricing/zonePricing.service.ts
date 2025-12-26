@@ -90,67 +90,8 @@ const getShippingRate = async (from: string, to: string) => {
   return pricing
 };
 
-// seed all zone pricing
-const seedAllZonePricing = async () => {
-  // 1. Fetch all existing zones
-  const zones = await Zone.find({}).sort({ id: 1 }); // Assuming 'id' is the zone number
 
-  if (zones.length === 0) {
-    throw new Error("No zones found. Please seed zones first.");
-  }
 
-  // 2. Clear existing zone pricing
-  await ZonePricing.deleteMany({});
-
-  const pricingData = [];
-
-  // 3. Generate pricing for all combinations
-  for (const fromZone of zones) {
-    for (const toZone of zones) {
-      const isSameZone = fromZone.id === toZone.id;
-      // Simple distance logic: difference in IDs (just for variation)
-      // If IDs are not numbers, this math might need adjustment, but usually zone IDs are 1, 2, 3...
-      const distance = Math.abs((fromZone.id || 0) - (toZone.id || 0));
-
-      // Standard Pricing
-      let standardPrice = isSameZone ? 15 : 30 + (distance * 5);
-
-      // Express Pricing
-      let expressPrice = isSameZone ? 30 : 50 + (distance * 10);
-
-      // Create Standard Record
-      pricingData.push({
-        title: `${fromZone.name} to ${toZone.name} - Standard`,
-        fromZone: fromZone.id,
-        toZone: toZone.id,
-        shippingType: 'standard',
-        price: parseFloat(standardPrice.toFixed(2)),
-        duration: isSameZone ? '3-5 business days' : '7-14 business days',
-        description: `Standard shipping from ${fromZone.name} to ${toZone.name}`
-      });
-
-      // Create Express Record
-      pricingData.push({
-        title: `${fromZone.name} to ${toZone.name} - Express`,
-        fromZone: fromZone.id,
-        toZone: toZone.id,
-        shippingType: 'express',
-        price: parseFloat(expressPrice.toFixed(2)),
-        duration: isSameZone ? '1-2 business days' : '3-5 business days',
-        description: `Express shipping from ${fromZone.name} to ${toZone.name}`
-      });
-    }
-  }
-
-  // 4. Bulk insert
-  const result = await ZonePricing.insertMany(pricingData);
-
-  return {
-    totalZones: zones.length,
-    totalPricingRecords: result.length,
-    message: `Successfully seeded ${result.length} pricing records for ${zones.length} zones.`
-  };
-};
 
 
 export const ZonePricingService = {
@@ -160,5 +101,4 @@ export const ZonePricingService = {
   deleteZonePricing,
   updateZonePricing,
   getShippingRate,
-  seedAllZonePricing
 };
