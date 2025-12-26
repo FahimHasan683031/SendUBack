@@ -19,6 +19,7 @@ export interface IShippingAddress {
   country: string
   phone: string
   email: string
+  countryName: string
 }
 
 export interface IParcel {

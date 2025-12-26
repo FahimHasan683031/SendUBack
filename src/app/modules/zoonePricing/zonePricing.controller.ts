@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import catchAsync from "../../../shared/catchAsync";
 
 // create zone pricing
- const createZonePricingController = catchAsync(async (req: Request, res: Response) => {
+const createZonePricingController = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
   const zonePricing = await ZonePricingService.createZonePricing(payload);
   sendResponse(res, {
@@ -17,7 +17,7 @@ import catchAsync from "../../../shared/catchAsync";
 });
 
 // get all zone pricings
- const getZonePricingsController = catchAsync(async (req: Request, res: Response) => {
+const getZonePricingsController = catchAsync(async (req: Request, res: Response) => {
   const zonePricings = await ZonePricingService.getZonePricings(req.query);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -29,7 +29,7 @@ import catchAsync from "../../../shared/catchAsync";
 });
 
 // get zone pricing by id
- const getZonePricingByIdController = catchAsync(async (req: Request, res: Response) => {
+const getZonePricingByIdController = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const zonePricing = await ZonePricingService.getZonePricingById(id);
   sendResponse(res, {
@@ -41,7 +41,7 @@ import catchAsync from "../../../shared/catchAsync";
 });
 
 // delete zone pricing
- const deleteZonePricingController = catchAsync(async (req: Request, res: Response) => {
+const deleteZonePricingController = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const zonePricing = await ZonePricingService.deleteZonePricing(id);
   sendResponse(res, {
@@ -53,7 +53,7 @@ import catchAsync from "../../../shared/catchAsync";
 });
 
 // update zone pricing
- const updateZonePricingController = catchAsync(async (req: Request, res: Response) => {
+const updateZonePricingController = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
   const payload = req.body;
   const zonePricing = await ZonePricingService.updateZonePricing(id, payload);
@@ -70,12 +70,22 @@ import catchAsync from "../../../shared/catchAsync";
 
 
 
+// seed all zone pricing
+const seedAllZonePricingController = catchAsync(async (req: Request, res: Response) => {
+  const result = await ZonePricingService.seedAllZonePricing();
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: 'All zone pricing seeded successfully',
+    data: result,
+  });
+});
+
 export const zonePricingController = {
   createZonePricingController,
   getZonePricingsController,
   getZonePricingByIdController,
   deleteZonePricingController,
   updateZonePricingController,
-  
-  
+  seedAllZonePricingController
 }

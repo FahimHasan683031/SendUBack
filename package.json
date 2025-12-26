@@ -20,7 +20,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "seed:zones": "ts-node-dev src/seeders/zone.seeder.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.782.0",

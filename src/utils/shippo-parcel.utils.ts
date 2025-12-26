@@ -11,7 +11,7 @@ export interface ParcelInput {
 
 const PARCEL_PRESETS: Record<string, Omit<ParcelInput, "name">> = {
   // ------- DOCUMENTS -------
-  "Documents": { length: 12, width: 9, height: 1, distance_unit: "in", weight: 0.23, mass_unit: "kg" },
+  "Passport": { length: 12, width: 9, height: 1, distance_unit: "in", weight: 0.23, mass_unit: "kg" },
   "ID Card": { length: 6, width: 4, height: 1, distance_unit: "in", weight: 0.09, mass_unit: "kg" },
   "Drivers Licence": { length: 6, width: 4, height: 1, distance_unit: "in", weight: 0.09, mass_unit: "kg" },
   "Professional Card": { length: 6, width: 4, height: 1, distance_unit: "in", weight: 0.09, mass_unit: "kg" },

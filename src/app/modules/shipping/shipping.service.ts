@@ -142,12 +142,16 @@ const addShippingRateORInsurance = async (
   id: string,
   payload: Partial<IShipping>,
 ) => {
+  if(!payload || !id) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid payload or id')
+  }
   const isExistShipping = await Shipping.findById(id)
   if (!isExistShipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
   // Update selected rate
   if (payload.selected_rate) {
+    
     const selectedRate = await ZonePricing.findById(payload.selected_rate)
     if (!selectedRate) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Selected rate not found')

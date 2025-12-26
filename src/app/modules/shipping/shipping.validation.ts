@@ -10,6 +10,7 @@ const shippingAddressSchema = z.object({
   state: z.string().min(1, "State is required").optional(),
   postal_code: z.string().min(1, "Postal code is required").optional(),
   country: z.string().min(1, "Country is required"),
+  countryName: z.string().min(1, "Country name is required"),
   phone: z.string().min(1, "Phone is required"),
   email: z.string().email("Valid email is required"),
 });
