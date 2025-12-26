@@ -12,9 +12,9 @@ import { logger } from '../../../shared/logger'
 import { SettingsService } from '../settings/settings.service'
 import { JwtPayload } from 'jsonwebtoken'
 import { USER_ROLES } from '../user/user.interface'
-import { getZoneByCountry } from '../zoone/zone.utils'
 import { Zone } from '../zoone/zone.model'
 import { searchLocationsByQuery } from '../../../utils/googleMapsAddress.util'
+import { getZoneByCountry } from '../zoone/zone.utils'
 
 
 // Create shipping

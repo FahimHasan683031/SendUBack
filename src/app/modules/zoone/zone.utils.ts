@@ -1,3 +1,4 @@
+import { Zone } from "./zone.model";
 import { zoneService } from "./zone.service";
 
 
@@ -15,7 +16,7 @@ export const getZoneByCountry = async (countryCode: string): Promise<number | un
 // Get all zones (for shipping service)
 export const getAllZones = async () => {
   try {
-    return await zoneService.getAllZones();
+    return await Zone.find();
   } catch (error) {
     console.error('Error getting all zones:', error);
     return [];

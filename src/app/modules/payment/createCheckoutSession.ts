@@ -29,7 +29,7 @@ export const createCheckoutSession = async (shippingId: string) => {
     line_items: [
       {
         price_data: {
-          currency: shipping.currency || "GBP",
+          currency:"GBP",
           product_data: {
             name: `Shipping: ${shipping.zoneName.toUpperCase()}`,
             description: `From ${shipping.address_from.country} to ${shipping.address_to.country}`,
