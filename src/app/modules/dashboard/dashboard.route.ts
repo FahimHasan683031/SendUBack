@@ -17,6 +17,11 @@ router.get(
   DashboardControllers.getBusinessDashboardStatistics,
 )
 
+router.get(
+  '/public-stats',
+  DashboardControllers.getPublicStats,
+)
+
 
 
 export const DashboardRoutes = router

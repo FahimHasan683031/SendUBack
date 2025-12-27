@@ -20,9 +20,13 @@ import { getZoneByCountry } from '../zoone/zone.utils'
 // Create shipping
 const createShipping = async (payload: IShipping) => {
   try {
-    const parcel = payload.parcel?.map(parcel =>
-      generateParcel(parcel as string),
-    ) || [generateParcel('Other')]
+    const parcel = payload.parcel?.map((p: any) =>
+      generateParcel({
+        itemType: p.itemType,
+        name: p.name,
+        description: p.description
+      }),
+    ) || [generateParcel({ itemType: 'Other', name: 'Other' })]
     payload.parcel = parcel
 
     // Check if countries are valid
@@ -34,9 +38,9 @@ const createShipping = async (payload: IShipping) => {
 
     if (fromZone === toZone) {
 
-      const zone = await Zone.findOne({id: fromZone})
+      const zone = await Zone.findOne({ id: fromZone })
       payload.zoneName = zone?.name || ''
-    }  else {
+    } else {
       payload.zoneName = 'international'
     }
 
@@ -142,7 +146,7 @@ const addShippingRateORInsurance = async (
   id: string,
   payload: Partial<IShipping>,
 ) => {
-  if(!payload || !id) {
+  if (!payload || !id) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid payload or id')
   }
   const isExistShipping = await Shipping.findById(id)
@@ -151,7 +155,7 @@ const addShippingRateORInsurance = async (
   }
   // Update selected rate
   if (payload.selected_rate) {
-    
+
     const selectedRate = await ZonePricing.findById(payload.selected_rate)
     if (!selectedRate) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Selected rate not found')
@@ -165,7 +169,7 @@ const addShippingRateORInsurance = async (
         'Invalid Rate for selected country',
       )
     }
-    ;(payload.total_cost =
+    ; (payload.total_cost =
       selectedRate.price + (isExistShipping.insurance?.insuranceCost || 0)),
       (payload.shipping_cost = selectedRate.price),
       (payload.status = 'rateSelected')
@@ -178,7 +182,7 @@ const addShippingRateORInsurance = async (
     }
     const { insurance } = settings
     // check if product value exceeds max insurance value
-    if(payload.insurance.productValue > insurance.maxValue){
+    if (payload.insurance.productValue > insurance.maxValue) {
       throw new ApiError(StatusCodes.BAD_REQUEST, `Product value must be less than or equal to ${insurance.maxValue}`)
     }
     const insuranceCost = (payload.insurance.productValue / 100) * insurance.percentage

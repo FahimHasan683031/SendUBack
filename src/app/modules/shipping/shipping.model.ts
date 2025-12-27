@@ -16,7 +16,9 @@ const shippingAddressSchema = new Schema({
 })
 
 const parcelSchema = new Schema({
+  itemType: { type: String, required: true },
   name: { type: String, required: true },
+  description: String,
   length: { type: Number, required: true },
   width: { type: Number, required: true },
   height: { type: Number, required: true },

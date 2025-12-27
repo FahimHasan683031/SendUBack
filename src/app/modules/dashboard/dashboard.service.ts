@@ -72,7 +72,18 @@ const businessDashboardOverview = async (user: JwtPayload) => {
     totalDeliveriesThisMonth,
   }
 }
+const getPublicStats = async () => {
+  const totalBusinessAccounts = await User.countDocuments({ role: 'business' })
+  const totalShippings = await Shipping.countDocuments()
+
+  return {
+    totalBusinessAccounts,
+    totalShippings,
+  }
+}
+
 export const DshboardServices = {
   getDashboardOverview,
-  businessDashboardOverview
+  businessDashboardOverview,
+  getPublicStats
 }

@@ -1,6 +1,6 @@
 
 export interface ParcelInput {
-  name: string;  
+  name: string;
   length: number;
   width: number;
   height: number;
@@ -76,11 +76,14 @@ const PARCEL_PRESETS: Record<string, Omit<ParcelInput, "name">> = {
   "Other": { length: 10, width: 10, height: 5, distance_unit: "in", weight: 0.91, mass_unit: "kg" },
 };
 
-export const generateParcel = (productType: string): ParcelInput => {
-  const preset = PARCEL_PRESETS[productType] || PARCEL_PRESETS["Other"];
+export const generateParcel = (parcelData: { itemType: string; name: string; description?: string }): ParcelInput & { itemType: string; description?: string } => {
+  const { itemType, name, description } = parcelData;
+  const preset = PARCEL_PRESETS[itemType] || PARCEL_PRESETS["Other"];
 
   return {
-    name: productType in PARCEL_PRESETS ? productType : "Other",
+    itemType,
+    name,
+    description: description || "",
     ...preset,
   };
 };

@@ -28,7 +28,11 @@ const insuranceSchema = z.object({
 const baseShippingSchema = z.object({
   address_from: shippingAddressSchema,
   address_to: shippingAddressSchema,
-  parcel: z.array(z.string().min(1, "Parcel is required")),
+  parcel: z.array(z.object({
+    itemType: z.string().min(1, "Item type is required"),
+    name: z.string().min(1, "Name is required"),
+    description: z.string().optional()
+  })).min(1, "At least one parcel is required"),
   selected_rate: z.any().optional(),
   insurance: insuranceSchema.optional(),
   notes: z.string().optional(),
@@ -63,7 +67,11 @@ export const calculateShippingRatesZod = z.object({
     shipping_type: z.enum(['insideUk', 'international']),
     address_from: shippingAddressSchema,
     address_to: shippingAddressSchema,
-    parcel: z.array(z.string().min(1, "Parcel is required")),
+    parcel: z.array(z.object({
+      itemType: z.string().min(1, "Item type is required"),
+      name: z.string().min(1, "Name is required"),
+      description: z.string().optional()
+    })).min(1, "At least one parcel is required"),
   }).strict(),
 });
 

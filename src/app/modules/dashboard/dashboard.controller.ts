@@ -28,7 +28,18 @@ const getBusinessDashboardStatistics = catchAsync(async (req: Request, res: Resp
 
 
 
+const getPublicStats = catchAsync(async (req: Request, res: Response) => {
+  const result = await DshboardServices.getPublicStats()
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Public stats fetched successfully',
+    data: result,
+  })
+})
+
 export const DashboardControllers = {
   getDashboardStatistics,
-  getBusinessDashboardStatistics
+  getBusinessDashboardStatistics,
+  getPublicStats
 }

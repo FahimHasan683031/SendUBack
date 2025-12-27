@@ -23,7 +23,9 @@ export interface IShippingAddress {
 }
 
 export interface IParcel {
+  itemType: string
   name: string
+  description?: string
   length: number
   width: number
   height: number
@@ -60,11 +62,10 @@ export interface IShipping {
 
 
 export interface IShippingCreateInput {
-  address_from: IShippingAddress 
+  address_from: IShippingAddress
   address_to: IShippingAddress
-  parcel: string[]
+  parcel: { itemType: string; name: string; description?: string }[]
   insurance?: IInsurance
   notes?: string
   lostItemId?: string
-  currency: string
 }
