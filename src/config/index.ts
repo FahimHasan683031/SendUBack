@@ -5,17 +5,13 @@ dotenv.config({ path: path.join(process.cwd(), '.env') })
 
 export default {
   ip_address: process.env.IP_ADDRESS,
+
   database_url: process.env.DATABASE_URL,
-  google_redirect_url: process.env.GOOGLE_REDIRECT_URL,
   node_env: process.env.NODE_ENV,
   port: process.env.PORT,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
   firebase_service_account_base64: process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
-  google: {
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    callback_url: process.env.GOOGLE_CALLBACK_URL,
-  },
+
   aws: {
     access_key_id: process.env.AWS_ACCESS_KEY_ID,
     secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
@@ -46,16 +42,7 @@ export default {
     host: process.env.EMAIL_HOST,
     pass: process.env.EMAIL_PASS,
   },
-  twilio: {
-    account_sid: process.env.TWILIO_ACCOUNT_SID,
-    auth_token: process.env.TWILIO_AUTH_TOKEN,
-    phone_number: process.env.TWILIO_PHONE_NUMBER,
-  },
-  cloudinary: {
-    cloudinary_name: process.env.CLOUDINARY_NAME,
-    cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
-    cloudinary_secret: process.env.CLOUDINARY_SECRET,
-  },
+
   super_admin: {
     email: process.env.ADMIN_EMAIL,
     password: process.env.ADMIN_PASSWORD,

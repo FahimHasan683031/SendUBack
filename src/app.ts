@@ -5,7 +5,6 @@ import router from './routes'
 import { Morgan } from './shared/morgan'
 import cookieParser from 'cookie-parser'
 import globalErrorHandler from './app/middleware/globalErrorHandler'
-import passport from './app/modules/auth/passport.auth/config/passport'
 import handleStripeWebhook from './app/modules/payment/handleStripeWebhook'
 
 
@@ -16,8 +15,8 @@ const app = express();
 
 const allowedOrigins = [
   'http://160.153.181.155:3000',
-  'https://senduback.com',  
-  'https://www.senduback.com',  
+  'https://senduback.com',
+  'https://www.senduback.com',
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
@@ -41,8 +40,8 @@ app.use(cors({
 
 // Stripe webhook route
 app.use('/webhook',
-    express.raw({ type: 'application/json' }),
-    handleStripeWebhook
+  express.raw({ type: 'application/json' }),
+  handleStripeWebhook
 );
 
 
@@ -52,7 +51,6 @@ app.use(Morgan.successHandler)
 app.use(Morgan.errorHandler)
 //body parser
 app.use(express.json())
-app.use(passport.initialize())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 //file retrieve

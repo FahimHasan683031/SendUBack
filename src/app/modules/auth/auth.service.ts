@@ -1,22 +1,25 @@
 import { StatusCodes } from 'http-status-codes'
-import { User } from '../../user/user.model'
-import { AuthHelper } from '../auth.helper'
-import ApiError from '../../../../errors/ApiError'
-import { USER_ROLES, USER_STATUS } from '../../../../enum/user'
-import config from '../../../../config'
-import { Token } from '../../token/token.model'
-import { IAuthResponse, IResetPassword } from '../auth.interface'
-import { emailTemplate } from '../../../../shared/emailTemplate'
-import cryptoToken, { generateOtp } from '../../../../utils/crypto'
-import bcrypt from 'bcryptjs'
-import { ILoginData } from '../../../../interfaces/auth'
-import { AuthCommonServices, authResponse } from '../common'
-import { jwtHelper } from '../../../../helpers/jwtHelper'
+import { IAuthResponse, IResetPassword } from './auth.interface'
+import { User } from '../user/user.model'
+import ApiError from '../../../errors/ApiError'
+import { USER_ROLES, USER_STATUS } from '../../../enum/user'
+import { AuthHelper } from './auth.helper'
+import {
+  AuthCommonServices,
+  authResponse,
+} from './common'
+import { ILoginData } from '../../../interfaces/auth'
+import { emailTemplate } from '../../../shared/emailTemplate'
+import { emailHelper } from '../../../helpers/emailHelper'
 import { JwtPayload } from 'jsonwebtoken'
-import { IUser } from '../../user/user.interface'
-import { emailHelper } from '../../../../helpers/emailHelper'
+import { jwtHelper } from '../../../helpers/jwtHelper'
+import config from '../../../config'
+import bcrypt from 'bcryptjs'
+import cryptoToken, { generateOtp } from '../../../utils/crypto'
+import { Token } from '../token/token.model'
+import { IUser } from '../user/user.interface'
 import mongoose from 'mongoose'
-import { BusinessDetails } from '../../businessDetails/businessDetails.model'
+import { BusinessDetails } from '../businessDetails/businessDetails.model'
 
 export const createUser = async (payload: IUser) => {
   payload.email = payload.email?.toLowerCase().trim()
@@ -24,8 +27,8 @@ export const createUser = async (payload: IUser) => {
 
   try {
     session.startTransaction()
-    
-    if(payload.role === USER_ROLES.ADMIN){
+
+    if (payload.role === USER_ROLES.ADMIN) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
         `Admin account creation is not allowed.`,
@@ -109,7 +112,7 @@ export const createUser = async (payload: IUser) => {
   }
 }
 
-const customLogin = async (payload: ILoginData): Promise<IAuthResponse> => {
+const login = async (payload: ILoginData): Promise<IAuthResponse> => {
   const { email, phone } = payload
   const query = email ? { email: email.toLowerCase().trim() } : { phone: phone }
 
@@ -452,75 +455,7 @@ const getAccessToken = async (token: string) => {
   }
 }
 
-const socialLogin = async (
-  appId: string,
-  deviceToken: string,
-): Promise<IAuthResponse> => {
-  const isUserExist = await User.findOne({
-    appId,
-    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
-  })
 
-  if (!isUserExist) {
-    const createdUser = await User.create({
-      appId,
-      deviceToken,
-      status: USER_STATUS.ACTIVE,
-      firstName: 'User',
-      lastName: 'Social',
-      email: `${appId}@social.com`,
-      password: appId,
-      role: USER_ROLES.Business,
-      verified: true,
-      authentication: {
-        oneTimeCode: '',
-        restrictionLeftAt: null,
-        resetPassword: false,
-        wrongLoginAttempts: 0,
-        latestRequestAt: new Date(),
-      },
-    })
-
-    if (!createdUser)
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user.')
-
-    const tokens = AuthHelper.createToken(
-      createdUser._id,
-      createdUser.role,
-      `${createdUser.firstName} ${createdUser.lastName}`,
-      createdUser.email,
-    )
-
-    return authResponse(
-      StatusCodes.OK,
-      `Welcome ${createdUser.firstName} to our platform.`,
-      createdUser.role,
-      tokens.accessToken,
-      tokens.refreshToken,
-    )
-  } else {
-    await User.findByIdAndUpdate(isUserExist._id, {
-      $set: {
-        deviceToken,
-      },
-    })
-
-    const tokens = AuthHelper.createToken(
-      isUserExist._id,
-      isUserExist.role,
-      `${isUserExist.firstName} ${isUserExist.lastName}`,
-      isUserExist.email,
-    )
-
-    return authResponse(
-      StatusCodes.OK,
-      `Welcome back ${isUserExist.firstName}`,
-      isUserExist.role,
-      tokens.accessToken,
-      tokens.refreshToken,
-    )
-  }
-}
 
 const resendOtpToPhoneOrEmail = async (
   authType: 'resetPassword' | 'createAccount',
@@ -580,7 +515,7 @@ const resendOtpToPhoneOrEmail = async (
   }
 
   if (phone) {
-    // Implement this feature using twilio/aws sns
+    // Implement this feature using aws sns
     await User.findByIdAndUpdate(
       isUserExist._id,
       {
@@ -728,17 +663,17 @@ const changePassword = async (
   return { message: 'Password changed successfully' }
 }
 
-export const CustomAuthServices = {
-  adminLogin,
+export const AuthServices = {
   forgetPassword,
   resetPassword,
   verifyAccount,
-  customLogin,
+  login,
   getAccessToken,
-  socialLogin,
+
   resendOtpToPhoneOrEmail,
   deleteAccount,
   resendOtp,
   changePassword,
   createUser,
+  adminLogin
 }

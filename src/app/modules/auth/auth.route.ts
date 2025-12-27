@@ -1,7 +1,5 @@
 import express from 'express'
-import passport from 'passport'
-import { PassportAuthController } from './passport.auth/passport.auth.controller'
-import { CustomAuthController } from './custom.auth/custom.auth.controller'
+import { AuthController } from './auth.controller'
 import validateRequest from '../../middleware/validateRequest'
 import { AuthValidations } from './auth.validation'
 import { USER_ROLES } from '../../../enum/user'
@@ -14,7 +12,7 @@ const router = express.Router()
 
 router.post(
   '/signup',
-   fileUploadHandler(),
+  fileUploadHandler(),
   async (req, res, next) => {
     try {
       const image = getSingleFilePath(req.files, "image");
@@ -28,75 +26,65 @@ router.post(
     }
   },
   validateRequest(UserValidations.userSignupSchema),
-  CustomAuthController.createUser,
+  AuthController.createUser,
 )
 router.post(
   '/admin-login',
   validateRequest(AuthValidations.loginZodSchema),
-  CustomAuthController.adminLogin,
+  AuthController.adminLogin,
 )
 router.post(
   '/login',
   validateRequest(AuthValidations.loginZodSchema),
-  passport.authenticate('local', { session: false }), 
-  PassportAuthController.login,
+  AuthController.login,
 )
 
-router.get(
-  '/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] }),
-)
 
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { session: false }),
-  PassportAuthController.googleAuthCallback,
-)
 
 router.post(
   '/verify-account',
   validateRequest(AuthValidations.verifyAccountZodSchema),
-  CustomAuthController.verifyAccount,
+  AuthController.verifyAccount,
 )
 
 router.post(
   '/custom-login',
   validateRequest(AuthValidations.loginZodSchema),
-  CustomAuthController.customLogin,
+  AuthController.login,
 )
 
 router.post(
   '/forget-password',
   validateRequest(AuthValidations.forgetPasswordZodSchema),
-  CustomAuthController.forgetPassword,
+  AuthController.forgetPassword,
 )
 router.post(
   '/reset-password',
   validateRequest(AuthValidations.resetPasswordZodSchema),
-  CustomAuthController.resetPassword,
+  AuthController.resetPassword,
 )
 
 router.post(
   '/resend-otp',
- 
+
   validateRequest(AuthValidations.resendOtpZodSchema),
-  CustomAuthController.resendOtp,
+  AuthController.resendOtp,
 )
 
 router.post(
   '/change-password',
   auth(USER_ROLES.ADMIN, USER_ROLES.Business),
   validateRequest(AuthValidations.changePasswordZodSchema),
-  CustomAuthController.changePassword,
+  AuthController.changePassword,
 )
 
 router.delete(
   '/delete-account',
   auth(USER_ROLES.ADMIN, USER_ROLES.Business),
   validateRequest(AuthValidations.deleteAccount),
-  CustomAuthController.deleteAccount,
+  AuthController.deleteAccount,
 )
-router.post('/access-token', CustomAuthController.getAccessToken)
-router.post('/social-login', validateRequest(AuthValidations.socialLoginZodSchema), CustomAuthController.socialLogin)
-router.post('/logout', CustomAuthController.logOut)
+router.post('/access-token', AuthController.getAccessToken)
+
+router.post('/logout', AuthController.logOut)
 export const AuthRoutes = router

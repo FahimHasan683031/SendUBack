@@ -1,16 +1,16 @@
 import { Request, Response } from 'express'
-import catchAsync from '../../../../shared/catchAsync'
-import { CustomAuthServices } from './custom.auth.service'
-import sendResponse from '../../../../shared/sendResponse'
+import catchAsync from '../../../shared/catchAsync'
+import { AuthServices } from './auth.service'
+import sendResponse from '../../../shared/sendResponse'
 import { StatusCodes } from 'http-status-codes'
-import config from '../../../../config'
+import config from '../../../config'
 
 const customLogin = catchAsync(async (req: Request, res: Response) => {
   const { ...loginData } = req.body
 
-  const result = await CustomAuthServices.customLogin(loginData)
-  const { status, message, accessToken, refreshToken, role } = result
-    if (refreshToken) {
+  const result = await AuthServices.login(loginData)
+  const { status, message, accessToken, refreshToken, role, userInfo } = result
+  if (refreshToken) {
     res.cookie('refreshToken', refreshToken, {
       secure: config.node_env === 'production',
       httpOnly: true,
@@ -21,14 +21,14 @@ const customLogin = catchAsync(async (req: Request, res: Response) => {
     statusCode: status,
     success: true,
     message: message,
-    data: { accessToken, role },
+    data: { accessToken, refreshToken, userInfo },
   })
 })
 
 const adminLogin = catchAsync(async (req: Request, res: Response) => {
   const { ...loginData } = req.body
 
-  const result = await CustomAuthServices.adminLogin(loginData)
+  const result = await AuthServices.adminLogin(loginData)
   const { status, message, accessToken, refreshToken, role } = result
 
   sendResponse(res, {
@@ -41,7 +41,7 @@ const adminLogin = catchAsync(async (req: Request, res: Response) => {
 
 const forgetPassword = catchAsync(async (req: Request, res: Response) => {
   const { email, phone } = req.body
-  const result = await CustomAuthServices.forgetPassword(
+  const result = await AuthServices.forgetPassword(
     email.toLowerCase().trim(),
     phone,
   )
@@ -57,7 +57,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   const token = req.query.token as string
   const { ...resetData } = req.body
 
-  const result = await CustomAuthServices.resetPassword(token!, resetData)
+  const result = await AuthServices.resetPassword(token!, resetData)
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -69,7 +69,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 const verifyAccount = catchAsync(async (req: Request, res: Response) => {
   const { oneTimeCode, phone, email } = req.body
 
-  const result = await CustomAuthServices.verifyAccount(email, oneTimeCode)
+  const result = await AuthServices.verifyAccount(email, oneTimeCode)
   const { status, message, accessToken, refreshToken, token, userInfo } = result
   if (refreshToken) {
     res.cookie('refreshToken', refreshToken, {
@@ -88,7 +88,7 @@ const verifyAccount = catchAsync(async (req: Request, res: Response) => {
 
 const getAccessToken = catchAsync(async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies
-  const result = await CustomAuthServices.getAccessToken(refreshToken)
+  const result = await AuthServices.getAccessToken(refreshToken)
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -99,7 +99,7 @@ const getAccessToken = catchAsync(async (req: Request, res: Response) => {
 
 const resendOtp = catchAsync(async (req: Request, res: Response) => {
   const { email, phone, authType } = req.body
-  const result = await CustomAuthServices.resendOtp(email, authType)
+  const result = await AuthServices.resendOtp(email, authType)
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -109,7 +109,7 @@ const resendOtp = catchAsync(async (req: Request, res: Response) => {
 
 const changePassword = catchAsync(async (req: Request, res: Response) => {
   const { currentPassword, newPassword } = req.body
-  const result = await CustomAuthServices.changePassword(
+  const result = await AuthServices.changePassword(
     req.user!,
     currentPassword,
     newPassword,
@@ -124,7 +124,7 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const { ...userData } = req.body
-  const result = await CustomAuthServices.createUser(userData)
+  const result = await AuthServices.createUser(userData)
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -135,7 +135,7 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 const deleteAccount = catchAsync(async (req: Request, res: Response) => {
   const user = req.user
   const { password } = req.body
-  const result = await CustomAuthServices.deleteAccount(user!, password)
+  const result = await AuthServices.deleteAccount(user!, password)
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -144,23 +144,11 @@ const deleteAccount = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
-const socialLogin = catchAsync(async (req: Request, res: Response) => {
-  const { appId, deviceToken } = req.body
-  const result = await CustomAuthServices.socialLogin(appId, deviceToken)
-  const { status, message, accessToken, refreshToken, role } = result
-  sendResponse(res, {
-    statusCode: status,
-    success: true,
-    message: message,
-    data: { accessToken, role },
-  })
-})
-
 const logOut = catchAsync(async (req: Request, res: Response) => {
- res.clearCookie('refreshToken',{
-      secure: config.node_env === 'production',
-      httpOnly: true,
-    })
+  res.clearCookie('refreshToken', {
+    secure: config.node_env === 'production',
+    httpOnly: true,
+  })
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -168,17 +156,17 @@ const logOut = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
-export const CustomAuthController = {
+export const AuthController = {
   forgetPassword,
   resetPassword,
   verifyAccount,
-  customLogin,
+  login: customLogin,
   getAccessToken,
   resendOtp,
   changePassword,
   createUser,
   deleteAccount,
   adminLogin,
-  socialLogin,
+
   logOut
 }

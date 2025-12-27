@@ -1,4 +1,4 @@
-import {  z } from 'zod'
+import { z } from 'zod'
 import { USER_ROLES } from '../../../enum/user'
 
 const verifyEmailOrPhoneOtpZodSchema = z.object({
@@ -24,7 +24,7 @@ const forgetPasswordZodSchema = z.object({
     email: z
       .string()
       .optional()
-      
+
       .refine(value => !value || /^\S+@\S+\.\S+$/.test(value), {
         message: 'Invalid email format',
       }),
@@ -96,7 +96,7 @@ const resendOtpZodSchema = z.object({
       .refine(value => !value || /^\+?[1-9]\d{1,14}$/.test(value), {
         message: 'Invalid phone number format',
       }),
-      authType:z.string(z.enum(['resetPassword','createAccount']))
+    authType: z.string(z.enum(['resetPassword', 'createAccount']))
   }),
 })
 
@@ -124,11 +124,11 @@ const changePasswordZodSchema = z.object({
 const deleteAccount = z.object({
   body: z
     .object({
-    password: z.string({
-      required_error: 'Password is required',
+      password: z.string({
+        required_error: 'Password is required',
+      })
     })
-   })
-    
+
 })
 
 const createUserZodSchema = z.object({
@@ -150,12 +150,7 @@ const createUserZodSchema = z.object({
   }),
 })
 
-const socialLoginZodSchema = z.object({
-  body: z.object({
-    appId: z.string({ required_error: 'App ID is required' }),
-    deviceToken: z.string({ required_error: 'Device token is required' }),
-  }),
-})
+
 
 export const AuthValidations = {
   verifyEmailOrPhoneOtpZodSchema,
@@ -167,5 +162,5 @@ export const AuthValidations = {
   changePasswordZodSchema,
   createUserZodSchema,
   deleteAccount,
-  socialLoginZodSchema
+
 }
