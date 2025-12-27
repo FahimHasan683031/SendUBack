@@ -41,7 +41,7 @@ const createZone = async (payload: { name: string; countries: string[] }): Promi
 const getAllZones = async (query: Record<string, unknown>) => {
   const zonQuryBuilder =new QueryBuilder(Zone.find(),query)
   .filter()
-  .search(['name'])
+  .search(['name','countries'])
   .sort()
   .paginate();
   const zones = await zonQuryBuilder.modelQuery;

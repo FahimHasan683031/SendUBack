@@ -46,7 +46,6 @@ const shippingSchema = new Schema<IShipping>(
       type: String,
       enum: [
         'created',
-        'rateSelected',
         'paymentCompleted',
         'shipped',
         'delivered',

@@ -171,8 +171,7 @@ const addShippingRateORInsurance = async (
     }
     ; (payload.total_cost =
       selectedRate.price + (isExistShipping.insurance?.insuranceCost || 0)),
-      (payload.shipping_cost = selectedRate.price),
-      (payload.status = 'rateSelected')
+      (payload.shipping_cost = selectedRate.price)
   }
   // Update insurance cost
   if (payload.insurance?.isInsured && payload.insurance.productValue) {

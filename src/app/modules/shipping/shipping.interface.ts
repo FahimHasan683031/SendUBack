@@ -3,7 +3,6 @@ import { Types } from 'mongoose'
 
 export type ShippingStatus =
   | 'created'
-  | 'rateSelected'
   | 'paymentCompleted'
   | 'shipped'
   | 'delivered'
