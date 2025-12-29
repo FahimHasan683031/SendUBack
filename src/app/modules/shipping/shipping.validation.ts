@@ -3,15 +3,15 @@ import { z } from "zod";
 // Address validation
 const shippingAddressSchema = z.object({
   hotelName: z.string().optional(),
-  name: z.string().min(1, "Name is required"),
+  name: z.string().optional(),
   street1: z.string().min(1, "Street address is required"),
   street2: z.string().optional(),
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required").optional(),
-  postal_code: z.string().min(1, "Postal code is required").optional(),
+  postal_code: z.string().optional(),
   country: z.string().min(1, "Country is required"),
   countryName: z.string().min(1, "Country name is required"),
-  phone: z.string().min(1, "Phone is required"),
+  phone: z.string().optional(),
   email: z.string().email("Valid email is required"),
 });
 

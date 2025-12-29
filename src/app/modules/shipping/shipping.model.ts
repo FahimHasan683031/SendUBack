@@ -3,14 +3,14 @@ import { IShipping } from './shipping.interface'
 
 const shippingAddressSchema = new Schema({
   placeName: String,
-  name: { type: String, required: true },
+  name: String,
   street1: { type: String, required: true },
   street2: String,
   city: { type: String, required: true },
   state: String,
   postal_code: String,
   country: { type: String, required: true },
-  phone: { type: String, required: true },
+  phone: String,
   email: { type: String, required: true },
   countryName: { type: String, required: true },
 })
