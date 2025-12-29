@@ -12,20 +12,41 @@ export interface IShippingAddress {
 
 /**
  * Map your UI types to Google Places types
+ * NOTE: Google Autocomplete API has limited type support
+ * For Text Search API, we use specific types
+ * For Autocomplete API, we use 'establishment' and filter by keyword
  */
 const TYPE_MAP: Record<string, string> = {
   hotel: "lodging",
   airport: "airport",
-  "carRental": "car_rental",
+  carRental: "car_rental",
   ship: "establishment",
   airbnb: "lodging",
   hospital: "hospital",
-  "travelAgency": "travel_agency",
+  travelAgency: "travel_agency",
   event: "establishment",
   museum: "museum",
-  "intercityBus": "bus_station",
+  intercityBus: "bus_station",
   stadium: "stadium",
-  "trainStation": "train_station",
+  trainStation: "train_station",
+};
+
+/**
+ * Keywords for Autocomplete API (since it doesn't support all types)
+ */
+const KEYWORD_MAP: Record<string, string> = {
+  hotel: "hotel",
+  airport: "airport",
+  carRental: "car rental",
+  ship: "ship port",
+  airbnb: "airbnb",
+  hospital: "hospital",
+  travelAgency: "travel agency",
+  event: "event venue",
+  museum: "museum",
+  intercityBus: "bus station",
+  stadium: "stadium",
+  trainStation: "train station",
 };
 
 /**
@@ -77,6 +98,8 @@ export const searchLocationsByQuery = async (
   type?: string
 ): Promise<IShippingAddress[]> => {
   const isTypedSearch = Boolean(type);
+
+  console.log({ search, type })
 
   const googleType = isTypedSearch
     ? TYPE_MAP[type!.toLowerCase()] || "establishment"
@@ -171,17 +194,36 @@ export const searchLocationsByQuery = async (
   }
 
   // 🔹 CASE 2: NORMAL SEARCH → AUTOCOMPLETE
+  const autoCompleteParams: any = {
+    input: search,
+    key: process.env.GOOGLE_MAPS_API_KEY,
+  };
+
+  // If type is provided, use keyword instead of types for better results
+  if (isTypedSearch) {
+    const keyword = KEYWORD_MAP[type!.toLowerCase()];
+    if (keyword) {
+      // Combine search query with keyword for better filtering
+      autoCompleteParams.input = `${keyword} ${search}`.trim();
+    }
+    // Use establishment type which is widely supported
+    autoCompleteParams.types = "establishment";
+  } else {
+    // For address search without type
+    autoCompleteParams.types = "address";
+  }
+
   const autoCompleteRes = await axios.get<GoogleAutocompleteResponse>(
     "https://maps.googleapis.com/maps/api/place/autocomplete/json",
-    {
-      params: {
-        input: search,
-        key: process.env.GOOGLE_MAPS_API_KEY,
-        types: isTypedSearch ? googleType : "address",
-        ...(isTypedSearch && { strictbounds: true }),
-      },
-    }
+    { params: autoCompleteParams }
   );
+
+  console.log("Autocomplete response:", {
+    status: autoCompleteRes.data.status,
+    count: autoCompleteRes.data.predictions?.length || 0,
+    searchInput: autoCompleteParams.input,
+    types: autoCompleteParams.types,
+  });
 
   const predictions = autoCompleteRes.data.predictions;
   if (!predictions || predictions.length === 0) return [];
