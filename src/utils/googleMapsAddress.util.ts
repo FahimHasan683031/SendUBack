@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export interface IShippingAddress {
-  name?: string;
+  name: string; // ✅ required (TS-safe)
   street1: string;
   city: string;
   state: string;
@@ -16,14 +16,16 @@ export interface IShippingAddress {
 const TYPE_MAP: Record<string, string> = {
   hotel: "lodging",
   airport: "airport",
-  "car rental": "car_rental",
+  "carRental": "car_rental",
   ship: "establishment",
   airbnb: "lodging",
   hospital: "hospital",
-  "travel agency": "travel_agency",
+  "travelAgency": "travel_agency",
   event: "establishment",
   museum: "museum",
-  "intercity bus": "bus_station",
+  "intercityBus": "bus_station",
+  stadium: "stadium",
+  "trainStation": "train_station",
 };
 
 /**
@@ -56,34 +58,135 @@ interface GooglePlaceDetailsResponse {
   status: string;
 }
 
-/**
- * Search shipping addresses dynamically by query and type
- */
+interface GoogleTextSearchPlace {
+  place_id?: string;
+  name?: string;
+  formatted_address?: string;
+  address_components?: GooglePlaceAddressComponent[];
+}
+
+interface GoogleTextSearchResponse {
+  results: GoogleTextSearchPlace[];
+  status: string;
+}
+
+
+
 export const searchLocationsByQuery = async (
   search: string,
   type?: string
 ): Promise<IShippingAddress[]> => {
-  if (!search || search.trim().length === 0) return [];
+  const isTypedSearch = Boolean(type);
 
-  const googleType = type ? TYPE_MAP[type.toLowerCase()] || "address" : "address";
+  const googleType = isTypedSearch
+    ? TYPE_MAP[type!.toLowerCase()] || "establishment"
+    : "establishment";
 
-  // Autocomplete API
-  const response = await axios.get<GoogleAutocompleteResponse>(
+  // 🔥 CASE 1: EMPTY SEARCH → TEXT SEARCH (only if type is provided)
+  if (!search || search.trim().length === 0) {
+    // If no type is provided, return empty array (no meaningful search)
+    if (!isTypedSearch) {
+      return [];
+    }
+
+    const textSearchRes = await axios.get<GoogleTextSearchResponse>(
+      "https://maps.googleapis.com/maps/api/place/textsearch/json",
+      {
+        params: {
+          query: googleType, // hotel / airport / hospital
+          key: process.env.GOOGLE_MAPS_API_KEY,
+        },
+      }
+    );
+
+    const places = textSearchRes.data.results || [];
+
+    // 🔹 Fetch complete address details for each place
+    const results: Array<IShippingAddress | null> = await Promise.all(
+      places.slice(0, 10).map(async (place) => {
+        try {
+          const placeId = place.place_id;
+
+          if (!placeId) {
+            // Fallback: return basic info without details
+            return {
+              name: place.name ?? "",
+              street1: place.formatted_address ?? "",
+              city: "",
+              state: "",
+              postal_code: "",
+              country: "",
+              countryCode: "",
+            };
+          }
+
+          const detailsRes = await axios.get<GooglePlaceDetailsResponse>(
+            "https://maps.googleapis.com/maps/api/place/details/json",
+            {
+              params: {
+                place_id: placeId,
+                key: process.env.GOOGLE_MAPS_API_KEY,
+                fields: "name,formatted_address,address_component",
+              },
+            }
+          );
+
+          const result = detailsRes.data.result;
+          const components = result.address_components ?? [];
+
+          const getComponent = (type: string) =>
+            components.find((c) => c.types.includes(type));
+
+          return {
+            name: result.name ?? place.name ?? "",
+            street1: result.formatted_address ?? place.formatted_address ?? "",
+            city:
+              getComponent("locality")?.long_name ||
+              getComponent("sublocality")?.long_name ||
+              "",
+            state:
+              getComponent("administrative_area_level_1")?.long_name || "",
+            postal_code: getComponent("postal_code")?.long_name || "",
+            country: getComponent("country")?.long_name || "",
+            countryCode: getComponent("country")?.short_name || "",
+          };
+        } catch {
+          // If details fetch fails, return basic info
+          return {
+            name: place.name ?? "",
+            street1: place.formatted_address ?? "",
+            city: "",
+            state: "",
+            postal_code: "",
+            country: "",
+            countryCode: "",
+          };
+        }
+      })
+    );
+
+    return results.filter(
+      (item): item is IShippingAddress => item !== null
+    );
+  }
+
+  // 🔹 CASE 2: NORMAL SEARCH → AUTOCOMPLETE
+  const autoCompleteRes = await axios.get<GoogleAutocompleteResponse>(
     "https://maps.googleapis.com/maps/api/place/autocomplete/json",
     {
       params: {
         input: search,
         key: process.env.GOOGLE_MAPS_API_KEY,
-        types: googleType,
+        types: isTypedSearch ? googleType : "address",
+        ...(isTypedSearch && { strictbounds: true }),
       },
     }
   );
 
-  const predictions = response.data.predictions || [];
-  if (!predictions.length) return [];
+  const predictions = autoCompleteRes.data.predictions;
+  if (!predictions || predictions.length === 0) return [];
 
-  // Fetch place details in parallel
-  const addresses: (IShippingAddress | null)[] = await Promise.all(
+  const results: Array<IShippingAddress | null> = await Promise.all(
     predictions.slice(0, 10).map(async (prediction) => {
       try {
         const detailsRes = await axios.get<GooglePlaceDetailsResponse>(
@@ -92,44 +195,37 @@ export const searchLocationsByQuery = async (
             params: {
               place_id: prediction.place_id,
               key: process.env.GOOGLE_MAPS_API_KEY,
-              fields: "address_component,formatted_address,name",
+              fields: "name,formatted_address,address_component",
             },
           }
         );
 
         const result = detailsRes.data.result;
-        const components = result.address_components || [];
+        const components = result.address_components ?? [];
 
-        const street1 = result.formatted_address || "";
-        const city =
-          components.find((c) => c.types.includes("locality"))?.long_name ||
-          components.find((c) => c.types.includes("sublocality"))?.long_name ||
-          "";
-        const state =
-          components.find((c) => c.types.includes("administrative_area_level_1"))
-            ?.long_name || "";
-        const country =
-          components.find((c) => c.types.includes("country"))?.long_name || "";
-        const countryCode =
-          components.find((c) => c.types.includes("country"))?.short_name || "";
-        const postal_code =
-          components.find((c) => c.types.includes("postal_code"))?.long_name || "";
+        const getComponent = (type: string) =>
+          components.find((c) => c.types.includes(type));
 
         return {
-          name: result.name || "",
-          street1,
-          city,
-          state,
-          postal_code,
-          country,
-          countryCode,
-        } as IShippingAddress;
+          name: result.name ?? prediction.description,
+          street1: result.formatted_address ?? "",
+          city:
+            getComponent("locality")?.long_name ||
+            getComponent("sublocality")?.long_name ||
+            "",
+          state:
+            getComponent("administrative_area_level_1")?.long_name || "",
+          postal_code: getComponent("postal_code")?.long_name || "",
+          country: getComponent("country")?.long_name || "",
+          countryCode: getComponent("country")?.short_name || "",
+        };
       } catch {
         return null;
       }
     })
   );
 
-  // Filter out nulls
-  return addresses.filter((a): a is IShippingAddress => a !== null);
+  return results.filter(
+    (item): item is IShippingAddress => item !== null
+  );
 };
