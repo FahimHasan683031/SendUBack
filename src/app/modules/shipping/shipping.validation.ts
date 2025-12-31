@@ -2,8 +2,7 @@ import { z } from "zod";
 
 // Address validation
 const shippingAddressSchema = z.object({
-  hotelName: z.string().optional(),
-  name: z.string().optional(),
+  businessName: z.string().optional(),
   street1: z.string().min(1, "Street address is required"),
   street2: z.string().optional(),
   city: z.string().min(1, "City is required"),

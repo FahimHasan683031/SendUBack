@@ -9,7 +9,7 @@ export type ShippingStatus =
 
 export interface IShippingAddress {
   placeName?: string
-  name?: string
+  businessName?: string
   street1: string
   street2?: string
   city: string

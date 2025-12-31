@@ -3,7 +3,7 @@ import { IShipping } from './shipping.interface'
 
 const shippingAddressSchema = new Schema({
   placeName: String,
-  name: String,
+  businessName: String,
   street1: { type: String, required: true },
   street2: String,
   city: { type: String, required: true },
