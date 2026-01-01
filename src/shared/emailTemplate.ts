@@ -805,58 +805,119 @@ const businessUserRegistrationInviteEmail = (data: any) => {
 }
 
 const guestLostItemNotificationEmail = (data: any) => {
+  const businessDetails = data?.user?.businessDetails;
+  const BASE_URL = "https://api.senduback.com";
+
+  const imagesHtml =
+    Array.isArray(data?.images) && data.images.length > 0
+      ? `
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 8px;">
+          📷 Item Images
+        </h3>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            ${data.images
+              .map(
+                (img: string) => `
+                <td align="center" style="padding:6px;">
+                  <img
+                    src="${BASE_URL}${img}"
+                    alt="Lost Item Image"
+                    style="width:100%;max-width:170px;
+                    border-radius:10px;border:1px solid #ddd;" />
+                </td>
+              `
+              )
+              .join("")}
+          </tr>
+        </table>
+      `
+      : "";
+
   return {
     to: data.guestEmail,
     subject: `📦 We Found Your Lost Item – Action Required`,
     html: `
 <body style="margin:0;padding:0;font-family:Inter,Segoe UI,sans-serif;background:#f7f9fc;">
   <table width="100%" cellpadding="0" cellspacing="0"
-         style="max-width:620px;margin:30px auto;background:#fff;
-         border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+    style="max-width:620px;margin:30px auto;background:#fff;
+    border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
 
     <!-- Header -->
     <tr>
       <td align="center" style="background:#EAF4FF;padding:25px 20px;">
         <img src="https://i.ibb.co/Hf7XccNJ/Send-you-back-Final-logo-02-3.png"
-             style="height:70px;margin-bottom:8px;" />
-        <h2 style="margin:0;color:#0077DD;font-size:20px;">Good News! We Found Your Item</h2>
+          style="height:70px;margin-bottom:8px;" />
+
+        <h2 style="margin:0;color:#0077DD;font-size:20px;">
+          Good News! We Found Your Item
+        </h2>
+
+        ${
+          businessDetails
+            ? `<p style="margin-top:6px;font-size:13px;color:#333;">
+                <strong>${businessDetails.businessName || ""}</strong>
+                ${
+                  businessDetails.companyName
+                    ? `• ${businessDetails.companyName}`
+                    : ""
+                }
+              </p>`
+            : ""
+        }
       </td>
     </tr>
 
     <!-- Body -->
     <tr>
       <td style="padding:25px 20px;">
+
         <p style="font-size:14px;color:#000;line-height:1.6;">
           Hello <strong style="color:#0077DD;">${data.guestName}</strong>,<br>
           We hope you're doing well. Our team has located an item that matches your belongings.
           Please review the details below.
         </p>
 
-        <!-- Item Information -->
-        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">🟦 Lost Item Details</h3>
+        ${imagesHtml}
+
+        <!-- Item Details -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">
+          🟦 Lost Item Details
+        </h3>
         <p style="font-size:13px;margin:2px 0;"><strong>Item Name:</strong> ${data.itemName}</p>
-        <p style="font-size:13px;margin:2px 0;"><strong>Description:</strong> ${data.itemDescription}</p>
-        <p style="font-size:13px;margin:2px 0;"><strong>Date Found:</strong> ${new Date(data.dateFound).toDateString()}</p>
-        <p style="font-size:13px;margin:2px 0;"><strong>Location Found:</strong> ${data.locationFound}</p>
+        <p style="font-size:13px;margin:2px 0;"><strong>Description:</strong> ${data.itemDescription || "N/A"}</p>
+        <p style="font-size:13px;margin:2px 0;">
+          <strong>Date Found:</strong> ${new Date(data.dateFound).toDateString()}
+        </p>
+        <p style="font-size:13px;margin:2px 0;">
+          <strong>Location Found:</strong> ${data.locationFound}
+        </p>
 
-        <!-- Hotel Information -->
-        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">🏨 Your Stay Information</h3>
-        <p style="font-size:13px;margin:2px 0;"><strong>Name on Reservation:</strong> ${data.guestReservationName}</p>
-        <p style="font-size:13px;margin:2px 0;"><strong>Room Number:</strong> ${data.guestRoomNumber}</p>
-        <p style="font-size:13px;margin:2px 0;"><strong>Contact Number:</strong> ${data.guestPhone}</p>
+        <!-- Guest Info -->
+        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">
+          🏨 Your Stay Information
+        </h3>
+        <p style="font-size:13px;margin:2px 0;">
+          <strong>Name on Reservation:</strong> ${data.guestReservationName}
+        </p>
+        <p style="font-size:13px;margin:2px 0;">
+          <strong>Room Number:</strong> ${data.guestRoomNumber}
+        </p>
+        <p style="font-size:13px;margin:2px 0;">
+          <strong>Contact Number:</strong> ${data.guestPhone}
+        </p>
 
-        <!-- Action Box -->
+        <!-- Action -->
         <div style="background:#E8F6FF;padding:12px;border-radius:8px;margin-top:16px;">
           <p style="margin:0;font-size:13px;color:#000;">
             To have your item safely shipped to your address, please complete your shipping details below.
           </p>
         </div>
 
-        <!-- Book Shipping Button -->
         <div style="text-align:center;margin-top:22px;">
           <a href="${config.frontend_url}/orders/${data._id}"
-             style="background:#0077DD;color:#fff;padding:12px 30px;border-radius:8px;
-             text-decoration:none;font-size:14px;display:inline-block;">
+            style="background:#0077DD;color:#fff;padding:12px 30px;
+            border-radius:8px;text-decoration:none;font-size:14px;display:inline-block;">
             Book Shipping for Your Item
           </a>
         </div>
@@ -877,8 +938,10 @@ const guestLostItemNotificationEmail = (data: any) => {
   </table>
 </body>
 `,
-  }
-}
+  };
+};
+
+
 
 const businessShippingDetailsUpdateEmail = (data: any) => {
   return {

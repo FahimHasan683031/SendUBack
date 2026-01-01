@@ -12,7 +12,7 @@ export interface IShippingAddress {
   businessName?: string
   street1: string
   street2?: string
-  city: string
+  city?: string
   state?: string
   postal_code?: string
   country: string

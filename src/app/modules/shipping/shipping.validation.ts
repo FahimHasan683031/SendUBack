@@ -5,7 +5,7 @@ const shippingAddressSchema = z.object({
   businessName: z.string().optional(),
   street1: z.string().min(1, "Street address is required"),
   street2: z.string().optional(),
-  city: z.string().min(1, "City is required"),
+  city: z.string().optional(),
   state: z.string().min(1, "State is required").optional(),
   postal_code: z.string().optional(),
   country: z.string().min(1, "Country is required"),

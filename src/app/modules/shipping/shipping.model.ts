@@ -6,7 +6,7 @@ const shippingAddressSchema = new Schema({
   businessName: String,
   street1: { type: String, required: true },
   street2: String,
-  city: { type: String, required: true },
+  city: String,
   state: String,
   postal_code: String,
   country: { type: String, required: true },

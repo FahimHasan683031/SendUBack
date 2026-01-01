@@ -157,7 +157,13 @@ const addOrReplaceImages = async (
 };
 
 const sendGestEmail = async (lostItemId: string) => {
-  const lostItem = await LostItem.findById(lostItemId)
+  const lostItem = await LostItem.findById(lostItemId).populate({
+    path: 'user',
+    select: '-authentication -password -__v',
+    populate: {
+      path: 'businessDetails'
+    }
+  })
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
