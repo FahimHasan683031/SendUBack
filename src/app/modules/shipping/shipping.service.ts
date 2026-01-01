@@ -149,19 +149,28 @@ const addShippingRateORInsurance = async (
   if (!payload || !id) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid payload or id')
   }
-  const isExistShipping = await Shipping.findById(id)
-  if (!isExistShipping) {
+
+  const shipping = await Shipping.findById(id)
+  if (!shipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
-  // Update selected rate
-  if (payload.selected_rate) {
 
+  let shippingCost = shipping.shipping_cost || 0
+  let insuranceCost = shipping.insurance?.insuranceCost || 0
+
+  const updateQuery: any = {}
+
+  /* =======================
+     RATE UPDATE
+  ======================== */
+  if (payload.selected_rate) {
     const selectedRate = await ZonePricing.findById(payload.selected_rate)
     if (!selectedRate) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Selected rate not found')
     }
-    const fromZone = await getZoneByCountry(isExistShipping.address_from.country)
-    const toZone = await getZoneByCountry(isExistShipping.address_to.country)
+
+    const fromZone = await getZoneByCountry(shipping.address_from.country)
+    const toZone = await getZoneByCountry(shipping.address_to.country)
 
     if (fromZone !== selectedRate.fromZone || toZone !== selectedRate.toZone) {
       throw new ApiError(
@@ -169,29 +178,72 @@ const addShippingRateORInsurance = async (
         'Invalid Rate for selected country',
       )
     }
-    ; (payload.total_cost =
-      selectedRate.price + (isExistShipping.insurance?.insuranceCost || 0)),
-      (payload.shipping_cost = selectedRate.price)
+
+    shippingCost = selectedRate.price
+    updateQuery.shipping_cost = shippingCost
+    updateQuery.selected_rate = payload.selected_rate
   }
-  // Update insurance cost
-  if (payload.insurance?.isInsured && payload.insurance.productValue) {
+
+  /* =======================
+     INSURANCE ADD
+  ======================== */
+  if (payload.insurance?.isInsured === true) {
+    if (!payload.insurance.productValue) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Product value is required for insurance',
+      )
+    }
+
     const settings = await SettingsService.getSettings()
     if (!settings) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Settings not found')
     }
+
     const { insurance } = settings
-    // check if product value exceeds max insurance value
+
     if (payload.insurance.productValue > insurance.maxValue) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, `Product value must be less than or equal to ${insurance.maxValue}`)
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        `Product value must be less than or equal to ${insurance.maxValue}`,
+      )
     }
-    const insuranceCost = (payload.insurance.productValue / 100) * insurance.percentage
-    payload.insurance.insuranceCost = insuranceCost
-    payload.total_cost = (isExistShipping.shipping_cost || 0) + insuranceCost
+
+    insuranceCost =
+      (payload.insurance.productValue / 100) * insurance.percentage
+
+    updateQuery.insurance = {
+      isInsured: true,
+      productValue: payload.insurance.productValue,
+      insuranceCost,
+    }
   }
 
-  const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
-  return shipping
+  /* =======================
+     INSURANCE REMOVE (FIELD DELETE)
+  ======================== */
+  if (payload.insurance?.isInsured === false) {
+    insuranceCost = 0
+
+    updateQuery.$unset = {
+      insurance: 1,
+    }
+  }
+
+  /* =======================
+     TOTAL COST RECALC
+  ======================== */
+  updateQuery.total_cost = shippingCost + insuranceCost
+
+  const updatedShipping = await Shipping.findByIdAndUpdate(
+    id,
+    updateQuery,
+    { new: true },
+  )
+
+  return updatedShipping
 }
+
 
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
