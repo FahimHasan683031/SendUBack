@@ -10,12 +10,7 @@ export interface IShippingAddress {
   countryCode: string;
 }
 
-/**
- * Map your UI types to Google Places types
- * NOTE: Google Autocomplete API has limited type support
- * For Text Search API, we use specific types
- * For Autocomplete API, we use 'establishment' and filter by keyword
- */
+
 const TYPE_MAP: Record<string, string> = {
   hotel: "lodging",
   airport: "airport",
