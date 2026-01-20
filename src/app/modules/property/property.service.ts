@@ -38,21 +38,29 @@ const createProperty = async (
 
     try {
         const result = await searchLocationsByQuery(searchQuery)
-        if (result && result.length > 0 && result[0].countryCode) {
-            payload.countryCode = result[0].countryCode
-        } else {
+
+        if (!result || result.length === 0) {
             throw new ApiError(
                 StatusCodes.BAD_REQUEST,
-                'Unable to detect country code from the provided address. Please verify the address is correct.',
+                'Address not found. Please verify that the address is valid and exists.',
             )
         }
+
+        if (!result[0].countryCode) {
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST,
+                'Unable to detect country code from the provided address. Please check the country name is correct.',
+            )
+        }
+
+        payload.countryCode = result[0].countryCode
     } catch (error) {
         if (error instanceof ApiError) {
             throw error
         }
         throw new ApiError(
             StatusCodes.BAD_REQUEST,
-            'Failed to validate address with Google Maps API. Please check your address.',
+            'Failed to validate address. Please ensure the address details are correct.',
         )
     }
 
@@ -64,14 +72,22 @@ const createProperty = async (
     return property
 }
 
-// Get all properties
-const getAllProperties = async (query: Record<string, unknown>) => {
+// Get properties by user ID
+const getPropertiesByUserId = async (
+    userId: string,
+    query: Record<string, unknown>,
+) => {
+    const isExistUser = await User.findById(userId)
+    if (!isExistUser) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+
+    // Add user filter to query
+    const modifiedQuery = { ...query, user: userId }
+
     const propertyQueryBuilder = new QueryBuilder(
-        Property.find().populate({
-            path: 'user',
-            select: 'firstName lastName email image',
-        }),
-        query,
+        Property.find(),
+        modifiedQuery,
     )
         .filter()
         .search(['propertyName', 'propertyType', 'city', 'country'])
@@ -182,23 +198,37 @@ const updateProperty = async (
             .filter(Boolean)
             .join(', ')
 
+
         try {
-            const result = await searchLocationsByQuery(searchQuery)
-            if (result && result.length > 0 && result[0].countryCode) {
-                payload.countryCode = result[0].countryCode
-            } else {
+            let result = await searchLocationsByQuery(searchQuery)
+
+            // Fallback: If full address fails and country is being updated, try just the country
+            if ((!result || result.length === 0 || !result[0].countryCode) && payload.country) {
+                result = await searchLocationsByQuery(payload.country)
+            }
+
+            if (!result || result.length === 0) {
                 throw new ApiError(
                     StatusCodes.BAD_REQUEST,
-                    'Unable to detect country code from the updated address. Please verify the address is correct.',
+                    'Updated address not found. Please verify that the address is valid and exists.',
                 )
             }
+
+            if (!result[0].countryCode) {
+                throw new ApiError(
+                    StatusCodes.BAD_REQUEST,
+                    'Unable to detect country code from the updated address. Please check the country name is correct.',
+                )
+            }
+
+            payload.countryCode = result[0].countryCode
         } catch (error) {
             if (error instanceof ApiError) {
                 throw error
             }
             throw new ApiError(
                 StatusCodes.BAD_REQUEST,
-                'Failed to validate address with Google Maps API. Please check your address.',
+                'Failed to validate updated address. Please ensure the address details are correct.',
             )
         }
     }
@@ -239,7 +269,7 @@ const deleteProperty = async (user: JwtPayload, id: string) => {
 
 export const PropertyServices = {
     createProperty,
-    getAllProperties,
+    getPropertiesByUserId,
     getMyProperties,
     getSingleProperty,
     updateProperty,

@@ -17,8 +17,8 @@ router.post(
     PropertyControllers.createProperty,
 )
 
-// Get all properties (Public or authenticated)
-router.get('/', PropertyControllers.getAllProperties)
+// Get properties by user ID
+router.get('/user/:userId', PropertyControllers.getPropertiesByUserId)
 
 // Get my properties (Business users only)
 router.get(

@@ -16,14 +16,17 @@ const createProperty = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
-// Get all properties
-const getAllProperties = catchAsync(async (req: Request, res: Response) => {
-    const result = await PropertyServices.getAllProperties(req.query)
+// Get properties by user ID
+const getPropertiesByUserId = catchAsync(async (req: Request, res: Response) => {
+    const result = await PropertyServices.getPropertiesByUserId(
+        req.params.userId,
+        req.query,
+    )
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: 'Properties retrieved successfully',
+        message: 'User properties retrieved successfully',
         data: result.properties,
         meta: result.meta,
     })
@@ -84,7 +87,7 @@ const deleteProperty = catchAsync(async (req: Request, res: Response) => {
 
 export const PropertyControllers = {
     createProperty,
-    getAllProperties,
+    getPropertiesByUserId,
     getMyProperties,
     getSingleProperty,
     updateProperty,
