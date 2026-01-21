@@ -76,7 +76,7 @@ const getShippingRates = async (shipingId: string) => {
 
 // Get all shippings
 const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload) => {
-  if (user.role === USER_ROLES.Business) {
+  if (user.role === USER_ROLES.BUSINESS) {
     query['address_from.email'] = user.email;
   }
 

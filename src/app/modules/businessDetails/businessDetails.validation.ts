@@ -48,7 +48,20 @@ export const updateBusinessDetailsSchema = z.object({
   }).strict("Unknown fields are not allowed")
 });
 
+export const completeProfileSchema = z.object({
+  body: z.object({
+    addressLine1: z.string().trim().min(1, "Address Line 1 is required"),
+    addressLine2: z.string().trim().optional(),
+    city: z.string().trim().min(1, "City is required"),
+    postcode: z.string().trim().min(1, "Postcode is required"),
+    country: z.string().trim().min(1, "Country is required"),
+    businessEmail: z.string().email("Invalid email").optional(), // Already set at signup, but can update?
+    telephone: z.string().trim().optional(),
+  })
+});
+
 export const BusinessDetailsValidations = {
   createBusinessDetailsSchema,
   updateBusinessDetailsSchema,
+  completeProfileSchema
 };

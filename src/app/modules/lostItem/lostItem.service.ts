@@ -9,7 +9,6 @@ import { emailHelper } from '../../../helpers/emailHelper'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { logger } from '../../../shared/logger'
 import QueryBuilder from '../../builder/QueryBuilder'
-import { BusinessDetails } from '../businessDetails/businessDetails.model'
 
 // create lost item
 export const createLostItem = async (
@@ -21,16 +20,16 @@ export const createLostItem = async (
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
 
-  if (isExistUser.role === USER_ROLES.Business) {
-    const businessDetails = await BusinessDetails.findOne({ userId: user.authId })
+  if (isExistUser.role === USER_ROLES.BUSINESS) {
+    const businessDetails = isExistUser.businessDetails;
     if (!businessDetails) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Business details are required')
     }
     if (
-      !businessDetails.address ||
+      !businessDetails.addressLine1 ||
       !businessDetails.businessEmail ||
       !businessDetails.businessName ||
-      !businessDetails.businessPhone
+      !businessDetails.telephone
     ) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
@@ -55,7 +54,7 @@ export const getAllLostItems = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-  if (isExistUser.role === USER_ROLES.Business) {
+  if (isExistUser.role === USER_ROLES.BUSINESS) {
     query.user = isExistUser._id
   }
   const lostQueryBiilder = new QueryBuilder(LostItem.find(), query)
@@ -81,9 +80,6 @@ export const getSingleLostItem = async (id: string) => {
     .populate({
       path: 'user',
       select: '-authentication -password -__v',
-      populate: {
-        path: 'businessDetails'
-      }
     })
 
   if (!lostItem) {
@@ -122,7 +118,7 @@ export const deleteLostItem = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-  if (isExistUser.role !== USER_ROLES.Business && isExistUser.role !== USER_ROLES.ADMIN) {
+  if (isExistUser.role !== USER_ROLES.BUSINESS && isExistUser.role !== USER_ROLES.ADMIN) {
     throw new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to delete this lost item')
   }
 
@@ -160,9 +156,6 @@ const sendGestEmail = async (lostItemId: string) => {
   const lostItem = await LostItem.findById(lostItemId).populate({
     path: 'user',
     select: '-authentication -password -__v',
-    populate: {
-      path: 'businessDetails'
-    }
   })
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')

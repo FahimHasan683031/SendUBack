@@ -25,7 +25,7 @@ const getAllUser = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'User fetched successfully',
-    data: {...result},
+    data: { ...result },
   })
 })
 
@@ -76,6 +76,20 @@ const deleteMyAccount = catchAsync(async (req: Request, res: Response) => {
 
 
 
+// complete profile
+const completeProfile = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserServices.completeProfile(
+    req.user! as JwtPayload,
+    req.body
+  )
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Profile completed successfully",
+    data: result,
+  })
+})
+
 export const UserController = {
   getAllUser,
   updateProfile,
@@ -83,5 +97,5 @@ export const UserController = {
   deleteUser,
   getProfile,
   deleteMyAccount,
- 
+  completeProfile,
 }

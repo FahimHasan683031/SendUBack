@@ -1,10 +1,11 @@
 export enum USER_ROLES {
   ADMIN = "admin",
-  Business = "business"
+  BUSINESS = "business",
 }
 
 export enum USER_STATUS {
-  ACTIVE = 'active',
-  RESTRICTED = 'restricted',
-  DELETED = 'deleted',
+  PENDING = "pending",
+  ACTIVE = "active",
+  RESTRICTED = "restricted",
+  DELETED = "deleted",
 }

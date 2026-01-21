@@ -21,96 +21,106 @@ import { IUser } from '../user/user.interface'
 import mongoose from 'mongoose'
 import { BusinessDetails } from '../businessDetails/businessDetails.model'
 
-export const createUser = async (payload: IUser) => {
-  payload.email = payload.email?.toLowerCase().trim()
-  const session = await mongoose.startSession()
+export const createUser = async (payload: IUser & { businessName?: string }) => {
+  payload.email = payload.email?.toLowerCase().trim();
+  const session = await mongoose.startSession();
 
   try {
-    session.startTransaction()
+    session.startTransaction();
 
     if (payload.role === USER_ROLES.ADMIN) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        `Admin account creation is not allowed.`,
-      )
+        `Admin account creation is not allowed.`
+      );
     }
 
     // 1. Check if user already exists
     const isUserExist = await User.findOne({
       email: payload.email,
       status: { $nin: [USER_STATUS.DELETED] },
-    }).session(session)
+    }).session(session);
 
     if (isUserExist) {
+      // If user exists and is pending, should we allow re-sending OTP? 
+      // For now, sticking to "exists" error.
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        `An account with this email already exists.`,
-      )
+        `An account with this email already exists.`
+      );
     }
 
     // 2. Generate OTP
-    const otp = generateOtp()
-    const otpExpiresIn = new Date(Date.now() + 5 * 60 * 1000)
+    const otp = generateOtp();
+    const otpExpiresIn = new Date(Date.now() + 5 * 60 * 1000);
 
     const authentication = {
       oneTimeCode: otp,
       expiresAt: otpExpiresIn,
       latestRequestAt: new Date(),
       requestCount: 1,
-      authType: 'createAccount' as const,
+      authType: "createAccount" as const,
       restrictionLeftAt: null,
       resetPassword: false,
       wrongLoginAttempts: 0,
-    }
+    };
 
     // 3. Send OTP email
     setTimeout(() => {
       const createAccountEmail = emailTemplate.createAccount({
-        name: `${payload.firstName} ${payload.lastName}`,
+        name: payload.firstName ? `${payload.firstName} ${payload.lastName}` : payload.businessName || "User",
         email: payload.email,
         otp,
-      })
-      emailHelper.sendEmail(createAccountEmail)
-    }, 0)
+      });
+      emailHelper.sendEmail(createAccountEmail);
+    }, 0);
+
+    // Prepare business details if business
+    let businessDetailsData = null;
+    if (payload.role === USER_ROLES.BUSINESS && payload.businessName) {
+      businessDetailsData = {
+        businessName: payload.businessName,
+        businessEmail: payload.email,
+        // Other fields are optional now
+      };
+    }
 
     // 4. Create User
     const user = await User.create(
       [
         {
           ...payload,
+          firstName: payload.firstName || payload.businessName || "Business User",
+          lastName: payload.lastName || ".",
           password: payload.password,
           authentication,
-          role: payload.role || USER_ROLES.Business,
+          role: payload.role || USER_ROLES.BUSINESS,
+          status: USER_STATUS.PENDING,
+          businessDetails: businessDetailsData,
+          businessDetailsCompleted: false,
         },
       ],
-      { session },
-    )
+      { session }
+    );
 
     if (!user[0])
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user.')
-    // 6. Create Business Details if role is Business
-    if (user[0].role === USER_ROLES.Business) {
-      const businessDetails = await BusinessDetails.create({
-        businessEmail: user[0].email,
-        userId: user[0]._id,
-      })
-      user[0].businessDetails = businessDetails._id
-      await user[0].save({ session })
-    }
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user.");
 
-    const createdUser = user[0]
+    // No separate BusinessDetails creation needed anymore
+
+    const createdUser = user[0];
 
     // 5. Commit Transaction
-    await session.commitTransaction()
-    return createdUser._id
+    await session.commitTransaction();
+    return createdUser._id;
   } catch (error) {
     // Rollback on error
-    await session.abortTransaction()
-    throw error
+    await session.abortTransaction();
+    throw error;
   } finally {
-    session.endSession()
+    session.endSession();
   }
-}
+};
 
 const login = async (payload: ILoginData): Promise<IAuthResponse> => {
   const { email, phone } = payload

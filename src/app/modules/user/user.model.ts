@@ -1,13 +1,30 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IUser, USER_STATUS, UserModel } from "./user.interface";
+import { IUser, USER_ROLES, USER_STATUS, UserModel } from "./user.interface";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
 import config from "../../../config";
 
 
 
-const UserSchema = new Schema(
+
+const BusinessDetailsSchema = new Schema(
+  {
+    businessName: { type: String, required: true },
+    addressLine1: { type: String, required: false },
+    addressLine2: { type: String },
+    city: { type: String, required: false },
+    postcode: { type: String, required: false },
+    country: { type: String, required: false },
+    countryCode: { type: String, required: false },
+    businessEmail: { type: String, required: false },
+    telephone: { type: String, required: false },
+    completedAt: { type: Date, required: false },
+  },
+  { _id: false }
+);
+
+const UserSchema = new Schema<IUser, UserModel>(
   {
     email: {
       type: String,
@@ -24,16 +41,16 @@ const UserSchema = new Schema(
     },
     firstName: {
       type: String,
-      required: true,
+      required: false,
     },
     lastName: {
       type: String,
-      required: true,
+      required: false,
     },
     status: {
       type: String,
-      enum: ["active", "restricted", "deleted"],
-      default: "active",
+      enum: Object.values(USER_STATUS),
+      default: USER_STATUS.PENDING,
     },
     verified: {
       type: Boolean,
@@ -41,45 +58,51 @@ const UserSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "business"],
-      default: "business",
+      enum: Object.values(USER_ROLES),
+      default: USER_ROLES.BUSINESS,
+    },
+    businessDetailsCompleted: {
+      type: Boolean,
+      default: false,
     },
     businessDetails: {
-      type: Schema.Types.ObjectId,
-      ref: 'BusinessDetails',
+      type: BusinessDetailsSchema,
       default: null,
     },
     authentication: {
-      restrictionLeftAt: {
-        type: Date,
-        default: null,
+      type: {
+        restrictionLeftAt: {
+          type: Date,
+          default: null,
+        },
+        resetPassword: {
+          type: Boolean,
+          default: false,
+        },
+        wrongLoginAttempts: {
+          type: Number,
+          default: 0,
+        },
+        passwordChangedAt: Date,
+        oneTimeCode: {
+          type: String,
+          default: null,
+        },
+        latestRequestAt: {
+          type: Date,
+          default: Date.now,
+        },
+        expiresAt: Date,
+        requestCount: {
+          type: Number,
+          default: 0,
+        },
+        authType: {
+          type: String,
+          enum: ["createAccount", "resetPassword"],
+        },
       },
-      resetPassword: {
-        type: Boolean,
-        default: false,
-      },
-      wrongLoginAttempts: {
-        type: Number,
-        default: 0,
-      },
-      passwordChangedAt: Date,
-      oneTimeCode: {
-        type: String,
-        default: "",
-      },
-      latestRequestAt: {
-        type: Date,
-        default: Date.now,
-      },
-      expiresAt: Date,
-      requestCount: {
-        type: Number,
-        default: 0,
-      },
-      authType: {
-        type: String,
-        enum: ['createAccount', 'resetPassword'],
-      },
+      select: false,
     },
   },
   {
@@ -101,7 +124,7 @@ UserSchema.pre("save", async function (next) {
     if (this.isModified("email")) {
       const isExist = await User.findOne({
         email: this.email,
-        status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
+        status: { $in: [USER_STATUS.PENDING, USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
         _id: { $ne: this._id },
       });
 

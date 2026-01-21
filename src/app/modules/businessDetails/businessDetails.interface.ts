@@ -13,21 +13,20 @@ export interface IAddress {
 }
 
 
-export interface IBusinessDetails extends Document {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId;
-  businessName?: string;
-  businessPhone?: string;
+// IBusinessDetails is now embedded in User, so no extends Document
+export interface IBusinessDetails {
+  businessName: string;
+
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  postcode: string;
+  country: string;
+  countryCode: string; // backend controlled
+
   businessEmail: string;
-  contactPerson?: string;
-  managerName?: string;
-  logo?: string;
-  companyName?: string;
-  companyPhone?: string;
-  companyScope?: string;
-  taxOffice?: string;
-  vatTaxNumber?: string;
-  address?: IAddress;
-  invoicingEmail?: string;
+  telephone: string;
+
+  completedAt: Date;
 }
 

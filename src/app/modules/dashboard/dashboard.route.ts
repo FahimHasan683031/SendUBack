@@ -13,7 +13,7 @@ router.get(
 )
 router.get(
   '/businessStatistics',
-  auth(USER_ROLES.Business),
+  auth(USER_ROLES.BUSINESS),
   DashboardControllers.getBusinessDashboardStatistics,
 )
 

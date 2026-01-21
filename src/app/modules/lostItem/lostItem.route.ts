@@ -12,7 +12,7 @@ const router = express.Router();
 // Create a new lost item
 router.post(
   "/",
-  auth(USER_ROLES.Business),
+  auth(USER_ROLES.BUSINESS),
   validateRequest(LostItemValidations.createLostItemSchema),
   lostItemControllers.createLostItem
 );
@@ -20,7 +20,7 @@ router.post(
 // Get all lost items for a user
 router.get(
   "/",
-  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
   lostItemControllers.getAllLostItems
 );
 router.post(
@@ -33,7 +33,7 @@ router.post(
 // send guest email
 router.post(
   "/send-email/:id",
-  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
   lostItemControllers.sendGestEmail
 );
 
@@ -47,7 +47,7 @@ router.get(
 // Update a lost item by ID
 router.put(
   "/:id",
-  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
   fileAndBodyProcessorUsingDiskStorage(),
   validateRequest(LostItemValidations.updateLostItemSchema),
   lostItemControllers.updateLostItem
@@ -56,7 +56,7 @@ router.put(
 // Delete a lost item by ID
 router.delete(
   "/:id",
-  auth(USER_ROLES.Business,USER_ROLES.ADMIN),
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
   lostItemControllers.deleteLostItem
 );
 

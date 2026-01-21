@@ -28,7 +28,7 @@ router.post(
 // Get all shippings
 router.get(
   "/",
-  auth(USER_ROLES.Business, USER_ROLES.ADMIN),
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
   shippingController.getAllShippings
 );
 

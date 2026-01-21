@@ -11,7 +11,7 @@ const router = express.Router()
 // Create property (Business users only)
 router.post(
     '/',
-    auth(USER_ROLES.Business),
+    auth(USER_ROLES.BUSINESS),
     fileAndBodyProcessorUsingDiskStorage(),
     validateRequest(PropertyValidations.createPropertyZod),
     PropertyControllers.createProperty,
@@ -23,7 +23,7 @@ router.get('/user/:userId', PropertyControllers.getPropertiesByUserId)
 // Get my properties (Business users only)
 router.get(
     '/my-properties',
-    auth(USER_ROLES.Business),
+    auth(USER_ROLES.BUSINESS),
     PropertyControllers.getMyProperties,
 )
 
@@ -33,7 +33,7 @@ router.get('/:id', PropertyControllers.getSingleProperty)
 // Update property (Owner or Admin)
 router.patch(
     '/:id',
-    auth(USER_ROLES.Business, USER_ROLES.ADMIN),
+    auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
     fileAndBodyProcessorUsingDiskStorage(),
     validateRequest(PropertyValidations.updatePropertyZod),
     PropertyControllers.updateProperty,
@@ -42,7 +42,7 @@ router.patch(
 // Delete property (Owner or Admin)
 router.delete(
     '/:id',
-    auth(USER_ROLES.Business, USER_ROLES.ADMIN),
+    auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
     PropertyControllers.deleteProperty,
 )
 

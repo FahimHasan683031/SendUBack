@@ -1,7 +1,6 @@
-import { Types, Document } from 'mongoose'
+import { Types } from 'mongoose'
 
-export interface IProperty extends Document {
-    _id: Types.ObjectId
+export interface IProperty {
     user: Types.ObjectId
     propertyName: string
     propertyType: string

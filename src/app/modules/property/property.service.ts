@@ -7,18 +7,20 @@ import { StatusCodes } from 'http-status-codes'
 import { USER_ROLES } from '../user/user.interface'
 import QueryBuilder from '../../builder/QueryBuilder'
 import { searchLocationsByQuery } from '../../../utils/googleMapsAddress.util'
+import { ClientSession } from 'mongoose'
 
 // Create property
 const createProperty = async (
     user: JwtPayload,
     payload: IProperty,
+    session?: ClientSession,
 ) => {
     const isExistUser = await User.findById(user.authId)
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
 
-    if (isExistUser.role !== USER_ROLES.Business) {
+    if (isExistUser.role !== USER_ROLES.BUSINESS) {
         throw new ApiError(
             StatusCodes.FORBIDDEN,
             'Only business users can create properties',
@@ -64,12 +66,12 @@ const createProperty = async (
         )
     }
 
-    const property = await Property.create({
+    const property = await Property.create([{
         ...payload,
         user: user.authId,
-    })
+    }], { session })
 
-    return property
+    return property[0]
 }
 
 // Get properties by user ID
@@ -141,9 +143,6 @@ const getSingleProperty = async (id: string) => {
     const property = await Property.findById(id).populate({
         path: 'user',
         select: 'firstName lastName email image businessDetails',
-        populate: {
-            path: 'businessDetails',
-        },
     })
 
     if (!property) {

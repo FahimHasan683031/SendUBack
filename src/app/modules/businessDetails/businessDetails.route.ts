@@ -11,9 +11,16 @@ const router = express.Router()
 router.patch(
   "/update-business-details",
   fileAndBodyProcessorUsingDiskStorage(),
-  auth(USER_ROLES.Business),
+  auth(USER_ROLES.BUSINESS),
   validateRequest(BusinessDetailsValidations.updateBusinessDetailsSchema),
   businessDetailsControllers.updateBusinessDetails
+)
+
+router.post(
+  "/complete-profile",
+  auth(USER_ROLES.BUSINESS), // Fixed enum usage from Business to BUSINESS
+  validateRequest(BusinessDetailsValidations.completeProfileSchema),
+  businessDetailsControllers.completeProfile
 )
 
 
