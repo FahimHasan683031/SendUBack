@@ -8,15 +8,28 @@ const lostItemSchema = new Schema<ILostItem>(
       ref: 'User',
       required: true
     },
+    property: {
+      type: Schema.Types.ObjectId,
+      ref: 'Property',
+      required: true
+    },
     status: {
       type: String,
       enum: Object.values(LOST_ITEM_STATUS),
-      default: LOST_ITEM_STATUS.PENDING
+      default: LOST_ITEM_STATUS.REGISTERED
+    },
+    currentState: {
+      registered: { type: Boolean, default: true },
+      linkSended: { type: Boolean, default: false },
+      paymentCompleted: { type: Boolean, default: false },
+      withCourier: { type: Boolean, default: false },
+      delivered: { type: Boolean, default: false },
+      collected: { type: Boolean, default: false },
     },
     images: [{
       type: String,
       trim: true,
-      required:false
+      required: false
     }],
     itemName: {
       type: String,
@@ -47,21 +60,6 @@ const lostItemSchema = new Schema<ILostItem>(
       lowercase: true
     },
     guestPhone: {
-      type: String,
-      trim: true
-    },
-    guestReservationName: {
-      type: String,
-      trim: true
-    },
-    guestRoomNumber: {
-      type: String,
-      trim: true
-    },
-    checkoutDate: {
-      type: Date
-    },
-    note: {
       type: String,
       trim: true
     },

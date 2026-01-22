@@ -19,7 +19,6 @@ import cryptoToken, { generateOtp } from '../../../utils/crypto'
 import { Token } from '../token/token.model'
 import { IUser } from '../user/user.interface'
 import mongoose from 'mongoose'
-import { BusinessDetails } from '../businessDetails/businessDetails.model'
 
 export const createUser = async (payload: IUser & { businessName?: string }) => {
   payload.email = payload.email?.toLowerCase().trim();

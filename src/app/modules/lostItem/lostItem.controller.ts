@@ -85,26 +85,39 @@ const addOrReplaceImages = catchAsync(async (req: Request, res: Response) => {
     id,
     req.body.images
   )
-   sendResponse(res, {
+  sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Lost item images updated successfully",
     data: lostItem.images,
   })
-  })
+})
 
-  // send guest email
-  const sendGestEmail = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params
-    await lostItemServices.sendGestEmail(
-      id
-    )
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Guest email sent successfully",
-    })
+// send guest email
+const sendGestEmail = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  await lostItemServices.sendGestEmail(
+    id
+  )
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Guest email sent successfully",
   })
+})
+
+// update status
+const updateLostItemStatus = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { status } = req.body
+  const result = await lostItemServices.updateLostItemStatus(id, status)
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Status updated successfully",
+    data: result,
+  })
+})
 
 export const lostItemControllers = {
   createLostItem,
@@ -113,5 +126,6 @@ export const lostItemControllers = {
   updateLostItem,
   deleteLostItem,
   addOrReplaceImages,
-  sendGestEmail
+  sendGestEmail,
+  updateLostItemStatus
 }

@@ -204,11 +204,10 @@ const resendOtp = (values: {
 
         <p style="color:#3a5a40; font-size:16px; line-height:1.6; margin-bottom:25px; text-align:center;">
           Hi <strong>${values.name}</strong>, 👋<br>
-          ${
-            isReset
-              ? 'You requested a new verification code to reset your Go.Roqit password.'
-              : 'Here is your new verification code to complete your Go.Roqit account setup.'
-          }<br>
+          ${isReset
+        ? 'You requested a new verification code to reset your Go.Roqit password.'
+        : 'Here is your new verification code to complete your Go.Roqit account setup.'
+      }<br>
           Use the code below to continue:
         </p>
 
@@ -806,6 +805,7 @@ const businessUserRegistrationInviteEmail = (data: any) => {
 
 const guestLostItemNotificationEmail = (data: any) => {
   const businessDetails = data?.user?.businessDetails;
+  const property = data?.property;
   const BASE_URL = "https://api.senduback.com";
 
   const imagesHtml =
@@ -817,8 +817,8 @@ const guestLostItemNotificationEmail = (data: any) => {
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             ${data.images
-              .map(
-                (img: string) => `
+        .map(
+          (img: string) => `
                 <td align="center" style="padding:6px;">
                   <img
                     src="${BASE_URL}${img}"
@@ -827,11 +827,18 @@ const guestLostItemNotificationEmail = (data: any) => {
                     border-radius:10px;border:1px solid #ddd;" />
                 </td>
               `
-              )
-              .join("")}
+        )
+        .join("")}
           </tr>
         </table>
       `
+      : "";
+
+  const propertyImageHtml =
+    property?.propertyImage && property.propertyImage.length > 0
+      ? `<div style="text-align:center; margin-bottom:15px;">
+          <img src="${BASE_URL}${property.propertyImage[0]}" alt="${property.propertyName}" style="width:100%; max-width:300px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1);" />
+        </div>`
       : "";
 
   return {
@@ -853,18 +860,17 @@ const guestLostItemNotificationEmail = (data: any) => {
           Good News! We Found Your Item
         </h2>
 
-        ${
-          businessDetails
-            ? `<p style="margin-top:6px;font-size:13px;color:#333;">
-                <strong>${businessDetails.businessName || ""}</strong>
-                ${
-                  businessDetails.companyName
-                    ? `• ${businessDetails.companyName}`
-                    : ""
-                }
+        ${property
+        ? `<p style="margin-top:6px;font-size:13px;color:#333;">
+                <strong>${property.propertyName}</strong>
+                <br>${property.addressLine1}, ${property.city}, ${property.country}
               </p>`
-            : ""
-        }
+        : businessDetails
+          ? `<p style="margin-top:6px;font-size:13px;color:#333;">
+                <strong>${businessDetails.businessName || ""}</strong>
+              </p>`
+          : ""
+      }
       </td>
     </tr>
 
@@ -874,10 +880,11 @@ const guestLostItemNotificationEmail = (data: any) => {
 
         <p style="font-size:14px;color:#000;line-height:1.6;">
           Hello <strong style="color:#0077DD;">${data.guestName}</strong>,<br>
-          We hope you're doing well. Our team has located an item that matches your belongings.
+          We hope you're doing well. Our team has located an item that matches your belongings at <strong>${property?.propertyName || "our property"}</strong>.
           Please review the details below.
         </p>
 
+        ${propertyImageHtml}
         ${imagesHtml}
 
         <!-- Item Details -->
@@ -891,20 +898,6 @@ const guestLostItemNotificationEmail = (data: any) => {
         </p>
         <p style="font-size:13px;margin:2px 0;">
           <strong>Location Found:</strong> ${data.locationFound}
-        </p>
-
-        <!-- Guest Info -->
-        <h3 style="color:#0077DD;font-size:15px;margin:15px 0 6px;">
-          🏨 Your Stay Information
-        </h3>
-        <p style="font-size:13px;margin:2px 0;">
-          <strong>Name on Reservation:</strong> ${data.guestReservationName}
-        </p>
-        <p style="font-size:13px;margin:2px 0;">
-          <strong>Room Number:</strong> ${data.guestRoomNumber}
-        </p>
-        <p style="font-size:13px;margin:2px 0;">
-          <strong>Contact Number:</strong> ${data.guestPhone}
         </p>
 
         <!-- Action -->
@@ -940,6 +933,7 @@ const guestLostItemNotificationEmail = (data: any) => {
 `,
   };
 };
+
 
 
 
@@ -984,9 +978,8 @@ const businessShippingDetailsUpdateEmail = (data: any) => {
         <p style="font-size:13px;margin:2px 0;"><strong>Tracking Number:</strong> ${data.tracking_id || 'N/A'}</p>
         ${data.tracking_url ? `<p style="font-size:13px;margin:2px 0;"><strong>Tracking URL:</strong> <a href="${data.tracking_url}" style="color:#0077DD;">Track Package</a></p>` : ''}
 
-        ${
-          data.shippingLabel
-            ? `
+        ${data.shippingLabel
+        ? `
         <div style="margin-top:12px;">
       <a href="${config.backend_url}/${data.shippingLabel}"
    download
@@ -996,8 +989,8 @@ const businessShippingDetailsUpdateEmail = (data: any) => {
 </a>
 
         </div>`
-            : ''
-        }
+        : ''
+      }
 
         <!-- Action -->
         <div style="text-align:center;margin-top:18px;">
@@ -1063,9 +1056,8 @@ const customerShippingDetailsUpdateEmail = (data: any) => {
         <p style="font-size:13px;margin:2px 0;"><strong>Carrier:</strong> ${data.carrier || 'N/A'}</p>
         <p style="font-size:13px;margin:2px 0;"><strong>Tracking Number:</strong> ${data.tracking_id || 'N/A'}</p>
 
-        ${
-          data.tracking_url
-            ? `
+        ${data.tracking_url
+        ? `
         <div style="margin-top:18px;text-align:center;">
           <a href="${data.tracking_url}"
              style="background:#0077DD;color:#fff;padding:10px 28px;border-radius:8px;
@@ -1073,8 +1065,8 @@ const customerShippingDetailsUpdateEmail = (data: any) => {
             🔍 Track Your Shipment
           </a>
         </div>`
-            : ''
-        }
+        : ''
+      }
 
         <p style="font-size:12px;color:#666;text-align:center;margin-top:16px;">
           If the tracking number is not active yet, please allow a few hours for the carrier to update their system.

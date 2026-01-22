@@ -78,12 +78,12 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
       status: 'paymentCompleted',
     })
 
-    // Update lost item status to Shipment Booked
-    if(shipping.lostItemId) {
-      await LostItem.findByIdAndUpdate(
-        { _id: shipping.lostItemId },
-        { status: LOST_ITEM_STATUS.SHIPMENT_BOOKED },
-      )
+    // Update lost item status to paymentCompleted
+    if (shipping.lostItemId) {
+      await LostItem.findByIdAndUpdate(shipping.lostItemId, {
+        status: LOST_ITEM_STATUS.PAYMENTCOMPLETED,
+        'currentState.paymentCompleted': true,
+      })
     }
 
     // Send confermation email andmin and also customer 

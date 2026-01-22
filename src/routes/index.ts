@@ -2,7 +2,6 @@ import { UserRoutes } from '../app/modules/user/user.route'
 import { AuthRoutes } from '../app/modules/auth/auth.route'
 import express, { Router } from 'express'
 import { PublicRoutes } from '../app/modules/public/public.route'
-import { BusinessDetailsRoute } from '../app/modules/businessDetails/businessDetails.route'
 import { LostItemRoutes } from '../app/modules/lostItem/lostItem.route'
 import { CategoryRoutes } from '../app/modules/category/category.route'
 import { zonePricingRoutes } from '../app/modules/zoonePricing/zonePricing.route'
@@ -23,7 +22,6 @@ const apiRoutes: { path: string; route: Router }[] = [
   { path: '/user', route: UserRoutes },
   { path: '/auth', route: AuthRoutes },
   { path: '/public', route: PublicRoutes },
-  { path: '/business-details', route: BusinessDetailsRoute },
   { path: '/lost-item', route: LostItemRoutes },
   { path: '/category', route: CategoryRoutes },
   { path: '/zone-pricing', route: zonePricingRoutes },

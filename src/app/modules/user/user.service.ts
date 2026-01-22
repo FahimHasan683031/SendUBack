@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
-import { IUser } from './user.interface'
 import { User } from './user.model'
 import { USER_ROLES, USER_STATUS } from '../../../enum/user'
 import { JwtPayload } from 'jsonwebtoken'
@@ -8,11 +7,10 @@ import { logger } from '../../../shared/logger'
 import { AuthHelper } from '../auth/auth.helper'
 import QueryBuilder from '../../builder/QueryBuilder'
 import config from '../../../config'
-import { BusinessDetails } from '../businessDetails/businessDetails.model'
-import { IBusinessDetails } from '../businessDetails/businessDetails.interface'
 import { searchLocationsByQuery } from '../../../utils/googleMapsAddress.util'
 import { PropertyServices } from '../property/property.service'
 import { startSession } from 'mongoose'
+import { IBusinessDetails, IUser } from './user.interface'
 
 
 // create super admin
@@ -52,7 +50,7 @@ const createAdmin = async (): Promise<Partial<IUser> | null> => {
 }
 
 const getAllUser = async (query: Record<string, unknown>) => {
-  const userQueryBuilder = new QueryBuilder(User.find().populate('businessDetails').select('-password -authentication'), query)
+  const userQueryBuilder = new QueryBuilder(User.find().select('-password -authentication'), query)
     .filter()
     .sort()
     .fields()
@@ -80,11 +78,10 @@ const getAllUser = async (query: Record<string, unknown>) => {
 }
 
 const getSingleUser = async (id: string) => {
-  const result = await User.findById(id).populate('businessDetails').select('-password -authentication')
+  const result = await User.findById(id).select('-password -authentication')
   return result
 }
 
-// delete User
 const deleteUser = async (id: string) => {
   const user = await User.findById(id)
   if (!user) {
@@ -92,9 +89,6 @@ const deleteUser = async (id: string) => {
   }
   if (user.role === USER_ROLES.ADMIN) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Admin cannot be deleted')
-  }
-  if (user.role === USER_ROLES.BUSINESS) {
-    await BusinessDetails.deleteOne({ userId: user._id })
   }
   const result = await User.findByIdAndDelete(id)
   return result
@@ -131,10 +125,6 @@ const getProfile = async (user: JwtPayload) => {
       'The requested profile not found or deleted.',
     )
   }
-  if (isExistUser.role === USER_ROLES.BUSINESS) {
-    const businessDetails = await BusinessDetails.findOne({ userId: isExistUser._id }).lean()
-    return { ...isExistUser, businessDetails }
-  }
   return isExistUser
 }
 
@@ -151,9 +141,6 @@ const deleteMyAccount = async (user: JwtPayload) => {
   }
 
   await User.findByIdAndDelete(isExistUser._id)
-  if (isExistUser.role === USER_ROLES.BUSINESS) {
-    await BusinessDetails.deleteOne({ userId: isExistUser._id })
-  }
   return 'Account deleted successfully'
 }
 

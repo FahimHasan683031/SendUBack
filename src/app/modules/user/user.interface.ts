@@ -6,7 +6,7 @@ export { USER_ROLES, USER_STATUS };
 
 /* ================= AUTH ================= */
 
-type IAuthentication = {
+export type IAuthentication = {
   restrictionLeftAt: Date | null;
   resetPassword: boolean;
   wrongLoginAttempts: number;
@@ -20,7 +20,7 @@ type IAuthentication = {
 
 /* ================= BUSINESS DETAILS ================= */
 
-type IBusinessDetails = {
+export type IBusinessDetails = {
   businessName: string;
 
   addressLine1: string;

@@ -1,5 +1,5 @@
 import { JwtPayload } from 'jsonwebtoken'
-import { ILostItem } from './lostItem.interface'
+import { ILostItem, LOST_ITEM_STATUS } from './lostItem.interface'
 import { LostItem } from './lostItem.model'
 import { User } from '../user/user.model'
 import ApiError from '../../../errors/ApiError'
@@ -9,6 +9,7 @@ import { emailHelper } from '../../../helpers/emailHelper'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { logger } from '../../../shared/logger'
 import QueryBuilder from '../../builder/QueryBuilder'
+import { Property } from '../property/property.model'
 
 // create lost item
 export const createLostItem = async (
@@ -19,25 +20,10 @@ export const createLostItem = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-
-  if (isExistUser.role === USER_ROLES.BUSINESS) {
-    const businessDetails = isExistUser.businessDetails;
-    if (!businessDetails) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Business details are required')
-    }
-    if (
-      !businessDetails.addressLine1 ||
-      !businessDetails.businessEmail ||
-      !businessDetails.businessName ||
-      !businessDetails.telephone
-    ) {
-      throw new ApiError(
-        StatusCodes.BAD_REQUEST,
-        'Please complete your business details (Address, Email, Name, Phone) before adding a lost item',
-      )
-    }
+  const property = await Property.findById(payload.property)
+  if (!property) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Property not found')
   }
-
   const lostItem = await LostItem.create({
     ...payload,
     user: user.authId
@@ -57,7 +43,18 @@ export const getAllLostItems = async (
   if (isExistUser.role === USER_ROLES.BUSINESS) {
     query.user = isExistUser._id
   }
-  const lostQueryBiilder = new QueryBuilder(LostItem.find(), query)
+  const lostQueryBiilder = new QueryBuilder(
+    LostItem.find().populate([
+      {
+        path: 'user',
+        select: '-authentication -password -__v',
+      },
+      {
+        path: 'property',
+      },
+    ]),
+    query,
+  )
     .filter()
     .sort()
     .paginate()
@@ -66,21 +63,23 @@ export const getAllLostItems = async (
   const lostItems = await lostQueryBiilder.modelQuery
   const paginateInfo = await lostQueryBiilder.getPaginationInfo()
 
-
-
   return {
     lostItems,
-    meta: paginateInfo
+    meta: paginateInfo,
   }
 }
 
 // get single lost item
 export const getSingleLostItem = async (id: string) => {
-  const lostItem = await LostItem.findById(id)
-    .populate({
+  const lostItem = await LostItem.findById(id).populate([
+    {
       path: 'user',
       select: '-authentication -password -__v',
-    })
+    },
+    {
+      path: 'property',
+    },
+  ])
 
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
@@ -152,17 +151,28 @@ const addOrReplaceImages = async (
   return item;
 };
 
+
+
 const sendGestEmail = async (lostItemId: string) => {
-  const lostItem = await LostItem.findById(lostItemId).populate({
-    path: 'user',
-    select: '-authentication -password -__v',
-  })
+  const lostItem = await LostItem.findById(lostItemId)
+    .populate({
+      path: 'user',
+      select: '-authentication -password -__v',
+    })
+    .populate('property');
+
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
   if (!lostItem.guestEmail) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Guest email not found')
   }
+
+  // Update status and current state
+  lostItem.status = LOST_ITEM_STATUS.LINKSENDED;
+  lostItem.currentState.linkSended = true;
+  await lostItem.save();
+
   setTimeout(() => {
     try {
       emailHelper.sendEmail(emailTemplate.guestLostItemNotificationEmail(lostItem))
@@ -170,10 +180,34 @@ const sendGestEmail = async (lostItemId: string) => {
       logger.error('Failed to send guest lost item notification email:', error)
     }
   }, 0)
+
   return {
-    message: "Guest email sent successfully",
+    message: 'Guest email sent successfully',
   }
 }
+
+const updateLostItemStatus = async (id: string, status: LOST_ITEM_STATUS) => {
+  const isExistLostItem = await LostItem.findById(id)
+  if (!isExistLostItem) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
+  }
+
+  const updateData: any = { status }
+
+  if (status === LOST_ITEM_STATUS.DELIVERED) {
+    updateData['currentState.delivered'] = true
+  } else if (status === LOST_ITEM_STATUS.COLLECTED) {
+    updateData['currentState.collected'] = true
+  }
+
+  const result = await LostItem.findByIdAndUpdate(
+    id,
+    { $set: updateData },
+    { new: true },
+  )
+  return result
+}
+
 
 export const lostItemServices = {
   createLostItem,
@@ -182,5 +216,6 @@ export const lostItemServices = {
   updateLostItem,
   deleteLostItem,
   addOrReplaceImages,
-  sendGestEmail
+  sendGestEmail,
+  updateLostItemStatus
 }

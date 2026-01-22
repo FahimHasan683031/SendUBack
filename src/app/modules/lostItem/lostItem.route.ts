@@ -37,6 +37,12 @@ router.post(
   lostItemControllers.sendGestEmail
 );
 
+router.patch(
+  "/update-status/:id",
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
+  lostItemControllers.updateLostItemStatus
+);
+
 
 // Get single lost item
 router.get(
