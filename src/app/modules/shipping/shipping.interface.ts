@@ -1,11 +1,19 @@
 import { Types } from 'mongoose'
 
 
-export type ShippingStatus =
-  | 'created'
-  | 'paymentCompleted'
-  | 'shipped'
-  | 'delivered'
+export enum SHIPPING_STATUS {
+  PAYMENT_PENDING = 'paymentPending',
+  PAYMENT_COMPLETED = 'paymentCompleted',
+  IN_TRANSIT = 'inTransit',
+  DELIVERED = 'delivered',
+}
+
+export interface IShippingCurrentState {
+  registered: boolean
+  paymentCompleted: boolean
+  courierBooked: boolean
+  delivered: boolean
+}
 
 export interface IShippingAddress {
   placeName?: string
@@ -42,7 +50,8 @@ export interface IInsurance {
 export interface IShipping {
   _id: Types.ObjectId
   zoneName: string
-  status: ShippingStatus
+  status: SHIPPING_STATUS
+  currentState: IShippingCurrentState
   address_from: IShippingAddress
   address_to: IShippingAddress
   images?: string[]

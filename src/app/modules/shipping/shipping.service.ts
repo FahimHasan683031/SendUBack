@@ -1,5 +1,5 @@
 import { Shipping } from './shipping.model'
-import { IShipping } from './shipping.interface'
+import { IShipping, SHIPPING_STATUS } from './shipping.interface'
 import QueryBuilder from '../../builder/QueryBuilder'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '../../../errors/ApiError'
@@ -15,6 +15,8 @@ import { USER_ROLES } from '../user/user.interface'
 import { Zone } from '../zoone/zone.model'
 import { searchLocationsByQuery } from '../../../utils/googleMapsAddress.util'
 import { getZoneByCountry } from '../zoone/zone.utils'
+import { LostItem } from '../lostItem/lostItem.model'
+import { LOST_ITEM_STATUS } from '../lostItem/lostItem.interface'
 
 
 // Create shipping
@@ -247,7 +249,8 @@ const addShippingRateORInsurance = async (
 
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
-  payload.status = 'shipped'
+  payload.status = SHIPPING_STATUS.IN_TRANSIT;
+  (payload as any)['currentState.courierBooked'] = true
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
 
   if (!shipping) {
@@ -293,6 +296,36 @@ const searchLocations = async (search: string, type?: string) => {
   return locations
 }
 
+// mark as delivered
+const markAsDelivered = async (id: string) => {
+  const isExistShipping = await Shipping.findById(id)
+  if (!isExistShipping) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
+  }
+
+  const result = await Shipping.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status: SHIPPING_STATUS.DELIVERED,
+        'currentState.delivered': true,
+      },
+    },
+    { new: true },
+  )
+
+  if (result?.lostItemId) {
+    await LostItem.findByIdAndUpdate(result.lostItemId, {
+      $set: {
+        status: LOST_ITEM_STATUS.DELIVERED,
+        'currentState.delivered': true,
+      },
+    })
+  }
+
+  return result
+}
+
 export const shippingService = {
   createShipping,
   getAllShippings,
@@ -302,5 +335,6 @@ export const shippingService = {
   deleteShipping,
   getShippingRates,
   addShippingInfo,
-  searchLocations
+  searchLocations,
+  markAsDelivered
 }

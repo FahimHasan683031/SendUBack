@@ -208,6 +208,24 @@ const updateLostItemStatus = async (id: string, status: LOST_ITEM_STATUS) => {
   return result
 }
 
+const markAsCollected = async (id: string) => {
+  const isExistLostItem = await LostItem.findById(id)
+  if (!isExistLostItem) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
+  }
+
+  const result = await LostItem.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status: LOST_ITEM_STATUS.COLLECTED,
+        'currentState.collected': true,
+      },
+    },
+    { new: true },
+  )
+  return result
+}
 
 export const lostItemServices = {
   createLostItem,
@@ -217,5 +235,6 @@ export const lostItemServices = {
   deleteLostItem,
   addOrReplaceImages,
   sendGestEmail,
-  updateLostItemStatus
+  updateLostItemStatus,
+  markAsCollected
 }

@@ -119,6 +119,18 @@ const updateLostItemStatus = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+// mark as collected
+const markAsCollected = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const result = await lostItemServices.markAsCollected(id)
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Item marked as collected successfully",
+    data: result,
+  })
+})
+
 export const lostItemControllers = {
   createLostItem,
   getAllLostItems,
@@ -127,5 +139,6 @@ export const lostItemControllers = {
   deleteLostItem,
   addOrReplaceImages,
   sendGestEmail,
-  updateLostItemStatus
+  updateLostItemStatus,
+  markAsCollected
 }

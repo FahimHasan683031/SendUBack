@@ -120,6 +120,18 @@ const searchLocations = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// mark as delivered
+const markAsDelivered = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const result = await shippingService.markAsDelivered(id)
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shipping marked as delivered successfully",
+    data: result,
+  })
+})
+
 
 
 export const shippingController = {
@@ -131,5 +143,6 @@ export const shippingController = {
   getShippingRates,
   addShippingInfo,
   addShippingRateORInsurance,
-  searchLocations
+  searchLocations,
+  markAsDelivered
 };

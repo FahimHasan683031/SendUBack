@@ -11,6 +11,8 @@ import { emailTemplate } from '../../../shared/emailTemplate'
 import { User } from '../user/user.model'
 import { LostItem } from '../lostItem/lostItem.model'
 import { LOST_ITEM_STATUS } from '../lostItem/lostItem.interface'
+import { SHIPPING_STATUS } from '../shipping/shipping.interface'
+
 import catchAsync from '../../../shared/catchAsync'
 
 const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
@@ -75,7 +77,8 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
 
     // Update shipping to paid/processing
     await Shipping.findByIdAndUpdate(shippingId, {
-      status: 'paymentCompleted',
+      status: SHIPPING_STATUS.PAYMENT_COMPLETED,
+      'currentState.paymentCompleted': true,
     })
 
     // Update lost item status to paymentCompleted

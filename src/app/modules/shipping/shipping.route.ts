@@ -59,12 +59,17 @@ router.patch(
   validateRequest(updateShippingZod),
   shippingController.updateShipping
 );
-// Add tracking information
 router.post(
   "/:id/shippingInfo",
   fileAndBodyProcessorUsingDiskStorage(),
   validateRequest(addShippingInfo),
   shippingController.addShippingInfo
+);
+
+router.patch(
+  "/markAsDelivered/:id",
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
+  shippingController.markAsDelivered
 );
 
 // Delete shipping

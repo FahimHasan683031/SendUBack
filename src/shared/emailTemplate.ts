@@ -806,7 +806,7 @@ const businessUserRegistrationInviteEmail = (data: any) => {
 const guestLostItemNotificationEmail = (data: any) => {
   const businessDetails = data?.user?.businessDetails;
   const property = data?.property;
-  const BASE_URL = "https://api.senduback.com";
+  const BASE_URL = config.backend_url;
 
   const imagesHtml =
     Array.isArray(data?.images) && data.images.length > 0

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose'
-import { IShipping } from './shipping.interface'
+import { IShipping, SHIPPING_STATUS } from './shipping.interface'
 
 const shippingAddressSchema = new Schema({
   placeName: String,
@@ -44,13 +44,14 @@ const shippingSchema = new Schema<IShipping>(
     },
     status: {
       type: String,
-      enum: [
-        'created',
-        'paymentCompleted',
-        'shipped',
-        'delivered',
-      ],
-      default: 'created',
+      enum: Object.values(SHIPPING_STATUS),
+      default: SHIPPING_STATUS.PAYMENT_PENDING,
+    },
+    currentState: {
+      registered: { type: Boolean, default: true },
+      paymentCompleted: { type: Boolean, default: false },
+      courierBooked: { type: Boolean, default: false },
+      delivered: { type: Boolean, default: false },
     },
     address_from: { type: shippingAddressSchema, required: true },
     address_to: { type: shippingAddressSchema, required: true },

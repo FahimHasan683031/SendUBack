@@ -43,6 +43,12 @@ router.patch(
   lostItemControllers.updateLostItemStatus
 );
 
+router.patch(
+  "/markAsCollected/:id",
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
+  lostItemControllers.markAsCollected
+);
+
 
 // Get single lost item
 router.get(
