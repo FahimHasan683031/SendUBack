@@ -34,6 +34,7 @@ router.post(
 router.post(
   "/send-email/:id",
   auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
+  validateRequest(LostItemValidations.sendGuestEmailSchema),
   lostItemControllers.sendGestEmail
 );
 

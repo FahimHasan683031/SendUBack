@@ -97,7 +97,8 @@ const addOrReplaceImages = catchAsync(async (req: Request, res: Response) => {
 const sendGestEmail = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params
   await lostItemServices.sendGestEmail(
-    id
+    id,
+    req.body.email
   )
   sendResponse(res, {
     statusCode: StatusCodes.OK,

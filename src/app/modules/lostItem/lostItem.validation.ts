@@ -42,10 +42,15 @@ export const addOrReplaceImagesSchema = z.object({
   }).strict("Unknown fields are not allowed")
 });
 
-
+export const sendGuestEmailSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email format").optional(),
+  }).strict("Unknown fields are not allowed")
+});
 
 export const LostItemValidations = {
   createLostItemSchema,
   updateLostItemSchema,
-  addOrReplaceImagesSchema
+  addOrReplaceImagesSchema,
+  sendGuestEmailSchema
 };

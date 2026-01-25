@@ -153,7 +153,7 @@ const addOrReplaceImages = async (
 
 
 
-const sendGestEmail = async (lostItemId: string) => {
+const sendGestEmail = async (lostItemId: string, requestedEmail?: string) => {
   const lostItem = await LostItem.findById(lostItemId)
     .populate({
       path: 'user',
@@ -164,7 +164,10 @@ const sendGestEmail = async (lostItemId: string) => {
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
-  if (!lostItem.guestEmail) {
+
+  const targetEmail = requestedEmail || lostItem.guestEmail;
+
+  if (!targetEmail) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Guest email not found')
   }
 
@@ -175,7 +178,11 @@ const sendGestEmail = async (lostItemId: string) => {
 
   setTimeout(() => {
     try {
-      emailHelper.sendEmail(emailTemplate.guestLostItemNotificationEmail(lostItem))
+      const emailContent = emailTemplate.guestLostItemNotificationEmail(lostItem);
+      if (requestedEmail) {
+        emailContent.to = requestedEmail;
+      }
+      emailHelper.sendEmail(emailContent)
     } catch (error) {
       logger.error('Failed to send guest lost item notification email:', error)
     }
@@ -208,6 +215,7 @@ const updateLostItemStatus = async (id: string, status: LOST_ITEM_STATUS) => {
   return result
 }
 
+// mark as collected
 const markAsCollected = async (id: string) => {
   const isExistLostItem = await LostItem.findById(id)
   if (!isExistLostItem) {
