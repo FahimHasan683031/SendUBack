@@ -53,10 +53,10 @@ export const updateShippingZod = z.object({
 // Add tracking info validation
 export const addShippingInfo = z.object({
   body: z.object({
-    shippingLabel: z.string().min(1, "Shipping label is required"),
-    tracking_id: z.string().min(1, "Tracking ID is required"),
-    tracking_url: z.string().url("Valid tracking URL is required").optional(),
-    carrier: z.string().min(1, "Carrier is required").optional(),
+    shippingLabel: z.string().optional(),
+    tracking_id: z.string().optional(),
+    tracking_url: z.string().optional(),
+    carrier: z.string().optional(),
   }).strict(),
 });
 
