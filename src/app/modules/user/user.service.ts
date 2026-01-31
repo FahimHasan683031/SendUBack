@@ -96,7 +96,7 @@ const deleteUser = async (id: string) => {
 
 const updateProfile = async (
   user: JwtPayload,
-  payload: Partial<IUser>
+  payload: Partial<IUser> & Partial<IBusinessDetails>,
 ) => {
   const isExistUser = await User.findById(user.authId)
 
@@ -104,17 +104,124 @@ const updateProfile = async (
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found or deleted.')
   }
 
-  const updatedUser = await User.findOneAndUpdate(
-    { _id: user.authId, status: { $ne: USER_STATUS.DELETED } },
-    payload,
-    { new: true },
-  )
 
-  if (!updatedUser) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update profile')
+
+  // Address logic for business details
+  let countryCode = "US"; // Default fallback
+  if (payload.addressLine1 || payload.city) {
+    const searchQuery = [
+      payload.addressLine1,
+      payload.addressLine2,
+      payload.city,
+      payload.postcode,
+      payload.country,
+    ]
+      .filter(Boolean)
+      .join(', ')
+
+    try {
+      const result = await searchLocationsByQuery(searchQuery);
+      if (result && result.length > 0) {
+        countryCode = result[0].countryCode;
+      }
+    } catch (err) {
+      console.error("Map API Error", err);
+    }
   }
 
-  return updatedUser
+  // Check if this update completes the profile
+  const wasCompleted = isExistUser.businessDetailsCompleted;
+
+  if (!wasCompleted) {
+    // If first time completion, enforce required fields
+    if (!payload.businessName) throw new ApiError(StatusCodes.BAD_REQUEST, "Business Name is required for profile completion.");
+    if (!payload.addressLine1) throw new ApiError(StatusCodes.BAD_REQUEST, "Address Line 1 is required for profile completion.");
+    if (!payload.city) throw new ApiError(StatusCodes.BAD_REQUEST, "City is required for profile completion.");
+    if (!payload.country) throw new ApiError(StatusCodes.BAD_REQUEST, "Country is required for profile completion.");
+    if (!payload.postcode) throw new ApiError(StatusCodes.BAD_REQUEST, "Postcode is required for profile completion.");
+  }
+
+  // Construct businessDetails update if fields are present
+  // We use dot notation for update
+  const businessDetailsUpdate: any = {};
+  if (payload.businessName) businessDetailsUpdate["businessDetails.businessName"] = payload.businessName;
+  if (payload.addressLine1) businessDetailsUpdate["businessDetails.addressLine1"] = payload.addressLine1;
+  if (payload.addressLine2) businessDetailsUpdate["businessDetails.addressLine2"] = payload.addressLine2;
+  if (payload.city) businessDetailsUpdate["businessDetails.city"] = payload.city;
+  if (payload.postcode) businessDetailsUpdate["businessDetails.postcode"] = payload.postcode;
+  if (payload.country) businessDetailsUpdate["businessDetails.country"] = payload.country;
+  if (payload.businessEmail) businessDetailsUpdate["businessDetails.businessEmail"] = payload.businessEmail;
+  if (payload.telephone) businessDetailsUpdate["businessDetails.telephone"] = payload.telephone;
+
+  if (Object.keys(businessDetailsUpdate).length > 0) {
+    businessDetailsUpdate["businessDetails.countryCode"] = countryCode;
+    if (!wasCompleted) {
+      businessDetailsUpdate["businessDetailsCompleted"] = true;
+      businessDetailsUpdate["businessDetails.completedAt"] = new Date();
+      businessDetailsUpdate["status"] = USER_STATUS.ACTIVE;
+    }
+  }
+
+  // Merge payload with flattened business details
+
+  const updateData = { ...payload, ...businessDetailsUpdate };
+
+  // Remove flattened fields from payload
+  delete (updateData as any).addressLine1;
+  delete (updateData as any).addressLine2;
+  delete (updateData as any).city;
+  delete (updateData as any).postcode;
+  delete (updateData as any).country;
+  delete (updateData as any).businessEmail; // carefully not to remove root email
+  delete (updateData as any).telephone;
+  delete (updateData as any).businessName;
+
+
+  const session = await startSession();
+  try {
+    session.startTransaction();
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: user.authId, status: { $ne: USER_STATUS.DELETED } },
+      updateData,
+      { new: true, session },
+    )
+
+    if (!updatedUser) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update profile')
+    }
+
+    // Auto-create property if profile is completed for the first time
+    if (!wasCompleted && updatedUser.businessDetailsCompleted) {
+      await PropertyServices.createProperty(
+        { authId: isExistUser._id.toString(), role: isExistUser.role } as JwtPayload,
+        {
+          propertyName: updatedUser.businessDetails?.businessName || isExistUser.firstName || "Main Business",
+          propertyType: "Business",
+          addressLine1: updatedUser.businessDetails?.addressLine1 || "",
+          addressLine2: updatedUser.businessDetails?.addressLine2 || "",
+          city: updatedUser.businessDetails?.city || "",
+          postcode: updatedUser.businessDetails?.postcode || "",
+          country: updatedUser.businessDetails?.country || "",
+          countryCode: updatedUser.businessDetails?.countryCode || countryCode,
+          contactEmail: updatedUser.businessDetails?.businessEmail || updatedUser.email,
+          contactPhone: updatedUser.businessDetails?.telephone || "",
+          propertyImage: updatedUser.image ? [updatedUser.image] : [],
+        } as any,
+        session
+      );
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return updatedUser;
+
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 }
 
 const getProfile = async (user: JwtPayload) => {
@@ -144,102 +251,6 @@ const deleteMyAccount = async (user: JwtPayload) => {
   return 'Account deleted successfully'
 }
 
-// complete profile
-export const completeProfile = async (
-  user: JwtPayload,
-  payload: Partial<IBusinessDetails>,
-) => {
-  const isExistUser = await User.findById(user.authId)
-  if (!isExistUser) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
-  }
-
-  // Address logic
-  let countryCode = "US"; // Default fallback
-  if (payload.addressLine1 || payload.city) {
-    const searchQuery = [
-      payload.addressLine1,
-      payload.addressLine2,
-      payload.city,
-      payload.postcode, // postcode in interface
-      payload.country,
-    ]
-      .filter(Boolean)
-      .join(', ')
-
-    // Backend controlled countryCode resolution
-    try {
-      const result = await searchLocationsByQuery(searchQuery);
-      if (result && result.length > 0) {
-        countryCode = result[0].countryCode;
-        payload.countryCode = countryCode;
-      }
-    } catch (err) {
-      console.error("Map API Error", err);
-    }
-  }
-
-  payload.completedAt = new Date();
-
-  // Start Transaction
-  const session = await startSession();
-  try {
-    session.startTransaction();
-
-    // Update User with embedded businessDetails
-    const updatedUser = await User.findByIdAndUpdate(
-      user.authId,
-      {
-        $set: {
-          "businessDetails.addressLine1": payload.addressLine1,
-          "status": USER_STATUS.ACTIVE,
-          "businessDetails.addressLine2": payload.addressLine2,
-          "businessDetails.city": payload.city,
-          "businessDetails.postcode": payload.postcode,
-          "businessDetails.country": payload.country,
-          "businessDetails.countryCode": payload.countryCode || countryCode,
-          "businessDetails.businessEmail": payload.businessEmail,
-          "businessDetails.telephone": payload.telephone,
-          "businessDetails.completedAt": payload.completedAt,
-          businessDetailsCompleted: true
-        }
-      },
-      { new: true, runValidators: true, session }
-    );
-
-    if (!updatedUser) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to complete profile");
-    }
-
-    // Automatic Property Creation
-    await PropertyServices.createProperty(
-      { authId: isExistUser._id.toString(), role: isExistUser.role } as JwtPayload,
-      {
-        propertyName: updatedUser.businessDetails?.businessName || isExistUser.firstName || "Main Business",
-        propertyType: "Business",
-        addressLine1: payload.addressLine1 || "",
-        addressLine2: payload.addressLine2 || "",
-        city: payload.city || "",
-        postcode: payload.postcode || "",
-        country: payload.country || "",
-        countryCode: payload.countryCode || countryCode,
-        contactEmail: payload.businessEmail || updatedUser.businessDetails?.businessEmail || updatedUser.email,
-        contactPhone: payload.telephone || updatedUser.businessDetails?.telephone || "",
-      } as any,
-      session
-    );
-
-    await session.commitTransaction();
-    await session.endSession();
-
-    return updatedUser;
-  } catch (error) {
-    await session.abortTransaction();
-    await session.endSession();
-    throw error;
-  }
-}
-
 export const UserServices = {
   updateProfile,
   createAdmin,
@@ -248,5 +259,4 @@ export const UserServices = {
   deleteUser,
   getProfile,
   deleteMyAccount,
-  completeProfile,
 }

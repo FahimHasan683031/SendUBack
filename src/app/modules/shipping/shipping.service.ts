@@ -83,7 +83,23 @@ const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload)
   }
 
 
-  const shippingQueryBuilder = new QueryBuilder(Shipping.find(), query)
+  const shippingQueryBuilder = new QueryBuilder(
+    Shipping.find().populate([
+      {
+        path: 'lostItemId',
+        populate: [
+          {
+            path: 'property',
+          },
+          {
+            path: 'user',
+            select: '-password -authentication -__v',
+          },
+        ],
+      },
+    ]),
+    query,
+  )
     .search([
       'address_from',
       'address_to',
@@ -110,7 +126,20 @@ const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload)
 
 // Get shipping by ID
 const getShippingById = async (id: string) => {
-  const shipping = await Shipping.findById(id)
+  const shipping = await Shipping.findById(id).populate([
+    {
+      path: 'lostItemId',
+      populate: [
+        {
+          path: 'property',
+        },
+        {
+          path: 'user',
+          select: '-password -authentication -__v',
+        },
+      ],
+    },
+  ])
 
   if (!shipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
@@ -256,6 +285,11 @@ const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
   if (!shipping) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
+
+  await LostItem.findByIdAndUpdate(shipping.lostItemId, {
+    status: LOST_ITEM_STATUS.WITHCOURIER,
+    'currentState.courierBooked': true
+  })
 
   if (shipping.shippingLabel && shipping.tracking_id) {
     setTimeout(() => {

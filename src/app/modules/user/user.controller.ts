@@ -11,11 +11,14 @@ import { JwtPayload } from 'jsonwebtoken'
 
 // Update Profile
 const updateProfile = catchAsync(async (req: Request, res: Response) => {
+
   const result = await UserServices.updateProfile(req.user! as JwtPayload, req.body)
+
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'Profile updated successfully',
+    data: result,
   })
 })
 
@@ -76,20 +79,6 @@ const deleteMyAccount = catchAsync(async (req: Request, res: Response) => {
 
 
 
-// complete profile
-const completeProfile = catchAsync(async (req: Request, res: Response) => {
-  const result = await UserServices.completeProfile(
-    req.user! as JwtPayload,
-    req.body
-  )
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Profile completed successfully",
-    data: result,
-  })
-})
-
 export const UserController = {
   getAllUser,
   updateProfile,
@@ -97,5 +86,4 @@ export const UserController = {
   deleteUser,
   getProfile,
   deleteMyAccount,
-  completeProfile,
 }

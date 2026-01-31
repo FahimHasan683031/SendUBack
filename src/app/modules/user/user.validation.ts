@@ -24,11 +24,21 @@ export const userUpdateSchema = z.object({
     email: z.string().email("Invalid email address").trim().toLowerCase().optional(),
     firstName: z.string().min(1, "First name is required").optional(),
     lastName: z.string().min(1, "Last name is required").optional(),
-    image: z.string().url("Invalid image URL").optional(),
+    image: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters").optional(),
     status: z.nativeEnum(USER_STATUS).optional(),
     verified: z.boolean().optional(),
     role: z.nativeEnum(USER_ROLES).optional(),
+
+    // Business Details fields
+    businessName: z.string().trim().optional(), // Added businessName as it is part of business details
+    addressLine1: z.string().trim().optional(),
+    addressLine2: z.string().trim().optional(),
+    city: z.string().trim().optional(),
+    postcode: z.string().trim().optional(),
+    country: z.string().trim().optional(),
+    businessEmail: z.string().email("Invalid email").optional(),
+    telephone: z.string().trim().optional(),
   })
 });
 
@@ -39,22 +49,9 @@ export const changePasswordSchema = z.object({
   })
 });
 
-export const completeProfileSchema = z.object({
-  body: z.object({
-    addressLine1: z.string().trim().min(1, "Address Line 1 is required"),
-    addressLine2: z.string().trim().optional(),
-    city: z.string().trim().min(1, "City is required"),
-    postcode: z.string().trim().min(1, "Postcode is required"),
-    country: z.string().trim().min(1, "Country is required"),
-    businessEmail: z.string().email("Invalid email").optional(),
-    telephone: z.string().trim().optional(),
-  })
-});
-
 export const UserValidations = {
   userSignupSchema,
   userLoginSchema,
   userUpdateSchema,
   changePasswordSchema,
-  completeProfileSchema,
 };

@@ -18,15 +18,10 @@ router.get('/', auth(USER_ROLES.ADMIN), UserController.getAllUser),
     '/profile',
     auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
     fileAndBodyProcessorUsingDiskStorage(),
+    validateRequest(UserValidations.userUpdateSchema),
     UserController.updateProfile,
   )
 
-router.post(
-  "/complete-profile",
-  auth(USER_ROLES.BUSINESS),
-  validateRequest(UserValidations.completeProfileSchema),
-  UserController.completeProfile
-)
 
 // delete my account
 router.delete(
