@@ -123,11 +123,13 @@ export const createUser = async (payload: IUser & { businessName?: string }) => 
 
 const login = async (payload: ILoginData): Promise<IAuthResponse> => {
   const { email, phone } = payload
-  const query = email ? { email: email.toLowerCase().trim() } : { phone: phone }
+  const query = email ? { email: email } : { phone: phone }
+
+  console.log({email})
 
   const isUserExist = await User.findOne({
     ...query,
-    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
+    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.PENDING] },
   })
     .select('+password +authentication')
     .lean()
