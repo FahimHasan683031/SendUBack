@@ -235,6 +235,27 @@ const markAsCollected = async (id: string) => {
   return result
 }
 
+const getAllLostItemsForExport = async (user: JwtPayload) => {
+  const filter: any = {};
+
+  // For business users, only show their own lost items
+  if (user.role === USER_ROLES.BUSINESS) {
+    // We need to find the User _id corresponding to the authId in the token
+    const currentUser = await User.findById(user.authId);
+    if (currentUser) {
+      filter.user = currentUser._id;
+    }
+  }
+
+  return await LostItem.find(filter)
+    .populate('property')
+    .populate({
+      path: 'user',
+      select: 'firstName lastName email'
+    })
+    .lean();
+}
+
 export const lostItemServices = {
   createLostItem,
   getAllLostItems,
@@ -244,5 +265,6 @@ export const lostItemServices = {
   addOrReplaceImages,
   sendGestEmail,
   updateLostItemStatus,
-  markAsCollected
+  markAsCollected,
+  getAllLostItemsForExport
 }

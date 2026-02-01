@@ -360,6 +360,17 @@ const markAsDelivered = async (id: string) => {
   return result
 }
 
+const getAllShippingsForExport = async (user: JwtPayload) => {
+  const filter: any = {};
+  if (user.role === USER_ROLES.BUSINESS) {
+    filter['address_from.email'] = user.email;
+  }
+
+  return await Shipping.find(filter)
+    .populate('lostItemId')
+    .lean();
+}
+
 export const shippingService = {
   createShipping,
   getAllShippings,
@@ -370,5 +381,6 @@ export const shippingService = {
   getShippingRates,
   addShippingInfo,
   searchLocations,
-  markAsDelivered
+  markAsDelivered,
+  getAllShippingsForExport
 }

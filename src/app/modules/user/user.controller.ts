@@ -6,6 +6,7 @@ import { UserServices } from './user.service'
 import { IUser } from './user.interface'
 import config from '../../../config'
 import { JwtPayload } from 'jsonwebtoken'
+import { ExportUtils } from '../../../utils/export.util'
 
 
 
@@ -79,6 +80,46 @@ const deleteMyAccount = catchAsync(async (req: Request, res: Response) => {
 
 
 
+// export users
+const exportBusinessUsers = catchAsync(async (req: Request, res: Response) => {
+  const users = await UserServices.getAllUsersForExport();
+
+  const data = users.map((user: any) => ({
+    "First Name": user.firstName || "",
+    "Last Name": user.lastName || "",
+    "Email": user.email,
+    "Business Name": user.businessDetails?.businessName || "",
+    "Business Address": user.businessDetails?.addressLine1 || "",
+    "City": user.businessDetails?.city || "",
+    "Country": user.businessDetails?.country || "",
+    "Status": user.status,
+    "Verified": user.verified ? "Yes" : "No",
+    "Joined At": user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "",
+  }));
+
+  const format = req.query.format as string || 'csv';
+  const fileName = "Business_Users_Export";
+
+  if (format === 'xlsx') {
+    const columns = [
+      { header: 'First Name', key: 'First Name', width: 20 },
+      { header: 'Last Name', key: 'Last Name', width: 20 },
+      { header: 'Email', key: 'Email', width: 30 },
+      { header: 'Business Name', key: 'Business Name', width: 25 },
+      { header: 'Business Address', key: 'Business Address', width: 30 },
+      { header: 'City', key: 'City', width: 15 },
+      { header: 'Country', key: 'Country', width: 15 },
+      { header: 'Status', key: 'Status', width: 15 },
+      { header: 'Verified', key: 'Verified', width: 10 },
+      { header: 'Joined At', key: 'Joined At', width: 15 },
+    ];
+    await ExportUtils.toExcel(res, data, columns, "Users", fileName);
+  } else {
+    const fields = ["First Name", "Last Name", "Email", "Business Name", "Business Address", "City", "Country", "Status", "Verified", "Joined At"];
+    await ExportUtils.toCSV(res, data, fields, fileName);
+  }
+});
+
 export const UserController = {
   getAllUser,
   updateProfile,
@@ -86,4 +127,5 @@ export const UserController = {
   deleteUser,
   getProfile,
   deleteMyAccount,
+  exportBusinessUsers,
 }

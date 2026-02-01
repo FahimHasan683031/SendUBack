@@ -51,6 +51,15 @@ router.patch(
 );
 
 
+
+// export lost items
+router.get(
+  "/export",
+  auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
+  lostItemControllers.exportLostItems
+);
+
+
 // Get single lost item
 router.get(
   "/:id",

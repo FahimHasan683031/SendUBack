@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import sendResponse from "../../../shared/sendResponse";
 import catchAsync from "../../../shared/catchAsync";
 import { JwtPayload } from 'jsonwebtoken';
+import { ExportUtils } from "../../../utils/export.util";
 
 
 // Create shipping
@@ -134,6 +135,42 @@ const markAsDelivered = catchAsync(async (req: Request, res: Response) => {
 
 
 
+// Export shippings
+const exportShippings = catchAsync(async (req: Request, res: Response) => {
+  const shippings = await shippingService.getAllShippingsForExport(req.user as JwtPayload);
+
+  const data = shippings.map((item: any) => ({
+    "Tracking ID": item.tracking_id,
+    "From Name": item.address_from.name,
+    "From Country": item.address_from.country,
+    "To Name": item.address_to.name,
+    "To Country": item.address_to.country,
+    "Status": item.status,
+    "Cost": item.total_cost || 0,
+    "Created At": item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "",
+  }));
+
+  const format = req.query.format as string || 'csv';
+  const fileName = "Shippings_Export";
+
+  if (format === 'xlsx') {
+    const columns = [
+      { header: 'Tracking ID', key: 'Tracking ID', width: 25 },
+      { header: 'From Name', key: 'From Name', width: 20 },
+      { header: 'From Country', key: 'From Country', width: 15 },
+      { header: 'To Name', key: 'To Name', width: 20 },
+      { header: 'To Country', key: 'To Country', width: 15 },
+      { header: 'Status', key: 'Status', width: 15 },
+      { header: 'Cost', key: 'Cost', width: 10 },
+      { header: 'Created At', key: 'Created At', width: 15 },
+    ];
+    await ExportUtils.toExcel(res, data, columns, "Shippings", fileName);
+  } else {
+    const fields = ["Tracking ID", "From Name", "From Country", "To Name", "To Country", "Status", "Cost", "Created At"];
+    await ExportUtils.toCSV(res, data, fields, fileName);
+  }
+});
+
 export const shippingController = {
   createShipping,
   getAllShippings,
@@ -144,5 +181,6 @@ export const shippingController = {
   addShippingInfo,
   addShippingRateORInsurance,
   searchLocations,
-  markAsDelivered
+  markAsDelivered,
+  exportShippings
 };

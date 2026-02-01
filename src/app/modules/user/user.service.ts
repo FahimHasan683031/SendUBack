@@ -294,6 +294,12 @@ const deleteMyAccount = async (user: JwtPayload) => {
   return 'Account deleted successfully'
 }
 
+const getAllUsersForExport = async () => {
+  return await User.find({ role: USER_ROLES.BUSINESS })
+    .select('email firstName lastName businessDetails status verified createdAt')
+    .lean();
+}
+
 export const UserServices = {
   updateProfile,
   createAdmin,
@@ -302,4 +308,5 @@ export const UserServices = {
   deleteUser,
   getProfile,
   deleteMyAccount,
+  getAllUsersForExport,
 }

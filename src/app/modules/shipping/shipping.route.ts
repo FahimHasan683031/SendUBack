@@ -32,6 +32,13 @@ router.get(
   shippingController.getAllShippings
 );
 
+// Export shippings
+router.get(
+  "/export",
+  auth(USER_ROLES.ADMIN),
+  shippingController.exportShippings
+);
+
 // Add shipping rate OR insurance
 router.post(
   "/addRateOrInsurance/:id",
