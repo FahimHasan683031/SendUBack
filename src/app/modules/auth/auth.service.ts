@@ -4,10 +4,7 @@ import { User } from '../user/user.model'
 import ApiError from '../../../errors/ApiError'
 import { USER_ROLES, USER_STATUS } from '../../../enum/user'
 import { AuthHelper } from './auth.helper'
-import {
-  AuthCommonServices,
-  authResponse,
-} from './common'
+import { AuthCommonServices, authResponse } from './common'
 import { ILoginData } from '../../../interfaces/auth'
 import { emailTemplate } from '../../../shared/emailTemplate'
 import { emailHelper } from '../../../helpers/emailHelper'
@@ -20,68 +17,72 @@ import { Token } from '../token/token.model'
 import { IUser } from '../user/user.interface'
 import mongoose from 'mongoose'
 
-export const createUser = async (payload: IUser & { businessName?: string }) => {
-  payload.email = payload.email?.toLowerCase().trim();
-  const session = await mongoose.startSession();
+export const createUser = async (
+  payload: IUser & { businessName?: string },
+) => {
+  payload.email = payload.email?.toLowerCase().trim()
+  const session = await mongoose.startSession()
 
   try {
-    session.startTransaction();
+    session.startTransaction()
 
     if (payload.role === USER_ROLES.ADMIN) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        `Admin account creation is not allowed.`
-      );
+        `Admin account creation is not allowed.`,
+      )
     }
 
     // 1. Check if user already exists
     const isUserExist = await User.findOne({
       email: payload.email,
       status: { $nin: [USER_STATUS.DELETED] },
-    }).session(session);
+    }).session(session)
 
     if (isUserExist) {
-      // If user exists and is pending, should we allow re-sending OTP? 
+      // If user exists and is pending, should we allow re-sending OTP?
       // For now, sticking to "exists" error.
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        `An account with this email already exists.`
-      );
+        `An account with this email already exists.`,
+      )
     }
 
     // 2. Generate OTP
-    const otp = generateOtp();
-    const otpExpiresIn = new Date(Date.now() + 5 * 60 * 1000);
+    const otp = generateOtp()
+    const otpExpiresIn = new Date(Date.now() + 5 * 60 * 1000)
 
     const authentication = {
       oneTimeCode: otp,
       expiresAt: otpExpiresIn,
       latestRequestAt: new Date(),
       requestCount: 1,
-      authType: "createAccount" as const,
+      authType: 'createAccount' as const,
       restrictionLeftAt: null,
       resetPassword: false,
       wrongLoginAttempts: 0,
-    };
+    }
 
     // 3. Send OTP email
     setTimeout(() => {
       const createAccountEmail = emailTemplate.createAccount({
-        name: payload.firstName ? `${payload.firstName} ${payload.lastName}` : payload.businessName || "User",
+        name: payload.firstName
+          ? `${payload.firstName} ${payload.lastName}`
+          : payload.businessName || 'User',
         email: payload.email,
         otp,
-      });
-      emailHelper.sendEmail(createAccountEmail);
-    }, 0);
+      })
+      emailHelper.sendEmail(createAccountEmail)
+    }, 0)
 
     // Prepare business details if business
-    let businessDetailsData = null;
+    let businessDetailsData = null
     if (payload.role === USER_ROLES.BUSINESS && payload.businessName) {
       businessDetailsData = {
         businessName: payload.businessName,
         businessEmail: payload.email,
         // Other fields are optional now
-      };
+      }
     }
 
     // 4. Create User
@@ -89,8 +90,9 @@ export const createUser = async (payload: IUser & { businessName?: string }) => 
       [
         {
           ...payload,
-          firstName: payload.firstName || payload.businessName || "Business User",
-          lastName: payload.lastName || ".",
+          firstName:
+            payload.firstName || payload.businessName || 'Business User',
+          lastName: payload.lastName || '.',
           password: payload.password,
           authentication,
           role: payload.role || USER_ROLES.BUSINESS,
@@ -99,33 +101,33 @@ export const createUser = async (payload: IUser & { businessName?: string }) => 
           businessDetailsCompleted: false,
         },
       ],
-      { session }
-    );
+      { session },
+    )
 
     if (!user[0])
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user.");
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user.')
 
     // No separate BusinessDetails creation needed anymore
 
-    const createdUser = user[0];
+    const createdUser = user[0]
 
     // 5. Commit Transaction
-    await session.commitTransaction();
-    return createdUser._id;
+    await session.commitTransaction()
+    return createdUser._id
   } catch (error) {
     // Rollback on error
-    await session.abortTransaction();
-    throw error;
+    await session.abortTransaction()
+    throw error
   } finally {
-    session.endSession();
+    session.endSession()
   }
-};
+}
 
 const login = async (payload: ILoginData): Promise<IAuthResponse> => {
   const { email, phone } = payload
   const query = email ? { email: email } : { phone: phone }
 
-  console.log({email})
+  console.log({ email })
 
   const isUserExist = await User.findOne({
     ...query,
@@ -466,17 +468,17 @@ const getAccessToken = async (token: string) => {
   }
 }
 
-
-
 const resendOtpToPhoneOrEmail = async (
   authType: 'resetPassword' | 'createAccount',
   email?: string,
   phone?: string,
 ) => {
+  console.log('email from the service:', email)
+
   const query = email ? { email: email } : { phone: phone }
   const isUserExist = await User.findOne({
     ...query,
-    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
+    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.PENDING] },
   }).select('+authentication')
 
   if (!isUserExist) {
@@ -575,64 +577,110 @@ const deleteAccount = async (user: JwtPayload, password: string) => {
   }
 }
 
+// const resendOtp = async (
+//   email: string,
+//   authType: 'createAccount' | 'resetPassword',
+// ) => {
+//   const isUserExist = await User.findOne({
+//     email: email.toLowerCase().trim(),
+//     // status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
+//     status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.PENDING] },
+//   }).select('+authentication')
+
+//   if (!isUserExist) {
+//     throw new ApiError(
+//       StatusCodes.BAD_REQUEST,
+//       `No account found with this ${email}, please try again.`,
+//     )
+//   }
+
+//   const { authentication } = isUserExist
+
+//   const otp = generateOtp()
+//   const authenticationPayload = {
+//     ...authentication,
+//     oneTimeCode: otp,
+//     latestRequestAt: new Date(),
+//     requestCount: authentication?.requestCount! + 1,
+//     expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+//   }
+
+//   if (authenticationPayload.requestCount! >= 5) {
+//     throw new ApiError(
+//       StatusCodes.BAD_REQUEST,
+//       'You have exceeded the maximum number of requests. Please try again later.',
+//     )
+//   }
+
+//   await User.findByIdAndUpdate(
+//     isUserExist._id,
+//     {
+//       $set: { authentication: authenticationPayload },
+//     },
+//     { new: true },
+//   )
+
+//   // Send OTP to user
+//   if (email) {
+//     const forgetPasswordEmailTemplate = emailTemplate.resendOtp({
+//       email: email,
+//       name: `${isUserExist.firstName} ${isUserExist.lastName}`,
+//       otp,
+//       type: authType,
+//     })
+
+//     setTimeout(() => {
+//       emailHelper.sendEmail(forgetPasswordEmailTemplate)
+//     }, 0)
+//   }
+
+//   return 'OTP sent successfully.'
+// }
+
 const resendOtp = async (
   email: string,
   authType: 'createAccount' | 'resetPassword',
 ) => {
-  const isUserExist = await User.findOne({
+  const user = await User.findOne({
     email: email.toLowerCase().trim(),
-    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.RESTRICTED] },
+    status: { $in: [USER_STATUS.ACTIVE, USER_STATUS.PENDING] },
   }).select('+authentication')
 
-  if (!isUserExist) {
+  if (!user) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      `No account found with this ${email}, please try again.`,
+      `No account found with this ${email}`,
     )
   }
-
-  const { authentication } = isUserExist
 
   const otp = generateOtp()
-  const authenticationPayload = {
-    ...authentication,
-    oneTimeCode: otp,
-    latestRequestAt: new Date(),
-    requestCount: authentication?.requestCount! + 1,
-    expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
-  }
 
-  if (authenticationPayload.requestCount! >= 5) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'You have exceeded the maximum number of requests. Please try again later.',
-    )
-  }
+  // Ensure authentication exists
+  const authentication = user.authentication || {}
 
-  await User.findByIdAndUpdate(
-    isUserExist._id,
-    {
-      $set: { authentication: authenticationPayload },
-    },
-    { new: true },
-  )
+  // Update fields safely
+  authentication.oneTimeCode = otp
+  authentication.latestRequestAt = new Date()
+  authentication.requestCount = (authentication.requestCount || 0) + 1
+  authentication.expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+  authentication.authType = authType
 
-  // Send OTP to user
-  if (email) {
-    const forgetPasswordEmailTemplate = emailTemplate.resendOtp({
-      email: email,
-      name: `${isUserExist.firstName} ${isUserExist.lastName}`,
-      otp,
-      type: authType,
-    })
+  // Save back to DB
+  user.authentication = authentication
+  await user.save() // ✅ safer than findByIdAndUpdate for nested fields
 
-    setTimeout(() => {
-      emailHelper.sendEmail(forgetPasswordEmailTemplate)
-    }, 0)
-  }
+  // Send OTP
+  const template = emailTemplate.resendOtp({
+    email: user.email,
+    name: `${user.firstName} ${user.lastName}`,
+    otp,
+    type: authType,
+  })
+  await emailHelper.sendEmail(template)
 
   return 'OTP sent successfully.'
 }
+
 
 const changePassword = async (
   user: JwtPayload,
@@ -686,5 +734,5 @@ export const AuthServices = {
   resendOtp,
   changePassword,
   createUser,
-  adminLogin
+  adminLogin,
 }

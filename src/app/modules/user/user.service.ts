@@ -12,7 +12,6 @@ import { PropertyServices } from '../property/property.service'
 import { startSession } from 'mongoose'
 import { IBusinessDetails, IUser } from './user.interface'
 
-
 // create super admin
 const createAdmin = async (): Promise<Partial<IUser> | null> => {
   const admin = {
@@ -50,14 +49,15 @@ const createAdmin = async (): Promise<Partial<IUser> | null> => {
 }
 
 const getAllUser = async (query: Record<string, unknown>) => {
-  const userQueryBuilder = new QueryBuilder(User.find().select('-password -authentication'), query)
+  const userQueryBuilder = new QueryBuilder(
+    User.find().select('-password -authentication'),
+    query,
+  )
+    .search(['businessDetails.businessName', 'email'])
     .filter()
     .sort()
     .fields()
     .paginate()
-
-
-
 
   const users = await userQueryBuilder.modelQuery.lean()
   const paginationInfo = await userQueryBuilder.getPaginationInfo()
@@ -104,23 +104,22 @@ const updateProfile = async (
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found or deleted.')
   }
 
-
-
   // Extract business details from payload (nested or flattened)
-  const rawPayload = payload as any;
-  const businessDetailsPayload: Partial<IBusinessDetails> = payload.businessDetails || {
-    businessName: rawPayload.businessName,
-    addressLine1: rawPayload.addressLine1,
-    addressLine2: rawPayload.addressLine2,
-    city: rawPayload.city,
-    postcode: rawPayload.postcode,
-    country: rawPayload.country,
-    businessEmail: rawPayload.businessEmail,
-    telephone: rawPayload.telephone,
-  };
+  const rawPayload = payload as any
+  const businessDetailsPayload: Partial<IBusinessDetails> =
+    payload.businessDetails || {
+      businessName: rawPayload.businessName,
+      addressLine1: rawPayload.addressLine1,
+      addressLine2: rawPayload.addressLine2,
+      city: rawPayload.city,
+      postcode: rawPayload.postcode,
+      country: rawPayload.country,
+      businessEmail: rawPayload.businessEmail,
+      telephone: rawPayload.telephone,
+    }
 
   // Address logic for business details
-  let countryCode = "US"; // Default fallback
+  let countryCode = 'US' // Default fallback
   if (businessDetailsPayload.addressLine1 || businessDetailsPayload.city) {
     const searchQuery = [
       businessDetailsPayload.addressLine1,
@@ -133,29 +132,49 @@ const updateProfile = async (
       .join(', ')
 
     try {
-      const result = await searchLocationsByQuery(searchQuery);
+      const result = await searchLocationsByQuery(searchQuery)
       if (result && result.length > 0) {
-        countryCode = result[0].countryCode;
+        countryCode = result[0].countryCode
       }
     } catch (err) {
-      console.error("Map API Error", err);
+      console.error('Map API Error', err)
     }
   }
 
   // Check if this update completes the profile
-  const wasCompleted = isExistUser.businessDetailsCompleted;
+  const wasCompleted = isExistUser.businessDetailsCompleted
 
   if (!wasCompleted) {
     // If first time completion, enforce required fields from the nested object
-    if (!businessDetailsPayload.businessName) throw new ApiError(StatusCodes.BAD_REQUEST, "Business Name is required for profile completion.");
-    if (!businessDetailsPayload.addressLine1) throw new ApiError(StatusCodes.BAD_REQUEST, "Address Line 1 is required for profile completion.");
-    if (!businessDetailsPayload.city) throw new ApiError(StatusCodes.BAD_REQUEST, "City is required for profile completion.");
-    if (!businessDetailsPayload.country) throw new ApiError(StatusCodes.BAD_REQUEST, "Country is required for profile completion.");
-    if (!businessDetailsPayload.postcode) throw new ApiError(StatusCodes.BAD_REQUEST, "Postcode is required for profile completion.");
+    if (!businessDetailsPayload.businessName)
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Business Name is required for profile completion.',
+      )
+    if (!businessDetailsPayload.addressLine1)
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Address Line 1 is required for profile completion.',
+      )
+    if (!businessDetailsPayload.city)
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'City is required for profile completion.',
+      )
+    if (!businessDetailsPayload.country)
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Country is required for profile completion.',
+      )
+    if (!businessDetailsPayload.postcode)
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Postcode is required for profile completion.',
+      )
   }
 
   // Construct businessDetails update
-  const businessDetailsUpdate: any = {};
+  const businessDetailsUpdate: any = {}
 
   if (!isExistUser.businessDetails) {
     // Initialize businessDetails to avoid "Cannot create field ... in element {businessDetails: null}"
@@ -163,17 +182,35 @@ const updateProfile = async (
   }
 
   // Allow updating individual fields
-  if (businessDetailsPayload.businessName) businessDetailsUpdate["businessDetails.businessName"] = businessDetailsPayload.businessName;
-  if (businessDetailsPayload.addressLine1) businessDetailsUpdate["businessDetails.addressLine1"] = businessDetailsPayload.addressLine1;
-  if (businessDetailsPayload.addressLine2) businessDetailsUpdate["businessDetails.addressLine2"] = businessDetailsPayload.addressLine2;
-  if (businessDetailsPayload.city) businessDetailsUpdate["businessDetails.city"] = businessDetailsPayload.city;
-  if (businessDetailsPayload.postcode) businessDetailsUpdate["businessDetails.postcode"] = businessDetailsPayload.postcode;
-  if (businessDetailsPayload.country) businessDetailsUpdate["businessDetails.country"] = businessDetailsPayload.country;
-  if (businessDetailsPayload.businessEmail) businessDetailsUpdate["businessDetails.businessEmail"] = businessDetailsPayload.businessEmail;
-  if (businessDetailsPayload.telephone) businessDetailsUpdate["businessDetails.telephone"] = businessDetailsPayload.telephone;
+  if (businessDetailsPayload.businessName)
+    businessDetailsUpdate['businessDetails.businessName'] =
+      businessDetailsPayload.businessName
+  if (businessDetailsPayload.addressLine1)
+    businessDetailsUpdate['businessDetails.addressLine1'] =
+      businessDetailsPayload.addressLine1
+  if (businessDetailsPayload.addressLine2)
+    businessDetailsUpdate['businessDetails.addressLine2'] =
+      businessDetailsPayload.addressLine2
+  if (businessDetailsPayload.city)
+    businessDetailsUpdate['businessDetails.city'] = businessDetailsPayload.city
+  if (businessDetailsPayload.postcode)
+    businessDetailsUpdate['businessDetails.postcode'] =
+      businessDetailsPayload.postcode
+  if (businessDetailsPayload.country)
+    businessDetailsUpdate['businessDetails.country'] =
+      businessDetailsPayload.country
+  if (businessDetailsPayload.businessEmail)
+    businessDetailsUpdate['businessDetails.businessEmail'] =
+      businessDetailsPayload.businessEmail
+  if (businessDetailsPayload.telephone)
+    businessDetailsUpdate['businessDetails.telephone'] =
+      businessDetailsPayload.telephone
 
   // Handle first-time creation or existing update
-  if (!isExistUser.businessDetails && Object.keys(businessDetailsUpdate).length > 0) {
+  if (
+    !isExistUser.businessDetails &&
+    Object.keys(businessDetailsUpdate).length > 0
+  ) {
     const newBusinessDetails: any = {
       businessName: businessDetailsPayload.businessName,
       addressLine1: businessDetailsPayload.addressLine1,
@@ -184,45 +221,45 @@ const updateProfile = async (
       businessEmail: businessDetailsPayload.businessEmail,
       telephone: businessDetailsPayload.telephone,
       countryCode: countryCode,
-    };
+    }
 
     if (!wasCompleted) {
-      newBusinessDetails.completedAt = new Date();
+      newBusinessDetails.completedAt = new Date()
     }
 
     // Reset dot notation keys and set full object
-    for (const key in businessDetailsUpdate) delete businessDetailsUpdate[key];
-    businessDetailsUpdate["businessDetails"] = newBusinessDetails;
+    for (const key in businessDetailsUpdate) delete businessDetailsUpdate[key]
+    businessDetailsUpdate['businessDetails'] = newBusinessDetails
 
     if (!wasCompleted) {
-      businessDetailsUpdate["businessDetailsCompleted"] = true;
-      businessDetailsUpdate["status"] = USER_STATUS.ACTIVE;
+      businessDetailsUpdate['businessDetailsCompleted'] = true
+      businessDetailsUpdate['status'] = USER_STATUS.ACTIVE
     }
   } else if (Object.keys(businessDetailsUpdate).length > 0) {
-    businessDetailsUpdate["businessDetails.countryCode"] = countryCode;
+    businessDetailsUpdate['businessDetails.countryCode'] = countryCode
     if (!wasCompleted) {
-      businessDetailsUpdate["businessDetailsCompleted"] = true;
-      businessDetailsUpdate["businessDetails.completedAt"] = new Date();
-      businessDetailsUpdate["status"] = USER_STATUS.ACTIVE;
+      businessDetailsUpdate['businessDetailsCompleted'] = true
+      businessDetailsUpdate['businessDetails.completedAt'] = new Date()
+      businessDetailsUpdate['status'] = USER_STATUS.ACTIVE
     }
   }
 
-  const { businessDetails, ...restPayload } = payload;
-  const updateData = { ...restPayload, ...businessDetailsUpdate };
+  const { businessDetails, ...restPayload } = payload
+  const updateData = { ...restPayload, ...businessDetailsUpdate }
 
   // Remove flattened fields to prevent schema errors or junk data
-  delete (updateData as any).addressLine1;
-  delete (updateData as any).addressLine2;
-  delete (updateData as any).city;
-  delete (updateData as any).postcode;
-  delete (updateData as any).country;
-  delete (updateData as any).businessEmail;
-  delete (updateData as any).telephone;
-  delete (updateData as any).businessName;
+  delete (updateData as any).addressLine1
+  delete (updateData as any).addressLine2
+  delete (updateData as any).city
+  delete (updateData as any).postcode
+  delete (updateData as any).country
+  delete (updateData as any).businessEmail
+  delete (updateData as any).telephone
+  delete (updateData as any).businessName
 
-  const session = await startSession();
+  const session = await startSession()
   try {
-    session.startTransaction();
+    session.startTransaction()
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: user.authId, status: { $ne: USER_STATUS.DELETED } },
@@ -237,38 +274,46 @@ const updateProfile = async (
     // Auto-create property if profile is completed for the first time
     if (!wasCompleted && updatedUser.businessDetailsCompleted) {
       await PropertyServices.createProperty(
-        { authId: isExistUser._id.toString(), role: isExistUser.role } as JwtPayload,
         {
-          propertyName: updatedUser.businessDetails?.businessName || isExistUser.firstName || "Main Business",
-          propertyType: "Business",
-          addressLine1: updatedUser.businessDetails?.addressLine1 || "",
-          addressLine2: updatedUser.businessDetails?.addressLine2 || "",
-          city: updatedUser.businessDetails?.city || "",
-          postcode: updatedUser.businessDetails?.postcode || "",
-          country: updatedUser.businessDetails?.country || "",
+          authId: isExistUser._id.toString(),
+          role: isExistUser.role,
+        } as JwtPayload,
+        {
+          propertyName:
+            updatedUser.businessDetails?.businessName ||
+            isExistUser.firstName ||
+            'Main Business',
+          propertyType: 'Business',
+          addressLine1: updatedUser.businessDetails?.addressLine1 || '',
+          addressLine2: updatedUser.businessDetails?.addressLine2 || '',
+          city: updatedUser.businessDetails?.city || '',
+          postcode: updatedUser.businessDetails?.postcode || '',
+          country: updatedUser.businessDetails?.country || '',
           countryCode: updatedUser.businessDetails?.countryCode || countryCode,
-          contactEmail: updatedUser.businessDetails?.businessEmail || updatedUser.email,
-          contactPhone: updatedUser.businessDetails?.telephone || "",
+          contactEmail:
+            updatedUser.businessDetails?.businessEmail || updatedUser.email,
+          contactPhone: updatedUser.businessDetails?.telephone || '',
           propertyImage: updatedUser.image ? [updatedUser.image] : [],
         } as any,
-        session
-      );
+        session,
+      )
     }
 
-    await session.commitTransaction();
-    await session.endSession();
+    await session.commitTransaction()
+    await session.endSession()
 
-    return updatedUser;
-
+    return updatedUser
   } catch (error) {
-    await session.abortTransaction();
-    await session.endSession();
-    throw error;
+    await session.abortTransaction()
+    await session.endSession()
+    throw error
   }
 }
 
 const getProfile = async (user: JwtPayload) => {
-  const isExistUser = await User.findById(user.authId).lean().select('-password -authentication')
+  const isExistUser = await User.findById(user.authId)
+    .lean()
+    .select('-password -authentication')
   if (!isExistUser) {
     throw new ApiError(
       StatusCodes.NOT_FOUND,
@@ -277,9 +322,6 @@ const getProfile = async (user: JwtPayload) => {
   }
   return isExistUser
 }
-
-
-
 
 const deleteMyAccount = async (user: JwtPayload) => {
   const isExistUser = await User.findById(user.authId)
@@ -296,8 +338,10 @@ const deleteMyAccount = async (user: JwtPayload) => {
 
 const getAllUsersForExport = async () => {
   return await User.find({ role: USER_ROLES.BUSINESS })
-    .select('email firstName lastName businessDetails status verified createdAt')
-    .lean();
+    .select(
+      'email firstName lastName businessDetails status verified createdAt',
+    )
+    .lean()
 }
 
 export const UserServices = {

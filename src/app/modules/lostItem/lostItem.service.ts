@@ -12,10 +12,7 @@ import QueryBuilder from '../../builder/QueryBuilder'
 import { Property } from '../property/property.model'
 
 // create lost item
-export const createLostItem = async (
-  user: JwtPayload,
-  payload: ILostItem,
-) => {
+export const createLostItem = async (user: JwtPayload, payload: ILostItem) => {
   const isExistUser = await User.findById(user.authId)
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
@@ -26,7 +23,7 @@ export const createLostItem = async (
   }
   const lostItem = await LostItem.create({
     ...payload,
-    user: user.authId
+    user: user.authId,
   })
   return lostItem
 }
@@ -55,6 +52,15 @@ export const getAllLostItems = async (
     ]),
     query,
   )
+    .search([
+      'itemName',
+      'itemDescription',
+      'locationFound',
+      'guestName',
+      'guestEmail',
+      'guestPhone',
+      'status',
+    ])
     .filter()
     .sort()
     .paginate()
@@ -88,37 +94,36 @@ export const getSingleLostItem = async (id: string) => {
   return lostItem
 }
 
-
 // update lost item
 export const updateLostItem = async (
   id: string,
   payload: Partial<ILostItem>,
 ) => {
-
   const isExistLostItem = await LostItem.findOne({ _id: id })
   if (!isExistLostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
 
-  const lostItem = await LostItem.findOneAndUpdate(
-    { _id: id },
-    payload,
-    { new: true },
-  )
+  const lostItem = await LostItem.findOneAndUpdate({ _id: id }, payload, {
+    new: true,
+  })
   return lostItem
 }
 
 // delete lost item
-export const deleteLostItem = async (
-  user: JwtPayload,
-  id: string,
-) => {
+export const deleteLostItem = async (user: JwtPayload, id: string) => {
   const isExistUser = await User.findById(user.authId)
   if (!isExistUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
   }
-  if (isExistUser.role !== USER_ROLES.BUSINESS && isExistUser.role !== USER_ROLES.ADMIN) {
-    throw new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to delete this lost item')
+  if (
+    isExistUser.role !== USER_ROLES.BUSINESS &&
+    isExistUser.role !== USER_ROLES.ADMIN
+  ) {
+    throw new ApiError(
+      StatusCodes.FORBIDDEN,
+      'You are not authorized to delete this lost item',
+    )
   }
 
   const isExistLostItem = await LostItem.findOne({ _id: id })
@@ -130,17 +135,14 @@ export const deleteLostItem = async (
   return lostItem
 }
 
-const addOrReplaceImages = async (
-  itemId: string,
-  images: string[],
-) => {
-  const item = await LostItem.findById(itemId);
+const addOrReplaceImages = async (itemId: string, images: string[]) => {
+  const item = await LostItem.findById(itemId)
   if (!item) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Lost item not found");
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
   // Update images
-  item.images = images;
-  await item.save();
+  item.images = images
+  await item.save()
 
   //@ts-ignore
   const io = global.io
@@ -148,10 +150,8 @@ const addOrReplaceImages = async (
     // send message to specific chatId Room
     io.emit(`getImages::${itemId}`, item)
   }
-  return item;
-};
-
-
+  return item
+}
 
 const sendGestEmail = async (lostItemId: string, requestedEmail?: string) => {
   const lostItem = await LostItem.findById(lostItemId)
@@ -159,28 +159,29 @@ const sendGestEmail = async (lostItemId: string, requestedEmail?: string) => {
       path: 'user',
       select: '-authentication -password -__v',
     })
-    .populate('property');
+    .populate('property')
 
   if (!lostItem) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
 
-  const targetEmail = requestedEmail || lostItem.guestEmail;
+  const targetEmail = requestedEmail || lostItem.guestEmail
 
   if (!targetEmail) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Guest email not found')
   }
 
   // Update status and current state
-  lostItem.status = LOST_ITEM_STATUS.LINKSENDED;
-  lostItem.currentState.linkSended = true;
-  await lostItem.save();
+  lostItem.status = LOST_ITEM_STATUS.LINKSENDED
+  lostItem.currentState.linkSended = true
+  await lostItem.save()
 
   setTimeout(() => {
     try {
-      const emailContent = emailTemplate.guestLostItemNotificationEmail(lostItem);
+      const emailContent =
+        emailTemplate.guestLostItemNotificationEmail(lostItem)
       if (requestedEmail) {
-        emailContent.to = requestedEmail;
+        emailContent.to = requestedEmail
       }
       emailHelper.sendEmail(emailContent)
     } catch (error) {
@@ -236,14 +237,14 @@ const markAsCollected = async (id: string) => {
 }
 
 const getAllLostItemsForExport = async (user: JwtPayload) => {
-  const filter: any = {};
+  const filter: any = {}
 
   // For business users, only show their own lost items
   if (user.role === USER_ROLES.BUSINESS) {
     // We need to find the User _id corresponding to the authId in the token
-    const currentUser = await User.findById(user.authId);
+    const currentUser = await User.findById(user.authId)
     if (currentUser) {
-      filter.user = currentUser._id;
+      filter.user = currentUser._id
     }
   }
 
@@ -251,9 +252,9 @@ const getAllLostItemsForExport = async (user: JwtPayload) => {
     .populate('property')
     .populate({
       path: 'user',
-      select: 'firstName lastName email'
+      select: 'firstName lastName email',
     })
-    .lean();
+    .lean()
 }
 
 export const lostItemServices = {
@@ -266,5 +267,5 @@ export const lostItemServices = {
   sendGestEmail,
   updateLostItemStatus,
   markAsCollected,
-  getAllLostItemsForExport
+  getAllLostItemsForExport,
 }

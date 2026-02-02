@@ -24,15 +24,36 @@ const getDashboardOverview = async () => {
   // Resent Shipping
   const resentShipping = await Shipping.find({
     status: 'paymentCompleted',
-  }).limit(5).sort({
-    createdAt: -1,
+  })
+    .limit(5)
+    .sort({
+      createdAt: -1,
+    })
+
+  //  ✅ TOTAL Lost Item
+  const totalLostItems = await LostItem.countDocuments()
+
+  // ✅ Orders Today
+  const todayOrders = await Shipping.countDocuments({
+    createdAt: {
+      $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+      $lt: new Date(new Date().setHours(23, 59, 59, 999)),
+    },
+  })
+
+  // ✅ Shipment In Progress
+  const shipmentInProgress = await Shipping.countDocuments({
+    status: 'inTransit',
   })
 
   return {
     totalShipping,
     totalBusiness,
     totalDeliveriesThisMonth,
-    resentShipping
+    resentShipping,
+    totalLostItems,
+    todayOrders,
+    shipmentInProgress,
   }
 }
 
@@ -41,7 +62,6 @@ const businessDashboardOverview = async (user: JwtPayload) => {
   const totalLostItem = await LostItem.countDocuments({
     user: user.authId,
   })
-
 
   //  my shipping
   const totalShipping = await Shipping.countDocuments({
@@ -61,9 +81,11 @@ const businessDashboardOverview = async (user: JwtPayload) => {
   // Resent lost items
   const resentLostItems = await LostItem.find({
     user: user.authId,
-  }).limit(5).sort({
-    createdAt: -1,
   })
+    .limit(5)
+    .sort({
+      createdAt: -1,
+    })
 
   return {
     totalLostItem,
@@ -85,5 +107,5 @@ const getPublicStats = async () => {
 export const DshboardServices = {
   getDashboardOverview,
   businessDashboardOverview,
-  getPublicStats
+  getPublicStats,
 }

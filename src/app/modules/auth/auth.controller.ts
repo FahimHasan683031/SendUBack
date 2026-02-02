@@ -99,6 +99,9 @@ const getAccessToken = catchAsync(async (req: Request, res: Response) => {
 
 const resendOtp = catchAsync(async (req: Request, res: Response) => {
   const { email, phone, authType } = req.body
+  console.log('email from controller :', email)
+  console.log('authType from controller:', authType)
+
   const result = await AuthServices.resendOtp(email, authType)
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -168,5 +171,5 @@ export const AuthController = {
   deleteAccount,
   adminLogin,
 
-  logOut
+  logOut,
 }

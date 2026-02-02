@@ -21,7 +21,11 @@ const createShipping = catchAsync(async (req: Request, res: Response) => {
 
 // Get all shippings
 const getAllShippings = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.user);
+  console.log(req.query);
+
   const result = await shippingService.getAllShippings(req.query, req.user as JwtPayload);
+  console.log(result);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,

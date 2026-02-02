@@ -69,4 +69,4 @@ const lostItemSchema = new Schema<ILostItem>(
   }
 );
 
-export const LostItem = model<ILostItem>('LostItem', lostItemSchema);
+export const LostItem = model<ILostItem>('LostItem', lostItemSchema);   

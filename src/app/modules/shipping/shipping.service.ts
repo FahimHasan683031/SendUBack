@@ -18,7 +18,6 @@ import { getZoneByCountry } from '../zoone/zone.utils'
 import { LostItem } from '../lostItem/lostItem.model'
 import { LOST_ITEM_STATUS } from '../lostItem/lostItem.interface'
 
-
 // Create shipping
 const createShipping = async (payload: IShipping) => {
   try {
@@ -26,7 +25,7 @@ const createShipping = async (payload: IShipping) => {
       generateParcel({
         itemType: p.itemType,
         name: p.name,
-        description: p.description
+        description: p.description,
       }),
     ) || [generateParcel({ itemType: 'Other', name: 'Other' })]
     payload.parcel = parcel
@@ -39,13 +38,11 @@ const createShipping = async (payload: IShipping) => {
     }
 
     if (fromZone === toZone) {
-
       const zone = await Zone.findOne({ id: fromZone })
       payload.zoneName = zone?.name || ''
     } else {
       payload.zoneName = 'international'
     }
-
 
     const shipping = await Shipping.create(payload)
     return shipping
@@ -77,11 +74,13 @@ const getShippingRates = async (shipingId: string) => {
 }
 
 // Get all shippings
-const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload) => {
+const getAllShippings = async (
+  query: Record<string, unknown>,
+  user: JwtPayload,
+) => {
   if (user.role === USER_ROLES.BUSINESS) {
-    query['address_from.email'] = user.email;
+    query['address_from.email'] = user.email
   }
-
 
   const shippingQueryBuilder = new QueryBuilder(
     Shipping.find().populate([
@@ -101,14 +100,15 @@ const getAllShippings = async (query: Record<string, unknown>, user: JwtPayload)
     query,
   )
     .search([
-      'address_from',
-      'address_to',
-      'tracking_id',
-      '_id',
-      'address_to.email',
       'address_from.email',
-      'address_from.name',
-      'address_to.name',
+      'address_from.countryName',
+      'address_from.phone',
+      'address_from.street1',
+      'address_to.email',
+      'address_to.countryName',
+      'address_to.phone',
+      'address_to.street1',
+      'tracking_id',
     ])
     .filter()
     .sort()
@@ -266,20 +266,17 @@ const addShippingRateORInsurance = async (
   ======================== */
   updateQuery.total_cost = shippingCost + insuranceCost
 
-  const updatedShipping = await Shipping.findByIdAndUpdate(
-    id,
-    updateQuery,
-    { new: true },
-  )
+  const updatedShipping = await Shipping.findByIdAndUpdate(id, updateQuery, {
+    new: true,
+  })
 
   return updatedShipping
 }
 
-
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
-  payload.status = SHIPPING_STATUS.IN_TRANSIT;
-  (payload as any)['currentState.courierBooked'] = true
+  payload.status = SHIPPING_STATUS.IN_TRANSIT
+  ;(payload as any)['currentState.courierBooked'] = true
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
 
   if (!shipping) {
@@ -288,7 +285,7 @@ const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
 
   await LostItem.findByIdAndUpdate(shipping.lostItemId, {
     status: LOST_ITEM_STATUS.WITHCOURIER,
-    'currentState.courierBooked': true
+    'currentState.courierBooked': true,
   })
 
   if (shipping.shippingLabel && shipping.tracking_id) {
@@ -322,7 +319,6 @@ const deleteShipping = async (id: string) => {
 
   return shipping
 }
-
 
 // search locations using google maps api
 const searchLocations = async (search: string, type?: string) => {
@@ -361,14 +357,12 @@ const markAsDelivered = async (id: string) => {
 }
 
 const getAllShippingsForExport = async (user: JwtPayload) => {
-  const filter: any = {};
+  const filter: any = {}
   if (user.role === USER_ROLES.BUSINESS) {
-    filter['address_from.email'] = user.email;
+    filter['address_from.email'] = user.email
   }
 
-  return await Shipping.find(filter)
-    .populate('lostItemId')
-    .lean();
+  return await Shipping.find(filter).populate('lostItemId').lean()
 }
 
 export const shippingService = {
@@ -382,5 +376,5 @@ export const shippingService = {
   addShippingInfo,
   searchLocations,
   markAsDelivered,
-  getAllShippingsForExport
+  getAllShippingsForExport,
 }
