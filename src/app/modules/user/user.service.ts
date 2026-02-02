@@ -413,15 +413,45 @@ const getAllBusinessUsers = async (searchTerm?: string) => {
 
   if (searchTerm) {
     query['businessDetails.businessName'] = { $regex: searchTerm, $options: 'i' }
-    query['firstName'] = { $regex: searchTerm, $options: 'i' }
-    query['lastName'] = { $regex: searchTerm, $options: 'i' }
   }
 
   const users = await User.find(query)
-    .select('_id firstName lastName image businessDetails.businessName')
+    .select('_id email firstName lastName image businessDetails.businessName')
+    .sort({ createdAt: -1 })
     .lean()
 
   return users
+}
+
+const toggleUserStatus = async (id: string) => {
+  const user = await User.findById(id)
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+  }
+
+  if (user.status === USER_STATUS.DELETED || user.status === USER_STATUS.PENDING) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot toggle status of a deleted or pending user')
+  }
+
+  if (user.role === USER_ROLES.ADMIN) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Cannot toggle status of an admin user',
+    )
+  }
+
+  const newStatus =
+    user.status === USER_STATUS.ACTIVE
+      ? USER_STATUS.RESTRICTED
+      : USER_STATUS.ACTIVE
+
+  const result = await User.findByIdAndUpdate(
+    id,
+    { status: newStatus },
+    { new: true },
+  )
+
+  return result
 }
 
 export const UserServices = {
@@ -434,4 +464,5 @@ export const UserServices = {
   deleteMyAccount,
   getAllUsersForExport,
   getAllBusinessUsers,
+  toggleUserStatus,
 }

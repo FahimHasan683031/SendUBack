@@ -223,6 +223,13 @@ const markAsCollected = async (id: string) => {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Lost item not found')
   }
 
+  if (isExistLostItem.status !== LOST_ITEM_STATUS.LINKSENDED) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Lost item is not in LinkSended Yet',
+    )
+  }
+
   const result = await LostItem.findByIdAndUpdate(
     id,
     {

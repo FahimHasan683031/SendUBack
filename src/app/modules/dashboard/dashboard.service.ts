@@ -22,9 +22,37 @@ const getDashboardOverview = async () => {
   })
 
   // Resent Shipping
-  const resentShipping = await Shipping.find({
+  const resentOrders = await Shipping.find({
     status: 'paymentCompleted',
-  })
+  }).populate([
+      {
+        path: 'lostItemId',
+        populate: [
+          {
+            path: 'property',
+          },
+          {
+            path: 'user',
+            select: '-password -authentication -__v',
+          },
+        ],
+      },
+    ])
+    .limit(5)
+    .sort({
+      createdAt: -1,
+    })
+
+  // Resent Lost Items
+  const resentLostItems = await LostItem.find().populate([
+      {
+        path: 'user',
+        select: '-authentication -password -__v',
+      },
+      {
+        path: 'property',
+      },
+    ])
     .limit(5)
     .sort({
       createdAt: -1,
@@ -50,10 +78,11 @@ const getDashboardOverview = async () => {
     totalShipping,
     totalBusiness,
     totalDeliveriesThisMonth,
-    resentShipping,
     totalLostItems,
     todayOrders,
     shipmentInProgress,
+    resentOrders,
+    resentLostItems
   }
 }
 

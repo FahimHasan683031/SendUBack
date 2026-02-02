@@ -125,6 +125,7 @@ const getAllBusinessUsers = catchAsync(async (req: Request, res: Response) => {
 
   const data = result.map((user: any) => ({
     _id: user._id,
+    email: user.email,
     businessName: user.businessDetails?.businessName || `${user.firstName} ${user.lastName}`.trim(),
     image: user.image || "",
   }))
@@ -137,6 +138,17 @@ const getAllBusinessUsers = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const toggleUserStatus = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserServices.toggleUserStatus(req.params.id)
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'User status toggled successfully',
+    data: result,
+  })
+})
+
 export const UserController = {
   getAllUser,
   updateProfile,
@@ -146,4 +158,5 @@ export const UserController = {
   deleteMyAccount,
   exportBusinessUsers,
   getAllBusinessUsers,
+  toggleUserStatus,
 }

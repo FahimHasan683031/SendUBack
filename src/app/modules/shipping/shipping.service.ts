@@ -333,6 +333,13 @@ const markAsDelivered = async (id: string) => {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Shipping not found')
   }
 
+  if (isExistShipping.status !== SHIPPING_STATUS.IN_TRANSIT) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Shipping label is not provided yet',
+    )
+  }
+
   const result = await Shipping.findByIdAndUpdate(
     id,
     {

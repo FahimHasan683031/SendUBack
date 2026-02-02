@@ -17,6 +17,11 @@ router.get('/', auth(USER_ROLES.ADMIN), UserController.getAllUser),
   router.get('/all-business-users', auth(USER_ROLES.ADMIN), UserController.getAllBusinessUsers),
   router.get('/export', auth(USER_ROLES.ADMIN), UserController.exportBusinessUsers),
   router.patch(
+    '/toggle-status/:id',
+    auth(USER_ROLES.ADMIN),
+    UserController.toggleUserStatus,
+  ),
+  router.patch(
     '/profile',
     auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
     fileAndBodyProcessorUsingDiskStorage(),
