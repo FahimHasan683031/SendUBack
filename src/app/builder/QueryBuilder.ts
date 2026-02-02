@@ -65,11 +65,91 @@ class QueryBuilder<T> {
       }
     }
 
-    // Handle comma separated values for $in operator
+    // Handle date range aliases (startDate, endDate, from, to) mapping to createdAt
+    const dateRangeFilters: Record<string, any> = {}
+    if (queryObj.startDate || queryObj.from) {
+      dateRangeFilters.$gte = new Date((queryObj.startDate || queryObj.from) as string)
+      delete filters.startDate
+      delete filters.from
+    }
+    if (queryObj.endDate || queryObj.to) {
+      const endVal = (queryObj.endDate || queryObj.to) as string
+      const date = new Date(endVal)
+      if (endVal.length <= 10) {
+        date.setHours(23, 59, 59, 999)
+      }
+      dateRangeFilters.$lte = date
+      delete filters.endDate
+      delete filters.to
+    }
+    if (Object.keys(dateRangeFilters).length > 0) {
+      filters.createdAt = { ...(filters.createdAt || {}), ...dateRangeFilters }
+    }
+
+    // Handle comma separated values for $in operator and comparison operators
     Object.keys(filters).forEach(key => {
-      const value = filters[key]
+      let value = filters[key]
+      let targetKey = key
+
+      // Handle field[op] syntax (e.g., createdAt[gte]) if not parsed into object
+      const operatorMatch = key.match(/^(.+)\[(gte|lte|gt|lt)\]$/)
+      if (operatorMatch) {
+        const field = operatorMatch[1]
+        const op = operatorMatch[2]
+        delete filters[key]
+        filters[field] = { ...(filters[field] || {}), [op]: value }
+        targetKey = field
+        value = filters[field]
+      }
+
+      // @ts-ignore
+      const pathInfo = this.modelQuery.model.schema.path(targetKey)
+      // Check if it's a date field (explicitly in schema or standard timestamp)
+      const isDateField =
+        (pathInfo && (pathInfo.instance === 'Date' || (pathInfo as any).caster?.instance === 'Date')) ||
+        targetKey === 'createdAt' ||
+        targetKey === 'updatedAt'
+
+      // Handle operators (gte, lte, gt, lt)
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const operators: Record<string, any> = {}
+        const validOperators = ['gte', 'lte', 'gt', 'lt']
+        Object.keys(value).forEach(op => {
+          if (validOperators.includes(op)) {
+            let val = (value as any)[op]
+
+            // Cast to Date if it's a date field
+            if (isDateField && typeof val === 'string') {
+              const date = new Date(val)
+              if (!isNaN(date.getTime())) {
+                // If it's lte/lt and only a date (no time), adjust to end of day
+                if ((op === 'lte' || op === 'lt') && val.length <= 10) {
+                  date.setHours(23, 59, 59, 999)
+                }
+                val = date
+              }
+            }
+
+            operators[`$${op}`] = val
+          }
+        })
+        if (Object.keys(operators).length > 0) {
+          filters[targetKey] = operators
+        }
+      } else if (isDateField && typeof value === 'string' && value.length <= 10) {
+        // If it's a date field and an exact YYYY-MM-DD is provided, convert to a 24h range
+        // This ensures items created at any time during that day are matched
+        const startDate = new Date(value)
+        if (!isNaN(startDate.getTime())) {
+          const endDate = new Date(value)
+          endDate.setHours(23, 59, 59, 999)
+          filters[targetKey] = { $gte: startDate, $lte: endDate }
+        }
+      }
+
+      // Handle comma separated values for $in operator
       if (typeof value === 'string' && value.includes(',')) {
-        filters[key] = { $in: value.split(',').map(item => item.trim()) }
+        filters[targetKey] = { $in: value.split(',').map(item => item.trim()) }
       }
     })
 

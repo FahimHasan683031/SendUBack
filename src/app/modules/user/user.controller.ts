@@ -120,6 +120,23 @@ const exportBusinessUsers = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const getAllBusinessUsers = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserServices.getAllBusinessUsers(req.query.searchTerm as string)
+
+  const data = result.map((user: any) => ({
+    _id: user._id,
+    businessName: user.businessDetails?.businessName || `${user.firstName} ${user.lastName}`.trim(),
+    image: user.image || "",
+  }))
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Business users fetched successfully',
+    data,
+  })
+})
+
 export const UserController = {
   getAllUser,
   updateProfile,
@@ -128,4 +145,5 @@ export const UserController = {
   getProfile,
   deleteMyAccount,
   exportBusinessUsers,
+  getAllBusinessUsers,
 }

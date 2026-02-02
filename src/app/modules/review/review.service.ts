@@ -4,7 +4,7 @@ import { Review } from './review.model'
 
 // create review
 const createReview = async (payload: IReview) => {
-    console.log(payload)
+  console.log(payload)
   const result = await Review.create(payload)
   return result
 }
@@ -34,10 +34,10 @@ const getSingleReview = async (id: string) => {
 
 // delete review
 const deleteReview = async (id: string) => {
-    const isExist = await Review.findById(id)
-    if(!isExist){
-        throw new Error('Review not found')
-    }
+  const isExist = await Review.findById(id)
+  if (!isExist) {
+    throw new Error('Review not found')
+  }
   const result = await Review.findByIdAndDelete(id)
   return result
 }

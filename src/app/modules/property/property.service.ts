@@ -124,7 +124,8 @@ const getMyProperties = async (
         modifiedQuery,
     )
         .filter()
-        .search(['propertyName', 'propertyType', 'city', 'country'])
+
+    propertyQueryBuilder.search(['propertyName', 'propertyType', 'city', 'country'])
         .sort()
         .paginate()
         .fields()

@@ -39,14 +39,14 @@ const createZone = async (payload: { name: string; countries: string[] }): Promi
 
 // GET all zones
 const getAllZones = async (query: Record<string, unknown>) => {
-  const zonQuryBuilder =new QueryBuilder(Zone.find(),query)
-  .filter()
-  .search(['name','countries'])
-  .sort()
-  .paginate();
+  const zonQuryBuilder = new QueryBuilder(Zone.find(), query)
+    .filter()
+    .search(['name', 'countries'])
+    .sort()
+    .paginate();
   const zones = await zonQuryBuilder.modelQuery;
   const paginateInfo = await zonQuryBuilder.getPaginationInfo();
-  return {data:zones,meta:paginateInfo};
+  return { data: zones, meta: paginateInfo };
 };
 
 // GET zone by ID
@@ -65,7 +65,7 @@ const updateZone = async (id: string, payload: Partial<IZone>): Promise<IZone> =
     throw new ApiError(StatusCodes.NOT_FOUND, 'Zone not found');
   }
 
-  if(payload.countries){
+  if (payload.countries) {
     payload.countries = payload.countries.map(c => c.toUpperCase());
   }
 
@@ -93,9 +93,9 @@ const deleteZone = async (id: string): Promise<IZone> => {
 
 // GET zone by country code
 const getZoneByCountry = async (countryCode: string): Promise<IZone | null> => {
-  return await Zone.findOne({ 
+  return await Zone.findOne({
     countries: countryCode.toUpperCase(),
-    isActive: true 
+    isActive: true
   });
 };
 
@@ -118,7 +118,7 @@ const seedInitialZones = async () => {
 
   await Zone.deleteMany({});
   const zones = await Zone.insertMany(initialZones);
-  
+
   return {
     message: 'Initial zones seeded',
     count: zones.length,

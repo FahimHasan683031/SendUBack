@@ -78,8 +78,69 @@ const getAllUser = async (query: Record<string, unknown>) => {
 }
 
 const getSingleUser = async (id: string) => {
-  const result = await User.findById(id).select('-password -authentication')
-  return result
+  const user = await User.findById(id).select('-password -authentication').lean()
+
+  if (!user) {
+    return null
+  }
+
+  // Only add extra fields for business users
+  if (user.role === USER_ROLES.BUSINESS) {
+    const aggregateResult = await User.aggregate([
+      { $match: { _id: user._id } },
+      {
+        $lookup: {
+          from: 'lostitems',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'lostItems',
+        },
+      },
+      {
+        $lookup: {
+          from: 'shippings',
+          localField: 'lostItems._id',
+          foreignField: 'lostItemId',
+          as: 'shippings',
+        },
+      },
+      {
+        $addFields: {
+          totalLostItem: { $size: '$lostItems' },
+          activeShipmentsPaymentCompleted: {
+            $size: {
+              $filter: {
+                input: '$shippings',
+                as: 'ship',
+                cond: { $eq: ['$$ship.status', 'paymentCompleted'] },
+              },
+            },
+          },
+          activeShipmentsInTransit: {
+            $size: {
+              $filter: {
+                input: '$shippings',
+                as: 'ship',
+                cond: { $eq: ['$$ship.status', 'inTransit'] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          lostItems: 0,
+          shippings: 0,
+          password: 0,
+          authentication: 0,
+        },
+      },
+    ])
+
+    return aggregateResult.length > 0 ? aggregateResult[0] : user
+  }
+
+  return user
 }
 
 const deleteUser = async (id: string) => {
@@ -344,6 +405,25 @@ const getAllUsersForExport = async () => {
     .lean()
 }
 
+const getAllBusinessUsers = async (searchTerm?: string) => {
+  const query: any = {
+    role: USER_ROLES.BUSINESS,
+    status: USER_STATUS.ACTIVE,
+  }
+
+  if (searchTerm) {
+    query['businessDetails.businessName'] = { $regex: searchTerm, $options: 'i' }
+    query['firstName'] = { $regex: searchTerm, $options: 'i' }
+    query['lastName'] = { $regex: searchTerm, $options: 'i' }
+  }
+
+  const users = await User.find(query)
+    .select('_id firstName lastName image businessDetails.businessName')
+    .lean()
+
+  return users
+}
+
 export const UserServices = {
   updateProfile,
   createAdmin,
@@ -353,4 +433,5 @@ export const UserServices = {
   getProfile,
   deleteMyAccount,
   getAllUsersForExport,
+  getAllBusinessUsers,
 }

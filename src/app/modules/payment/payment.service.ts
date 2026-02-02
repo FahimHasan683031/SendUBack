@@ -4,8 +4,8 @@ import { IPayment } from "./payment.interface";
 import { Payment } from "./payment.model";
 
 // Create seassion
-const creatSession = async ( quoteId:string,) => {
-const url = await createCheckoutSession(quoteId)
+const creatSession = async (quoteId: string,) => {
+  const url = await createCheckoutSession(quoteId)
 
   return { url }
 }
@@ -22,7 +22,7 @@ const getPayments = async (query: Record<string, unknown>) => {
     .filter()
     .sort()
     .paginate();
-  
+
   const payments = await paymentQueryBuilder.modelQuery;
   const paginationInfo = await paymentQueryBuilder.getPaginationInfo();
 
@@ -41,8 +41,8 @@ const getPaymentById = async (id: string) => {
 
 
 export const PaymentService = {
-    creatSession,
-    createPayment,
-    getPayments,
-    getPaymentById,
+  creatSession,
+  createPayment,
+  getPayments,
+  getPaymentById,
 }

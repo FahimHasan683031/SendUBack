@@ -10,14 +10,14 @@ const createCategory = async (payload: ICategory) => {
 
 // Get all categories
 const getAllCategories = async (query: Record<string, unknown>) => {
-   const categoryQueryBuilder = new QueryBuilder(CategoryModel.find({isActive: true, parent: null}), query)
+  const categoryQueryBuilder = new QueryBuilder(CategoryModel.find({ isActive: true, parent: null }), query)
     .filter()
     .fields()
 
   const totalCategories = await CategoryModel.countDocuments()
 
   const categories = await categoryQueryBuilder.modelQuery
-  
+
   return {
     categories,
   };

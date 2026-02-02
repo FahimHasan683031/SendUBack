@@ -14,6 +14,7 @@ router.get(
   UserController.getProfile,
 )
 router.get('/', auth(USER_ROLES.ADMIN), UserController.getAllUser),
+  router.get('/all-business-users', auth(USER_ROLES.ADMIN), UserController.getAllBusinessUsers),
   router.get('/export', auth(USER_ROLES.ADMIN), UserController.exportBusinessUsers),
   router.patch(
     '/profile',

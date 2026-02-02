@@ -276,7 +276,7 @@ const addShippingRateORInsurance = async (
 // Add shipping information
 const addShippingInfo = async (id: string, payload: Partial<IShipping>) => {
   payload.status = SHIPPING_STATUS.IN_TRANSIT
-  ;(payload as any)['currentState.courierBooked'] = true
+    ; (payload as any)['currentState.courierBooked'] = true
   const shipping = await Shipping.findByIdAndUpdate(id, payload, { new: true })
 
   if (!shipping) {
