@@ -474,7 +474,7 @@ const sendPaymentConfirmationEmail = (data: any) => {
     <tr>
       <td style="padding:30px 25px;">
         <p style="color:#000; font-size:15px; line-height:1.6; text-align:center;">
-          Hello <strong style="color:#0096FF;">${data.address_from.name}</strong>, your payment for your shipping order has been successfully completed.
+          Hello, your payment for your shipping order has been successfully completed.
         </p>
 
         <!-- Sender & Receiver -->
@@ -678,7 +678,7 @@ const businessUserShipmentInfoEmail = (data: any) => {
     <tr>
       <td style="padding:25px 20px;">
         <p style="font-size:14px;color:#000;line-height:1.5;">
-          Hello <strong style="color:#0077DD;">${data.address_from.name}</strong>,<br>
+          Hello<br>
           Your added lost item has been successfully booked for shipment. ✅
         </p>
 
@@ -755,7 +755,7 @@ const businessUserRegistrationInviteEmail = (data: any) => {
     <tr>
       <td style="padding:25px 20px;">
         <p style="font-size:14px;color:#000;line-height:1.5;">
-          Hello <strong style="color:#0077DD;">${data.address_from.name}</strong>,<br>
+          Hello,<br>
           A customer has booked a shipment for the lost item you found.  
           To continue and provide shipping information, you must register a business account.
         </p>

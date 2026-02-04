@@ -11,7 +11,7 @@ const shippingAddressSchema = new Schema({
   postal_code: String,
   country: { type: String, required: true },
   phone: String,
-  email: { type: String, required: true },
+  email: { type: String },
   countryName: { type: String, required: true },
 })
 

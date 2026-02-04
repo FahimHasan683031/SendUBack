@@ -25,7 +25,7 @@ export interface IShippingAddress {
   postal_code?: string
   country: string
   phone?: string
-  email: string
+  email?: string
   countryName: string
 }
 

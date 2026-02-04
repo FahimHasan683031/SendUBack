@@ -11,7 +11,7 @@ const shippingAddressSchema = z.object({
   country: z.string().min(1, "Country is required"),
   countryName: z.string().min(1, "Country name is required"),
   phone: z.string().optional(),
-  email: z.string().email("Valid email is required"),
+  email: z.string().optional(),
 });
 
 
