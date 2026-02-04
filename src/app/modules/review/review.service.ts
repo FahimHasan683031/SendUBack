@@ -13,6 +13,7 @@ const createReview = async (payload: IReview) => {
 const getAllReviews = async (query: Record<string, unknown>) => {
   const reviewQueryBuilder = new QueryBuilder(Review.find(), query)
     .filter()
+    .search(['name', 'email'])
     .sort()
     .fields()
     .paginate()
