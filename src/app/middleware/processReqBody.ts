@@ -60,18 +60,90 @@ export const fileAndBodyProcessorUsingDiskStorage = () => {
   ) => {
     try {
       const allowedTypes = {
-        image: ['image/jpeg', 'image/png', 'image/jpg'],
+        image: [
+          'image/jpeg', // JPEG
+          'image/jpg',  // JPG
+          'image/png',  // PNG
+          'image/gif',  // GIF
+          'image/webp', // WebP
+          'image/svg+xml', // SVG
+          'image/bmp',  // BMP
+          'image/tiff', // TIFF
+          'image/tif',  // TIFF alternative MIME type
+          'image/x-icon', // ICO
+          'image/vnd.microsoft.icon', // ICO alternative
+          'image/heic', // HEIC (iOS)
+          'image/heif', // HEIF
+          'image/avif', // AVIF
+          'image/apng', // Animated PNG
+        ],
         media: ['video/mp4', 'audio/mpeg'],
         documents: ['application/pdf'],
-        logo: ['image/jpeg', 'image/png', 'image/jpg'],
-        lostImage: ['image/jpeg', 'image/png', 'image/jpg'],
+        logo: [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+          'image/bmp',
+          'image/tiff',
+          'image/tif',
+          'image/x-icon',
+          'image/vnd.microsoft.icon',
+          'image/heic',
+          'image/heif',
+          'image/avif',
+        ],
+        lostImage: [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+          'image/bmp',
+          'image/tiff',
+          'image/tif',
+          'image/x-icon',
+          'image/vnd.microsoft.icon',
+          'image/heic',
+          'image/heif',
+          'image/avif',
+        ],
         shippingLabel: [
           'image/jpeg',
-          'image/png',
           'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+          'image/bmp',
+          'image/tiff',
+          'image/tif',
+          'image/x-icon',
+          'image/vnd.microsoft.icon',
+          'image/heic',
+          'image/heif',
+          'image/avif',
           'application/pdf',
         ],
-        propertyImage: ['image/jpeg', 'image/png', 'image/jpg'],
+        propertyImage: [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+          'image/bmp',
+          'image/tiff',
+          'image/tif',
+          'image/x-icon',
+          'image/vnd.microsoft.icon',
+          'image/heic',
+          'image/heif',
+          'image/avif',
+        ],
       };
 
       const fieldType = file.fieldname as IFolderName;
