@@ -11,7 +11,7 @@ const router = express.Router()
 // Create property (Business users only)
 router.post(
     '/',
-    auth(USER_ROLES.BUSINESS),
+    auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
     fileAndBodyProcessorUsingDiskStorage(),
     validateRequest(PropertyValidations.createPropertyZod),
     PropertyControllers.createProperty,
@@ -23,7 +23,7 @@ router.get('/user/:userId', PropertyControllers.getPropertiesByUserId)
 // Get my properties (Business users only)
 router.get(
     '/my-properties',
-    auth(USER_ROLES.BUSINESS),
+    auth(USER_ROLES.BUSINESS, USER_ROLES.ADMIN),
     PropertyControllers.getMyProperties,
 )
 

@@ -109,6 +109,8 @@ const getAllShippings = async (
       'address_to.phone',
       'address_to.street1',
       'tracking_id',
+      'parcel.name'
+
     ])
     .filter()
     .sort()
