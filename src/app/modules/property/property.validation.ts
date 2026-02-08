@@ -37,6 +37,7 @@ const createPropertyZod = z.object({
         }).min(1, 'Contact phone cannot be empty'),
 
         website: z.string().url('Invalid website URL').optional().or(z.literal('')),
+        userId: z.string().optional(),
     }),
 })
 

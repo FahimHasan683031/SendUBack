@@ -11,21 +11,15 @@ import { ClientSession } from 'mongoose'
 
 // Create property
 const createProperty = async (
-    user: JwtPayload,
+    userId: string,
     payload: IProperty,
     session?: ClientSession,
 ) => {
-    const isExistUser = await User.findById(user.authId)
+    const isExistUser = await User.findById(userId)
     if (!isExistUser) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
 
-    if (isExistUser.role !== USER_ROLES.BUSINESS) {
-        throw new ApiError(
-            StatusCodes.FORBIDDEN,
-            'Only business users can create properties',
-        )
-    }
 
     // Auto-detect country code from address using Google Maps API
     const searchQuery = [
@@ -68,7 +62,7 @@ const createProperty = async (
 
     const property = await Property.create([{
         ...payload,
-        user: user.authId,
+        user: isExistUser._id,
     }], { session })
 
     return property[0]

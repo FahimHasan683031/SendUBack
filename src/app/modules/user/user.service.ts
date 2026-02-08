@@ -335,10 +335,7 @@ const updateProfile = async (
     // Auto-create property if profile is completed for the first time
     if (!wasCompleted && updatedUser.businessDetailsCompleted) {
       await PropertyServices.createProperty(
-        {
-          authId: isExistUser._id.toString(),
-          role: isExistUser.role,
-        } as JwtPayload,
+        isExistUser._id.toString(),
         {
           propertyName:
             updatedUser.businessDetails?.businessName ||
