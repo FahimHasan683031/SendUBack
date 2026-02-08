@@ -3,10 +3,10 @@ import { z } from "zod";
 // Address validation
 const shippingAddressSchema = z.object({
   businessName: z.string().optional(),
-  street1: z.string().min(1, "Street address is required"),
+  street1: z.string(),
   street2: z.string().optional(),
   city: z.string().optional(),
-  state: z.string().min(1, "State is required").optional(),
+  state: z.string().optional(),
   postal_code: z.string().optional(),
   country: z.string().min(1, "Country is required"),
   countryName: z.string().min(1, "Country name is required"),
